@@ -1,28 +1,58 @@
-# 轉換相容矩陣
+# 格式相容矩陣
 
-矩陣真實來源為 `engine/registry.py`（`formats.py` 保留舊呼叫相容性）。同副檔名允許重新編碼或處理，不會覆寫輸入。
+P5：305 個宣告直接方向以自行產生內容實際轉換並解碼／檢查內容通過。這代表基本格式方向覆蓋，不保證每一種版面、編碼器或參數組合。PDF→PDF 必須選擇頁碼／旋轉／分割或多檔合併；RAR 只作來源。
 
-| 輸入 | 允許輸出 | 引擎 / 限制 |
-|---|---|---|
-| MP4, MOV, MKV, AVI, WebM, M4V | MP4, MOV, MKV, AVI, WebM；MP3, WAV, FLAC, AAC, OGG, M4A, Opus | FFmpeg；音訊輸出需要來源音軌；WebM 強制 VP9 / Opus，AVI 強制 MPEG-4 |
-| MP3, WAV, FLAC, AAC, OGG, M4A, Opus | MP3, WAV, FLAC, AAC, OGG, M4A, Opus | FFmpeg；不將音訊假裝轉成影片 |
-| JPG, JPEG, PNG, WebP, BMP, TIF, TIFF | PNG, JPG, WebP, BMP, TIFF, PDF | Pillow；動畫與多頁 TIFF 目前僅處理第一畫格／第一頁 |
-| PDF | PNG, JPG | MuPDF；每頁一張圖片，36–600 DPI |
-| PDF | PDF | MuPDF；必須明確指定頁碼擷取、逐頁分割或 90/180/270° 旋轉，不接受空操作 |
-| 多份圖片 / PDF | PDF | MuPDF；依 GUI 清單順序合併，可混合圖片與 PDF |
-| DOCX, ODT, DOC, RTF | PDF, DOCX, ODT, RTF, TXT（依下列精確限制） | LibreOffice；僅文字文件族群 |
-| XLSX, ODS, XLS | PDF, XLSX, ODS, CSV | LibreOffice；CSV 不保留多工作表與樣式 |
-| PPTX, ODP, PPT | PDF, PPTX, ODP | LibreOffice；僅簡報族群 |
+| 來源 | 可直接輸出 |
+|---|---|
+| 7Z | ZIP, TAR |
+| AAC | AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| AVI | MP4, MOV, MKV, AVI, WEBM, WMV, AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| AVIF | AVIF, BMP, GIF, HEIC, JPG, PNG, TIFF, WEBP, PDF |
+| AZW3 | EPUB, MOBI, FB2 |
+| BMP | AVIF, BMP, GIF, HEIC, JPG, PNG, TIFF, WEBP, PDF |
+| CSV | XLSX, ODS, PDF, TSV |
+| DOC | PDF, DOCX, ODT, RTF, TXT |
+| DOCX | PDF, DOC, ODT, DOCX, RTF, TXT, MD, HTML |
+| EPS | PDF, PNG |
+| EPUB | MOBI, AZW3, FB2 |
+| FB2 | EPUB, MOBI, AZW3 |
+| FLAC | AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| GIF | AVIF, BMP, GIF, HEIC, JPG, PNG, TIFF, WEBP, PDF |
+| GZ | ZIP, 7Z, TAR |
+| HEIC | AVIF, BMP, GIF, HEIC, JPG, PNG, TIFF, WEBP, PDF |
+| HTML | MD, DOCX, PDF, TXT |
+| JPG | AVIF, BMP, GIF, HEIC, JPG, PNG, TIFF, WEBP, PDF |
+| M4A | AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| MD | HTML, DOCX, PDF, TXT |
+| MKV | MP4, MOV, MKV, AVI, WEBM, WMV, AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| MOBI | EPUB, AZW3, FB2 |
+| MOV | MP4, MOV, MKV, AVI, WEBM, WMV, AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| MP3 | AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| MP4 | MP4, MOV, MKV, AVI, WEBM, WMV, AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| ODP | PDF, PPT, PPTX, ODP |
+| ODS | PDF, XLS, XLSX, ODS, CSV, TSV |
+| ODT | PDF, DOC, DOCX, ODT, RTF, TXT |
+| OGG | AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| OPUS | AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| PDF | PNG, JPG, PDF, DOCX, TXT, SVG, EPS |
+| PNG | AVIF, BMP, GIF, HEIC, JPG, PNG, TIFF, WEBP, PDF |
+| PPT | PDF, PPTX, ODP |
+| PPTX | PDF, PPT, ODP, PPTX |
+| RAR | ZIP, 7Z, TAR |
+| RTF | PDF, DOCX, ODT, TXT |
+| SVG | PDF, PNG, EPS |
+| TAR | ZIP, 7Z |
+| TIFF | AVIF, BMP, GIF, HEIC, JPG, PNG, TIFF, WEBP, PDF |
+| TSV | XLSX, ODS, PDF, CSV |
+| TXT | MD, HTML, DOCX, PDF |
+| WAV | AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| WEBM | MP4, MOV, MKV, AVI, WEBM, WMV, AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| WEBP | AVIF, BMP, GIF, HEIC, JPG, PNG, TIFF, WEBP, PDF |
+| WMV | MP4, MOV, MKV, AVI, WEBM, WMV, AAC, FLAC, M4A, MP3, OGG, OPUS, WAV |
+| XLS | PDF, XLSX, ODS, CSV |
+| XLSX | PDF, XLS, ODS, XLSX, CSV, TSV |
+| ZIP | 7Z, TAR |
 
-RTF 不提供 RTF→RTF，DOC 不提供 DOC→DOC；其餘依程式矩陣。加密 PDF 需先解密。Office 轉檔使用獨立使用者設定目錄，避免干擾正在使用的 LibreOffice。缺少來源字型時排版可能變化。
+後端 `engine/registry.py` 為唯一相容矩陣，GUI 與 worker 共用。多步驟需在工作流程中明確建立，沒有暗中執行任意中介路徑。
 
-影片選項：CPU H.264 / H.265、WebM VP9、NVIDIA H.264 NVENC；CRF 或 kbps、目標高度、FPS。NVENC 先執行小型編碼測試，無可用硬體／驅動會失敗並提供錯誤，使用者可選 CPU 重試。來源影音的解碼支援依附帶的 FFmpeg build，損毀檔與不相容參數會顯示真實錯誤。
-
-圖片設定為單張輸出，保留 EXIF 方向但不承諾保留所有中繼資料／ICC／HDR。JPEG / BMP 輸出將透明區域鋪上指定底色。尺寸 0 為自動；寬高都指定時使用指定尺寸。
-
-沒有上傳、外部雲端 API 或人為檔案大小上限。Pillow 對解壓縮炸彈的內建像素安全檢查仍生效；實際處理受儲存、記憶體及引擎限制。
-
-
-P0 的 UI 兩種模式與工具箱均讀取 Registry，而不是各自保存格式清單。實際內容經 Rust infer 提示、解碼器／容器解析後，才交叉檢查副檔名。JPEG／TIF／M4V 分別正規化為 JPG／TIFF／MP4。每個 worker 會再次辨識，避免來源在匯入後遭替換時使用錯誤引擎。
-
-Registry 的測試狀態只代表目前整合測試有對應來源／目標案例，不代表所有選項、輸入內容與編碼器皆已驗證。Office 能力仍取決於外部 LibreOffice，尚未通過完整配對驗收。Graph 可查詢中介路徑，但 P0 不執行間接轉換；例如 PDF → PNG → WebP 的規劃不會讓 PDF → WebP 出現在直接輸出選單。
+PDF→DOCX／OCR 需校對；圖片有損格式與重新編碼可能改變品質；GIF/WebP 以外輸出使用第一畫格。詳見 README 與工具內提示。

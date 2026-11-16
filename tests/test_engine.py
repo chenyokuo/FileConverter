@@ -23,7 +23,7 @@ class Client:
     def __init__(self,root):
         command=[sys.executable,str(ROOT/'engine/service.py')]
         if os.environ.get('FILE_CONVERTER_TEST_FROZEN'):command=[os.environ['FILE_CONVERTER_TEST_FROZEN']]
-        self.proc=subprocess.Popen(command+['--data',str(root),'--engines',str(ROOT/'vendor')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        self.proc=subprocess.Popen(command+['--data',str(root),'--engines',os.environ.get('FILE_CONVERTER_TEST_ENGINES',str(ROOT/'vendor'))],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         self.messages=queue.Queue();self.events=[];self.serial=0
         def read():
             for line in self.proc.stdout:
@@ -158,7 +158,7 @@ class EngineTests(unittest.TestCase):
         self.client.call('cancel',{'id':jobs[-1]['id']});result=self.client.wait([j['id'] for j in jobs]);self.assertEqual(result[-1]['status'],'cancelled')
         self.assertEqual(sum(j['status']=='completed' for j in result),14,[(j['status'],j.get('error')) for j in result])
     def test_12_missing_office_and_invalid_request(self):
-        with self.assertRaises(ValueError):self.enqueue(self.pdf,'docx')
+        with self.assertRaises(ValueError):self.enqueue(self.pdf,'mp4')
         with self.assertRaises(ValueError):self.client.call('shell',{'command':'whoami'})
         with self.assertRaises(ValueError):self.client.call('settings',{'settings':{'concurrency':10}})
     def test_13_bulk_inspect(self):
@@ -188,13 +188,18 @@ class EngineTests(unittest.TestCase):
                 self.assertGreater(float(info['format']['duration']),2)
                 self.assertTrue(info['streams'])
     def test_17_missing_office_dependency_error(self):
-        if self.client.call('engines')['soffice']:self.skipTest('LibreOffice is present')
-        source=self.inputs/'test.docx'
-        import zipfile
-        with zipfile.ZipFile(source,'w') as archive:
-            archive.writestr('[Content_Types].xml','<Types/>');archive.writestr('word/document.xml','<document/>')
-        job=self.enqueue(source,'pdf');result=self.client.wait([job['id']])[0]
-        self.assertEqual(result['status'],'failed');self.assertIn('LibreOffice',result['error'])
+        from unittest.mock import patch
+        from docx import Document
+        source=self.dir/'missing-runtime.docx';source.parent.mkdir(parents=True,exist_ok=True)
+        document=Document();document.add_paragraph('Missing runtime handling');document.save(source)
+        empty=self.dir/'empty-engines';empty.mkdir()
+        with patch.dict(os.environ,{'FILE_CONVERTER_TEST_ENGINES':str(empty)}):missing=Client(self.dir/'missing-runtime-data')
+        try:
+            self.assertIsNone(missing.call('engines')['soffice'])
+            job=missing.call('enqueue',{'jobs':[{'sources':[str(source)],'format':'pdf','outputDir':str(self.out),'options':{}}]})[0]
+            result=missing.wait([job['id']])[0]
+            self.assertEqual(result['status'],'failed');self.assertIn('LibreOffice',result['error'])
+        finally:missing.close()
 
     def test_18_disguised_content_worker_and_inspect(self):
         renamed=self.inputs/'實際 PNG 偽裝 [PDF] & 測試.pdf';renamed.write_bytes(self.image.read_bytes())

@@ -15,17 +15,24 @@ function Invoke-Checked {
     & $Action
     if ($LASTEXITCODE -ne 0) { throw "Build command failed with exit code $LASTEXITCODE" }
 }
-Invoke-Checked { & $PythonExe scripts\icons.py }
 if (!(Test-Path 'vendor\ffmpeg\ffprobe.exe')) { Invoke-Checked { & $PythonExe scripts\prepare.py } }
+Invoke-Checked { & $PythonExe scripts\acquire_engines.py }
+Invoke-Checked { & $PythonExe scripts\stage_runtime.py }
 Invoke-Checked { & $PythonExe scripts\freeze.py }
 Invoke-Checked { node tests\appearance-settings.mjs }
 if (!$SkipTests) {
-    Invoke-Checked { & $PythonExe tests\test_engine.py }
+    Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_*.py' -v }
+    Invoke-Checked { & $PythonExe -X utf8 tests\matrix.py }
     $env:FILE_CONVERTER_TEST_FROZEN = Join-Path $ProjectRoot 'src-tauri\binaries\FileConverterEngine\FileConverterEngine.exe'
-    try { Invoke-Checked { & $PythonExe tests\test_engine.py } }
-    finally { Remove-Item Env:FILE_CONVERTER_TEST_FROZEN -ErrorAction SilentlyContinue }
+    $env:FILE_CONVERTER_TEST_ENGINES = Join-Path $ProjectRoot 'src-tauri\bundled-engines'
+    try {
+        Invoke-Checked { & $PythonExe tests\test_engine.py }
+        Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_p[234].py' -v }
+    }
+    finally { Remove-Item Env:FILE_CONVERTER_TEST_FROZEN,Env:FILE_CONVERTER_TEST_ENGINES -ErrorAction SilentlyContinue }
 }
 Invoke-Checked { & $PythonExe scripts\licenses.py }
+Invoke-Checked { & $PythonExe scripts\normalize_bundle_marker.py }
 if ($NoInstaller) { Invoke-Checked { npm run package -- --no-bundle } }
 else { Invoke-Checked { npm run package } }
 $IconTargets = @('src-tauri\target\release\FileConverter.exe', 'src-tauri\binaries\FileConverterEngine\FileConverterEngine.exe')

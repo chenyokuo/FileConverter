@@ -1,0 +1,43 @@
+{
+  "PATH": "C:\\WINDOWS\\System32;C:\\WINDOWS",
+  "checks": [
+    {
+      "direction": "png:heic",
+      "status": "passed"
+    },
+    {
+      "direction": "pdf:docx",
+      "status": "passed"
+    },
+    {
+      "direction": "docx:pdf",
+      "status": "passed"
+    },
+    {
+      "direction": "md:html",
+      "status": "passed"
+    },
+    {
+      "direction": "epub:mobi",
+      "status": "passed"
+    },
+    {
+      "direction": "eps:png",
+      "status": "passed"
+    },
+    {
+      "direction": "mp4:mp3",
+      "status": "passed"
+    },
+    {
+      "direction": "zip:7z",
+      "status": "passed"
+    },
+    {
+      "operation": "OpenCV repair",
+      "status": "passed"
+    }
+  ],
+  "cleanWindowsVM": false,
+  "note": "Host PATH excludes developer tools. Uses only bundled executables. Installed system DLLs are still present; this cannot certify a clean Windows machine."
+}

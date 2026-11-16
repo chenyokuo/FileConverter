@@ -15,7 +15,8 @@ def keys(engines):
 
 def executable(app_exe):
     if os.name!='nt' or not app_exe:raise ValueError('右鍵整合只可從 Windows 桌面應用程式啟用')
-    path=Path(app_exe).resolve()
+    from fsutils import ordinary_path
+    path=Path(ordinary_path(app_exe)).resolve()
     if path.name!='FileConverter.exe' or not path.is_file():raise ValueError('應用程式執行檔無效')
     return path
 

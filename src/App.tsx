@@ -835,7 +835,7 @@ export default function App() {
               ))}
             </nav>
             <div className="sidebar-bottom">
-              <span>v0.3.0</span>
+              <span>v1.0.0-rc.1</span>
               <Button
                 compact
                 aria-label="開啟個人化設定"

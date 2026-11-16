@@ -1,0 +1,24 @@
+{
+  "browser": "157.0.4341.60",
+  "decodedContentVerified": true,
+  "jobs": [
+    {
+      "category": "image",
+      "format": "jpg",
+      "operation": null,
+      "status": "completed"
+    },
+    {
+      "category": "office",
+      "format": "pdf",
+      "operation": null,
+      "status": "completed"
+    },
+    {
+      "category": "pdf",
+      "format": "pdf",
+      "operation": "pdf.ocr",
+      "status": "completed"
+    }
+  ]
+}

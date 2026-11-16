@@ -49,5 +49,17 @@
     "license": "Apache-2.0",
     "version": "fast model, SHA-256 pinned",
     "sha256": "529c5b5797d64b126065cd55f2bb4c7fd7b15790798091b1ff259941a829330b"
+  },
+  "font": {
+    "version": "Sans2.004",
+    "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/Sans2.004/Sans/OTF/TraditionalChinese/NotoSansCJKtc-Regular.otf",
+    "license": "OFL-1.1",
+    "sha256": "dce08bd4fd91aa8aa76ed8fea4b694c2dfb8550f67871e326843212ddbeb88b4"
+  },
+  "webview2": {
+    "version": "157.0.4341.60",
+    "url": "https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/9d6605ff-c172-41a1-8116-e1bb02b93a01/Microsoft.WebView2.FixedVersionRuntime.157.0.4341.60.x64.cab",
+    "sha256": "1bad3df802a4c21f6b271cf3cd640912056291e3915b86fa7577a18899f761b9",
+    "license": "Microsoft WebView2 Fixed Version redistribution terms"
   }
 }

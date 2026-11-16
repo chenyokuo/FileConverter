@@ -2,7 +2,18 @@
 from pathlib import Path
 import io
 import re
+import os
+from contextlib import contextmanager
 from runtime import command
+
+@contextmanager
+def ocr_model_directory(path):
+    # Tesseract's C file loader accepts neither verbatim nor arbitrary Unicode
+    # absolute paths on Windows. Relative ASCII model names work from a Unicode
+    # working directory. This runs only inside the isolated, single-job worker.
+    before=os.getcwd()
+    try:os.chdir(path);yield '.'
+    finally:os.chdir(before)
 
 def pages(spec,count):
     result=[]
@@ -94,14 +105,18 @@ def execute(job,sources,stage,engines):
         elif op=='pdf.ocr':
             result=pymupdf.open();languages=params['language'];tessdata=engines.get('tessdata')
             if not tessdata:raise RuntimeError('OCR 字庫不完整')
-            for i,page in enumerate(doc):
-                if params['onlyScans'] and page.get_text().strip():result.insert_pdf(doc,from_page=i,to_page=i)
-                else:
-                    pix=page.get_pixmap(dpi=int(params['dpi']),alpha=False)
-                    data=pix.pdfocr_tobytes(compress=True,language=languages,tessdata=tessdata)
-                    with pymupdf.open(stream=data,filetype='pdf') as recognized:result.insert_pdf(recognized)
-                emit((i+1)/len(doc)*95)
-            result.save(target,garbage=4,deflate=True);result.close();return [target]
+            target=target.resolve()
+            try:
+                with ocr_model_directory(tessdata) as model_path:
+                    for i,page in enumerate(doc):
+                        if params['onlyScans'] and page.get_text().strip():result.insert_pdf(doc,from_page=i,to_page=i)
+                        else:
+                            pix=page.get_pixmap(dpi=int(params['dpi']),alpha=False)
+                            data=pix.pdfocr_tobytes(compress=True,language=languages,tessdata=model_path)
+                            with pymupdf.open(stream=data,filetype='pdf') as recognized:result.insert_pdf(recognized)
+                        emit((i+1)/len(doc)*95)
+                result.save(target,garbage=4,deflate=True);return [target]
+            finally:result.close()
         encryption=pymupdf.PDF_ENCRYPT_NONE;extra={}
         if op=='pdf.protect':
             password=params.get('password','')

@@ -666,7 +666,7 @@ export function SettingsPage({
 
                 <h2>File Converter</h2>
 
-                <span className="badge">v0.3.0 · Windows x64</span>
+                <span className="badge">v1.0.0-rc.1 · Windows x64</span>
                 <hr />
                 <div className="about-stack">
                   <p>React · Tauri · Rust · Python</p>

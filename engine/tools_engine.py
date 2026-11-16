@@ -7,6 +7,10 @@ def execute(job,stage,engines):
     definition,params=validate_tool(job['operation'],job.get('params',{}),sources,engines)
     job=dict(job,params=params)
     op=job['operation']
+    if job.get('previewOnly') and op=='video.delogo':
+        from worker import probe
+        duration=float(probe(sources[0],engines['ffprobe']).get('format',{}).get('duration') or 0)
+        job['options']={**job.get('options',{}),'trimStart':0,'trimEnd':min(10,duration) if duration else 0}
     if op.startswith('pdf.'):
         from pdf_tools import execute as handler
     elif op=='image.metadata' or op.startswith(('office.','files.')):

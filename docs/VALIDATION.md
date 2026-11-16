@@ -1,62 +1,33 @@
-# 驗收紀錄 — File Converter 0.3.0 / P0
+# P5 驗收紀錄 — 1.0.0-rc.1
 
-日期：2026-11-16。Windows 11 x64（10.0.26200）、WebView2、Node 24.22.1、Rust 1.100.0、Python 3.13.5。這是可執行的私人測試版，不等同跨所有 Windows 環境完成正式發行認證。
+2026-11-16，Windows x64 開發主機；所有素材由測試建立，RAR 使用 libarchive 官方 RAR5 stored 開源測試素材。沒有將使用者檔案上傳。P1–P4 只有相關測試和增量編譯，P5 才統一封裝。
 
-## 後端與建置
+| 驗證 | 實際結果 |
+|---|---|
+| 完整來源回歸 | 55 項，53 通過、2 當時跳過。之後以空 Runtime 實測 missing-LO：來源／凍結版均通過；建置 EXE 圖示另行驗證。新增影片預覽案例亦通過 |
+| 直接轉換矩陣 | 305/305；圖片實際解碼、媒體試解碼、文件內文／儲存格／投影片 XML、舊 Office 渲染、PDF 頁面與文字、電子書內文及壓縮展開 |
+| 凍結 Sidecar | 核心 23 項：22 通過、1 missing-LO 跳過；P2–P4 20/20 通過。Office 巨集／主動內容停用後受影響預覽案例再測通過 |
+| 真實 GUI／IPC | 開發模式 22 組、實際 Portable 候選 23 組通過；外觀、六材質、佇列、真實轉檔、歷史、視窗、工作流程、預設、預覽、參數變更與鍵盤關閉 |
+| 版面 | 1500×960 與常見桌面尺寸；125/150/200% renderer DPI 模擬通過。這不是 Windows 多螢幕實體 DPI 認證 |
+| Windows 選用整合 | 實際 HKCU 專屬 shell 啟停／清理、第二次啟動轉送通過；測試後恢復原右鍵狀態，沒有修改預設關聯 |
+| WebView2 | app-local 固定版 157.0.4341.60，Microsoft 簽章 Valid，CDP 回報同版 |
+| 大來源 | 1,073,741,868 bytes WAV：實際辨識，串流裁切 2 秒 FLAC 並解碼驗證 |
+| 大量 GUI | 250 個真實長中文／特殊字元檔名；匯入、批次 JPG 設定、清空與 1500×960 無水平溢出通過；逐項高成本動畫在大量檔案停用 |
+| 取消與原檔 | 真實 worker／FFmpeg 程序樹結束，原檔雜湊、撞名另存、失敗不阻斷整批；已在來源與 frozen 核心回歸驗證 |
+| 網址下載 | 自有本機 HTTP/HLS：720/1080 實際畫質、播放清單選單項目、字幕內容、四種音訊、取消後 Range 續傳、並行本機轉檔。未宣稱所有外部網站永久可用 |
 
-- TypeScript / Vite production build、Windows Rust / Tauri `cargo check` 與 release EXE 建置。
-- 原始 Python 引擎 **23 / 23** subprocess 整合測試。
-- PyInstaller 凍結引擎 **23 / 23** 相同整合測試；不依賴使用者安裝 Python。
-- 外觀 Node assertions：清晰背景預設、舊版設定遷移、個人化參數保留與兩種背景配置。
-- NSIS Installer 成功產生，內含 Microsoft WebView2 離線安裝程式；Portable 同時包含凍結 Python、Pillow、MuPDF、FFmpeg / FFprobe 及授權。LibreOffice 不在本版套件中。
+矩陣驗證最初把 FFmpeg 測試參數寫成 `.25`，被本版 CLI 拒絕；修正為 `0.25` 後直接對已實際轉換出的 127 個媒體檔重新解碼，沒有為測試錯誤重新編碼其餘成功項目。最終逐方向結果在 `test-results/matrix.json`，成功方向列於 `engine/verified-capabilities.json`。
 
-23 項引擎案例覆蓋：合法矩陣、中文／空白／`&`／方括號路徑、alpha／圖片尺寸、各圖片與影音輸出容器、PDF 合併／旋轉／頁碼擷取／分割／影像 DPI、同名不覆寫與原始 SHA-256、背景原尺寸 RGBA 無損持久化、歷史重啟／重試／清除、250 筆匯入、真實 FFmpeg 進度、失敗隔離、有限並行、取消與程式異常結束後清理子程序、缺少 LibreOffice 的真實錯誤、內容與副檔名不符、損壞檔隔離、OOXML／OLE／影音容器辨識、Registry 欄位／Graph 直接與間接規劃、PDF 空操作阻擋，以及指定歷史清除不影響其他紀錄／輸出。
+## 本機硬體量測
 
-## 原生 UI
+自製 1080p30、3 秒測試來源，H.264 fast、CRF/QP 23。CPU libx264：0.645 秒、139.43 wall FPS、SSIM 0.995061、2,274,349 bytes。AMD h264_amf：0.485 秒、185.70 wall FPS、SSIM 0.980053、3,938,577 bytes。CRF 與 QP 並非相同率控制，這是使用相同數值設定的實測；含初始化成本，單次樣本，不是普遍效能保證；GPU 較快但不代表更佳品質。AMD HEVC 在此機不可用，明確指定 AMD 時已驗證退回 libx265 並產生可讀 HEVC；此機 NVIDIA／Intel 實際探測失敗，僅驗證不可用與 CPU 備援，沒有宣稱在實體 NVIDIA／Intel 裝置完成輸出測試。
 
-實際 Portable / Windows WebView2 的 **19 / 19** GUI 群組。測試透過本機 CDP 連接原生應用，只替換原生選檔對話框的回傳路徑；Rust IPC、SQL、背景匯入、引擎與輸出檔均是真實流程，沒有 mock 轉檔或假進度。
+## 尚未通過的正式驗收閘門
 
-1. 啟動直接顯示操作區，16px 內文、15–16px 按鈕、至少 14px 次要資訊。
-2. 原生背景匯入及獨立圖片透明度、亮度、模糊、遮罩、位置／縮放。
-3. 六種材質獨立樣式；主工作區永不套用全域 blur；文字不隨面板 alpha 淡化。
-4. 外觀配置儲存／套用及 SQLite 持久化。
-5. 深淺主題與 Reduced Motion。
-6. 清晰／毛玻璃背景配置、保存背景、主工作區保持清晰。
-7. 混合檔案篩選、順序調整、同類批次品質與 PDF 合併確認。
-8. 原生檔案辨識、合法格式清單、實際排程與圖片輸出。
-9. 1500×960、1360×900、1280×720、1024×768、760×480 主要操作區可見性。
-10. 歷史搜尋與實際重新轉檔。
-11. 原生視窗最大化及還原。
-12. 125 / 150 / 200% renderer DPI 尺寸模擬。
-13. 六項新導覽、P3／P4 明確停用、新圖示、側欄收合與重載持久化。
-14. 自動模式目標留空；native infer 提示；PDF 空操作阻擋與設定後啟用。
-15. 指定模式來源不符、取消勾選後實際 PNG → JPG；能力表阻止不合法 PDF → DOCX／影片選項。
-16. 工具箱實際逐頁分割兩頁 PDF，驗證兩個輸出檔。
-17. 八類工具、未實作階段／缺少引擎標示、後端 Registry 搜尋。
-18. 有檔案佇列的桌面與 DPI 排版、進度展開／收合、About 新圖示與名稱。
-19. 觀察到的執行期外部網路請求為 0，無前端例外。
+目前未找到可用 Windows Sandbox／Hyper-V，使用者亦已確認沒有乾淨 VM／實機。已完成僅含 Windows 系統目錄 PATH 的凍結引擎 9 組代表功能與 Portable GUI；仍不能將同一開發主機測試宣稱為「無任何開發／引擎安裝的乾淨 Windows 電腦」驗收。實體多螢幕／不同 Windows OS DPI 亦未驗證。
 
-測試後恢復原設定及背景檔，只清除本次建立的歷史紀錄，保留使用者的其他歷史。實際畫面見 [P0.md](P0.md)。原生關閉動作已確認先儲存設定，再退出 FileConverter.exe；退出清理由 Rust / Windows Job Object 執行。
+對外散布的完整 corresponding-source 交付尚待完成，見 [散布要求](DISTRIBUTION.md)。候選包未簽署。這些項目未完成前，不標示 P5 正式通過、不清理舊版交付檔、不建立正式發行 Tag 或 Push main，以遵守使用者「最終整合驗收通過再同步」的要求。
 
-## Windows 圖示與部署
+Release／Installer／Portable、PE 圖示、安裝／移除、ZIP 全 CRC、Runtime 項目／雜湊及交付 SHA-256 檢查已通過；詳見 `docs/P5.md` 與 `docs/validation/release-verification.json`。只有乾淨 Windows／實體環境及散布閘門仍未完成。
 
-- 指定 Downloads PNG 可讀取，1254×1254，SHA-256 與專案保留副本一致，原檔未變更。
-- 4 組圖示驗證通過：來源／SHA、等比例 PNG 與 ICO 尺寸、名稱與識別碼／封裝範圍、實際 PE 資源。
-- FileConverter.exe、FileConverterEngine.exe、NSIS Installer 的 ICO frame 像素逐一比對一致，涵蓋 16／20／24／32／40／48／64／96／128／256px；32／64／128／256／512px UI PNG 同源且清晰。
-- 唯讀 Win32 Shell 及目前應用視窗的 32px 圖示擷取，與來源像素平均差為 0。只檢查本應用，沒有清除全系統圖示快取。
-- NSIS 實際生成腳本的 Installer／Uninstaller 圖示指向新 ICO；桌面與開始功能表捷徑指向 FileConverter.exe，解除安裝項目的 DisplayIcon 也指向本程式。
-- Tauri 未設定 fileAssociations，生成安裝腳本沒有 APP_ASSOCIATE／APP_UNASSOCIATE 呼叫。未修改預設開啟程式、其他應用圖示或全系統檔案類型圖示。
-- Portable ZIP 另外核對內含 EXE 與 release EXE 的 SHA-256；安裝包 EXE 與 Portable 僅差 Tauri 官方的三個 bundle-type 標記位元組（UNK → NSS），其他所有位元組一致。發行檔 SHA-256 位於 `release/SHA256SUMS.json`。
-
-## 尚待後續階段／環境驗證
-
-- P1：完整 LibreOffice Runtime 封裝、更多格式／OCR／PDF → DOCX 及硬體加速擴充。現有 Office Adapter 保留，但本機無 LibreOffice，不能宣稱全部 Office 配對已完成實測。
-- P2–P4：壓縮、電子書、物件修復、下載與工作流程尚未實作，介面停用並標階段。
-- 中介 Graph 僅提供規劃，P0 僅執行直接轉換。
-- Windows 10、未安裝開發工具的乾淨機安裝／解除安裝、實體多螢幕 DPI、已釘選舊捷徑的 Shell cache 更新仍需環境驗收。
-- Portable 需要已安裝 WebView2；Installer 附帶離線 WebView2 安裝包。兩者均未簽章。
-- 整個 OS 視窗 alpha 尚未完成 WebView2 相容性驗證，因此不提供假滑桿；背景與面板透明度已獨立實作。
-- NVENC 仍以現有實際編碼前測方式判斷；此機並未完成所有 GPU／驅動組合驗收。
-- 數千筆清單、超大型檔案、ICC／HDR／動畫與多頁 TIFF 保真、損壞或加密文件的全部邊界仍需進一步量測。沒有新增人為檔案大小上限。
-
-原始機器紀錄與測試產物在忽略的 `.tools/` 與 `test-results/`；Git 僅保留程式碼、報告與挑選的實際畫面。未上傳憑證、環境檔、快取、測試輸入或編譯產物。
+P5 額外修正：Tauri 安裝版 verbatim 路徑不直接交給 C 引擎／右鍵登錄；Tesseract 於隔離 worker 以相對模型路徑載入，已驗證中文模型目錄與英文／繁中 OCR。繁中＋English 採繁中優先，仍有辨識錯字，不能宣稱完美還原。

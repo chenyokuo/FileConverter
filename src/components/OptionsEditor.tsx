@@ -13,8 +13,24 @@ export function OptionsEditor({
   value: Options;
   onChange: (v: Options) => void;
 }) {
-  const set = (key: keyof Options, v: unknown) =>
-    onChange({ ...value, [key]: v });
+  const effectiveCodec =
+    value.videoCodec === "nvenc" ? "h264" : value.videoCodec;
+  const effectiveHardware =
+    value.videoCodec === "nvenc" ? "nvidia" : value.hardware || "auto";
+  const set = (key: keyof Options, v: unknown) => {
+    const next = {
+      ...value,
+      videoCodec: effectiveCodec,
+      hardware: effectiveHardware as Options["hardware"],
+      [key]: v,
+    };
+    if (key === "videoCodec" && !["auto", "cpu"].includes(next.hardware)) {
+      const device = hardware.find((d) => d.id === next.hardware);
+      if (!device?.available || device.codecs?.[String(v)] === false)
+        next.hardware = "auto";
+    }
+    onChange(next);
+  };
   const num = (key: keyof Options, label: string, max = 100000) => (
     <label className="field" key={key}>
       <span>{label}</span>
@@ -36,7 +52,8 @@ export function OptionsEditor({
     <label className="field" key={key}>
       <span>{label}</span>
       <select
-        value={String(value[key])}
+        aria-label={label}
+        value={String(key === "videoCodec" ? effectiveCodec : value[key])}
         onChange={(e) =>
           set(
             key,
@@ -91,70 +108,79 @@ export function OptionsEditor({
       )}
       {category === "video" && !isAudio && (
         <>
-          <label className="field">
-            <span>硬體加速</span>
-            <select
-              aria-label="硬體加速"
-              value={value.hardware || "auto"}
-              onChange={(e) => set("hardware", e.target.value)}
-            >
-              <option value="auto">自動 · 失敗改用 CPU</option>
-              <option value="cpu">CPU</option>
-              {hardware
-                .filter((d) => d.id !== "cpu")
-                .map((d) => (
-                  <option
-                    key={d.id}
-                    value={d.id}
-                    disabled={
-                      !d.available || d.codecs?.[value.videoCodec] === false
-                    }
-                  >
-                    {d.label}
-                    {d.pending ? " · 偵測中" : !d.available ? " · 不可用" : ""}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label className="field">
-            <span>品質預設</span>
-            <select
-              value={value.qualityPreset || "balanced"}
-              onChange={(e) =>
-                onChange({
-                  ...value,
-                  qualityPreset: e.target.value as Options["qualityPreset"],
-                  crf: (
-                    { fast: 26, balanced: 23, quality: 18 } as Record<
-                      string,
-                      number
+          {["mp4", "mov", "mkv"].includes(format) && (
+            <label className="field">
+              <span>硬體加速</span>
+              <select
+                aria-label="硬體加速"
+                value={effectiveHardware}
+                onChange={(e) => set("hardware", e.target.value)}
+              >
+                <option value="auto">自動 · 失敗改用 CPU</option>
+                <option value="cpu">CPU</option>
+                {hardware
+                  .filter((d) => d.id !== "cpu")
+                  .map((d) => (
+                    <option
+                      key={d.id}
+                      value={d.id}
+                      disabled={
+                        !d.available || d.codecs?.[effectiveCodec] === false
+                      }
                     >
-                  )[e.target.value],
-                })
-              }
-            >
-              <option value="fast">快速</option>
-              <option value="balanced">平衡</option>
-              <option value="quality">高品質</option>
-            </select>
-          </label>
+                      {d.label}
+                      {d.pending
+                        ? " · 偵測中"
+                        : !d.available
+                          ? " · 不可用"
+                          : ""}
+                    </option>
+                  ))}
+              </select>
+            </label>
+          )}
+          {(!["avi", "wmv"].includes(format) || !value.videoBitrate) && (
+            <label className="field">
+              <span>品質預設</span>
+              <select
+                value={value.qualityPreset || "balanced"}
+                onChange={(e) =>
+                  onChange({
+                    ...value,
+                    videoCodec: effectiveCodec,
+                    hardware: effectiveHardware as Options["hardware"],
+                    qualityPreset: e.target.value as Options["qualityPreset"],
+                    crf: (
+                      { fast: 26, balanced: 23, quality: 18 } as Record<
+                        string,
+                        number
+                      >
+                    )[e.target.value],
+                  })
+                }
+              >
+                <option value="fast">快速</option>
+                <option value="balanced">平衡</option>
+                <option value="quality">高品質</option>
+              </select>
+            </label>
+          )}
           <p className="hint">
             GPU 能力由實際編碼探測。硬體加速不保證比 CPU
             畫質更好。WebM、AVI、WMV 使用相容的固定編碼器。
           </p>
           {!["webm", "avi", "wmv"].includes(format) &&
             select("videoCodec", "影片編碼器", [
-              ["h264", "H.264 · CPU"],
-              ["h265", "H.265 · CPU"],
-              ["nvenc", "NVIDIA NVENC · 啟動時檢測"],
+              ["h264", "H.264"],
+              ["h265", "H.265"],
             ])}
           {format === "webm" && (
             <p className="hint">WebM 自動使用 VP9 / Opus。</p>
           )}
           {format === "avi" && <p className="hint">AVI 自動使用 MPEG-4。</p>}
-          {format !== "avi" && value.videoBitrate === 0 && (
+          {!["avi", "wmv"].includes(format) && value.videoBitrate === 0 && (
             <Slider
-              label="CRF · 數值低畫質高"
+              label="品質 CRF／CQ／QP · 數值低畫質高"
               min={0}
               max={51}
               unit=""

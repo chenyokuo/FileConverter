@@ -151,6 +151,48 @@ class P2Tests(unittest.TestCase):
         info=probe(normalized[0],self.engines['ffprobe']);self.assertEqual(info['streams'][0]['codec_type'],'audio')
         audio,_=self.execute('audio.trim',normalized[0],{'start':.2,'end':1.2,'format':'flac'})
         self.assertAlmostEqual(float(probe(audio[0],self.engines['ffprobe'])['format']['duration']),1,delta=.15)
+    def test_chinese_ocr_and_verbatim_runtime(self):
+        from PIL import ImageDraw,ImageFont
+        from test_engine import Client
+        from unittest.mock import patch
+        import os,io,time
+        image=Image.new('RGB',(1500,260),'white');ImageDraw.Draw(image).text((60,60),'繁體中文轉檔測試',fill='black',font=ImageFont.truetype(self.engines['font'],100))
+        data=io.BytesIO();image.save(data,format='PNG');source=self.root/'繁中 scan.pdf'
+        with pymupdf.open() as doc:
+            doc.new_page(width=750,height=130).insert_image(pymupdf.Rect(0,0,750,130),stream=data.getvalue());doc.save(source)
+        engine_path=self.root/'中文引擎 & runtime';(engine_path/'tessdata').mkdir(parents=True)
+        import shutil
+        for file in Path(self.engines['tessdata']).glob('*.traineddata'):shutil.copy2(file,engine_path/'tessdata'/file.name)
+        engine_root=str(engine_path)
+        if os.name=='nt' and not engine_root.startswith('\\\\?\\'):engine_root='\\\\?\\'+engine_root
+        with patch.dict(os.environ,{'FILE_CONVERTER_TEST_ENGINES':engine_root}):client=Client(self.root/'cjk-verbatim-data')
+        try:
+            self.assertFalse(client.call('engines')['tessdata'].startswith('\\\\?\\'))
+            job=client.call('enqueue_tool',{'operation':'pdf.ocr','sources':[str(source)],'params':{'language':'eng+chi_tra','dpi':200},'outputDir':str(self.root/'cjk-output')})[0]
+            result=client.wait([job['id']])[0];self.assertEqual(result['status'],'completed',result.get('error'))
+            with pymupdf.open(result['outputs'][0]) as document:text=''.join(''.join(page.get_text().split()) for page in document)
+            self.assertIn('中文轉檔測試',text);self.assertEqual(job['params']['language'],'chi_tra+eng')
+        finally:client.close()
+
+    def test_delogo_preview_clip(self):
+        from test_engine import Client
+        from worker import probe
+        source=self.root/'preview-12s.mp4'
+        command([self.engines['ffmpeg'],'-v','error','-f','lavfi','-i','color=c=gray:s=160x120:r=12:d=12','-vf','drawbox=x=30:y=30:w=35:h=25:color=red:t=fill','-c:v','libx264','-preset','ultrafast',source])
+        client=Client(self.root/'delogo-preview-service')
+        try:
+            job=client.call('enqueue_tool',{'operation':'video.delogo','sources':[str(source)],'params':{'region':[.18,.24,.25,.24]},'options':{'hardware':'cpu'},'preview':True})[0]
+            import time
+            deadline=time.monotonic()+30
+            while time.monotonic()<deadline:
+                task=client.call('preview_status',{'id':job['id']})
+                if task['status'] in {'failed','completed','cancelled'}:break
+                time.sleep(.1)
+            self.assertEqual(task['status'],'completed',task.get('error'))
+            duration=float(probe(task['outputs'][0],self.engines['ffprobe'])['format']['duration']);self.assertAlmostEqual(duration,10,places=1)
+            self.assertFalse(client.call('snapshot')['jobs']);client.call('clear_preview',{'id':job['id']})
+        finally:client.close()
+
     def test_preview_queue_and_folder_publication(self):
         from test_engine import Client
         import time

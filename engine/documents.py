@@ -44,11 +44,18 @@ def office(job,sources,stage,engines):
              'pptx':'Impress MS PowerPoint 2007 XML','odp':'impress8','csv':'Text - txt - csv (StarCalc):44,34,76,1',
              'tsv':'Text - txt - csv (StarCalc):9,34,76,1','txt':'Text (encoded):UTF8'}
     with tempfile.TemporaryDirectory(prefix='office-profile-',dir=stage,ignore_cleanup_errors=True) as profile:
+        user=Path(profile)/'user';user.mkdir()
+        (user/'registrymodifications.xcu').write_text('''<?xml version="1.0" encoding="UTF-8"?>
+<oor:items xmlns:oor="http://openoffice.org/2001/registry">
+<item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="MacroSecurityLevel" oor:op="fuse"><value>3</value></prop></item>
+<item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="DisableMacrosExecution" oor:op="fuse"><value>true</value></prop></item>
+<item oor:path="/org.openoffice.Office.Common/Security/Scripting"><prop oor:name="DisableActiveContent" oor:op="fuse"><value>true</value></prop></item>
+</oor:items>''',encoding='utf-8')
         arguments=[soffice,'-env:UserInstallation='+Path(profile).as_uri(),'--headless','--nologo','--nodefault','--norestore']
         if source.suffix.lower() in {'.csv','.tsv'}:
             arguments+=['--infilter=Text - txt - csv (StarCalc):'+('9' if source.suffix.lower()=='.tsv' else '44')+',34,76,1']
         arguments+=['--convert-to',fmt+(':'+filters[fmt] if fmt in filters else ''),'--outdir',stage,source]
-        command(arguments)
+        command(arguments,env=dict(os.environ,SAL_DISABLE_OPENCL='1'))
         # Office can finish writing its private deployment cache just after exit.
         profile_path=Path(profile).resolve()
         if not profile_path.is_relative_to(Path(stage).resolve()):raise ValueError('Invalid Office profile path')

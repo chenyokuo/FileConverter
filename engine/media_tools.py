@@ -18,7 +18,8 @@ def execute(job,sources,stage,engines):
             args=[ffmpeg,'-v','error','-nostdin','-ss',str(start),'-i',source]
             if end:args+=['-t',str(end-start)]
             command([*args,'-map','0','-c','copy','-n',target]);emit(stats={'encoder':'stream copy','warning':'快速裁切依關鍵影格，時間可能有差異'});return [target]
-        options={**job.get('options',{}),'trimStart':p.get('start',0),'trimEnd':p.get('end',0)}
+        options={**job.get('options',{})}
+        if op!='video.delogo':options.update(trimStart=p.get('start',0),trimEnd=p.get('end',0))
         return convert_media(dict(job,format=fmt,options=options),sources,stage,engines)
     if op=='video.remux':
         command([ffmpeg,'-v','error','-nostdin','-i',source,'-map','0','-c','copy','-n',target]);emit(stats={'encoder':'stream copy'});return [target]

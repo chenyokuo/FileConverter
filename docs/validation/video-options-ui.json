@@ -1,0 +1,10 @@
+{
+  "onlyCodecChoices": [
+    "h264",
+    "h265"
+  ],
+  "hardwareMatchesProbe": true,
+  "unsupportedCodecResetsToAuto": true,
+  "fixedCpuFormatsHideHardware": true,
+  "noIgnoredCrfOnAvi": true
+}

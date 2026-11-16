@@ -188,6 +188,7 @@ export function AdvancedTools({
     }
   };
   useEffect(() => {
+    setAfter(null);
     if (!tool || !sources[0] || !tool.preview) {
       setBefore(null);
       return;
@@ -289,8 +290,11 @@ export function AdvancedTools({
       setBusy(false);
     }
   };
-  const update = (key: string, value: unknown) =>
+  const update = (key: string, value: unknown) => {
+    if (busy) return;
+    setAfter(null);
     setParams((old) => ({ ...old, [key]: value }));
+  };
   const visible = catalog.filter(
     (t) =>
       t.category === category || (category === "壓縮" && t.category === "檔案"),
@@ -415,7 +419,7 @@ export function AdvancedTools({
               </ol>
             </div>
             <div className="tool-edit-layout">
-              <div className="tool-fields">
+              <fieldset className="tool-fields" disabled={busy}>
                 {tool.fields.map((f) => {
                   if (
                     ["quality", "minQuality"].includes(f.key) &&
@@ -504,7 +508,7 @@ export function AdvancedTools({
                     </label>
                   );
                 })}
-              </div>
+              </fieldset>
               {tool.preview && (
                 <div className="tool-preview">
                   <strong>第一頁／影格預覽</strong>

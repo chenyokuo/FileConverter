@@ -17,7 +17,7 @@ CATALOG=[
  tool('pdf.page-numbers','PDF','PDF 添加頁碼','在每頁頁尾添加數字',['pdf'],'pdf',[number('start','起始頁碼',1,1,100000)]),
  tool('pdf.protect','PDF','PDF 密碼保護','AES-256 加密；密碼不寫入歷史紀錄',['pdf'],'pdf',[field('password','密碼','password',secret=True)]),
  tool('pdf.decrypt','PDF','PDF 授權解密','僅使用已知且具修改權限的密碼，不繞過存取限制',['pdf'],'pdf',[field('password','授權密碼','password',secret=True),field('authorized','我有權修改此文件','switch',False)]),
- tool('pdf.ocr','PDF','PDF OCR／可搜尋 PDF','本機 Tesseract OCR；掃描辨識可能有誤，請校對',['pdf'],'pdf',[select('language','辨識語言',[('eng','English'),('chi_tra','繁體中文'),('eng+chi_tra','繁中＋English')],'eng+chi_tra'),field('onlyScans','略過已有文字的頁面','switch',True),number('dpi','OCR DPI',200,100,400)],engine='tessdata'),
+ tool('pdf.ocr','PDF','PDF OCR／可搜尋 PDF','本機 Tesseract OCR；掃描辨識可能有誤，請校對',['pdf'],'pdf',[select('language','辨識語言',[('eng','English'),('chi_tra','繁體中文'),('chi_tra+eng','繁中＋English')],'chi_tra+eng'),field('onlyScans','略過已有文字的頁面','switch',True),number('dpi','OCR DPI',200,100,400)],engine='tessdata'),
  tool('image.resize','圖片','批次縮放','任一尺寸為 0 時維持比例',['image'],'image',[number('width','寬度 px · 0 自動',0),number('height','高度 px · 0 自動',0),FORMAT,QUALITY],preview=True),
  tool('image.crop','圖片','批次裁切','預覽拖曳區域，依比例套用到每張圖片',['image'],'image',[REGION,FORMAT,QUALITY],preview=True),
  tool('image.rotate','圖片','批次旋轉','另存處理後圖片，不修改原檔',['image'],'image',[select('angle','順時針角度',[('90','90°'),('180','180°'),('270','270°')],'90'),FORMAT,QUALITY],preview=True),
@@ -34,7 +34,7 @@ CATALOG=[
  tool('video.frame','影片','擷取指定影格','依時間另存 PNG',['video'],'png',[number('time','時間秒',0,0,1e9)],preview=True),
  tool('video.subtitles','影片','字幕抽取','僅支援文字字幕；序號依影片預覽的字幕列表',['video'],'subtitle',[number('stream','字幕序號 · 從 0 起',0,0,100),select('format','字幕格式',[('srt','SRT'),('ass','ASS'),('vtt','WebVTT')],'srt')]),
  tool('video.mux-subtitles','影片','字幕封裝','先加入影片，再加入 SRT／ASS／VTT；不燒入畫面',['video','subtitle'],'media',[select('format','輸出容器',[('mkv','MKV'),('mp4','MP4')],'mkv')],min=2,max=2),
- tool('video.delogo','去浮水印／物件修復','影片固定區域修補','FFmpeg delogo，非 AI；區域需保留邊界，不能完美恢復原始像素',['video'],'mp4',[REGION]),
+ tool('video.delogo','去浮水印／物件修復','影片固定區域修補','FFmpeg delogo，非 AI；區域需保留邊界，不能完美恢復原始像素。預覽處理前 10 秒',['video'],'mp4',[REGION],preview=True),
  tool('audio.trim','音訊','音訊裁切','依時間精準另存音訊',['audio'],'media',[number('start','起點秒',0,0,1e9),number('end','終點秒 · 0 至結尾',0,0,1e9),select('format','輸出格式',[('mp3','MP3'),('wav','WAV'),('flac','FLAC')],'mp3')]),
  tool('audio.normalize','音訊','音量標準化','EBU R128 兩階段量測及處理',['audio','video'],'media',[number('lufs','整合音量 LUFS',-16,-70,-5),number('peak','True Peak dB',-1.5,-9,0),select('format','輸出格式',[('mp3','MP3'),('wav','WAV'),('flac','FLAC')],'wav')]),
  tool('archive.pack','壓縮','建立壓縮檔','ZIP／7Z／TAR；GZ 只接受單檔。支援加入資料夾',['any'],'archive',[select('format','壓縮格式',[('zip','ZIP'),('7z','7Z'),('tar','TAR'),('gz','GZ · 單檔')],'zip')],engine='sevenzip'),
@@ -74,6 +74,7 @@ def validate_params(definition,params):
     clean={}
     for f in definition['fields']:
         value=params.get(f['key'],f['default'])
+        if definition['id']=='pdf.ocr' and f['key']=='language' and value=='eng+chi_tra':value='chi_tra+eng'
         if f['type']=='number':
             value=float(value)
             if not f['min']<=value<=f['max']:raise ValueError(f['label']+' 超出範圍')

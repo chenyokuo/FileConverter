@@ -1,0 +1,77 @@
+{
+  "devices": [
+    {
+      "id": "cpu",
+      "label": "CPU",
+      "available": true,
+      "encoder": "libx264",
+      "codecs": {
+        "h264": true,
+        "h265": true
+      },
+      "reason": ""
+    },
+    {
+      "id": "nvidia",
+      "label": "NVIDIA",
+      "available": false,
+      "encoder": "h264_nvenc",
+      "codecs": {
+        "h264": false,
+        "h265": false
+      },
+      "reason": " (Invalid argument)\r\n[vost#0:0/h264_nvenc @ 0000021de4b3cd80] Terminating thread with return code -22 (Invalid argument)\r\n[out#0/null @ 0000021de4b1ae00] Nothing was written into output file, because at least one of its streams received no packets.\r\n /  (Invalid argument)\r\n[vost#0:0/hevc_nvenc @ 000001ec0718ccc0] Terminating thread with return code -22 (Invalid argument)\r\n[out#0/null @ 000001ec0716c9c0] Nothing was written into output file, because at least one of its streams received no packets.\r\n"
+    },
+    {
+      "id": "amd",
+      "label": "AMD",
+      "available": true,
+      "encoder": "h264_amf",
+      "codecs": {
+        "h264": true,
+        "h265": false
+      },
+      "reason": "andmade_App\\\\FileConverter\\\\src-tauri\\\\bundled-engines\\\\ffmpeg\\\\ffmpeg.exe', '-hide_banner', '-v', 'error', '-f', 'lavfi', '-i', 'color=s=128x128:r=30:d=0.15', '-an', '-c:v', 'hevc_amf', '-frames:v', '3', '-f', 'null', '-']' timed out after 4 seconds"
+    },
+    {
+      "id": "intel",
+      "label": "Intel",
+      "available": false,
+      "encoder": "h264_qsv",
+      "codecs": {
+        "h264": false,
+        "h265": false
+      },
+      "reason": "22 (Invalid argument)\r\n[vost#0:0/h264_qsv @ 000001af6eb01e00] Terminating thread with return code -22 (Invalid argument)\r\n[out#0/null @ 000001af6eadd180] Nothing was written into output file, because at least one of its streams received no packets.\r\n / 22 (Invalid argument)\r\n[vost#0:0/hevc_qsv @ 000001f2e4b3c240] Terminating thread with return code -22 (Invalid argument)\r\n[out#0/null @ 000001f2e4b1ad80] Nothing was written into output file, because at least one of its streams received no packets.\r\n"
+    }
+  ],
+  "comparison": [
+    {
+      "requested": "cpu",
+      "actual": "cpu",
+      "encoder": "libx264",
+      "fallback": "",
+      "wallSeconds": 0.645,
+      "wallFps": 139.43,
+      "bytes": 2274349,
+      "ssim": 0.995061
+    },
+    {
+      "requested": "amd",
+      "actual": "amd",
+      "encoder": "h264_amf",
+      "fallback": "",
+      "wallSeconds": 0.485,
+      "wallFps": 185.7,
+      "bytes": 3938577,
+      "ssim": 0.980053
+    }
+  ],
+  "largeInput": {
+    "inputBytes": 1073741868,
+    "operation": "Read 1 GiB WAV, stream first 2 seconds to FLAC",
+    "duration": 2.0,
+    "status": "passed"
+  },
+  "note": "Single run, synthetic 1080p30 3-second source. Wall time includes initialization; SSIM is against the encoded reference. No promise that GPU improves quality."
+}

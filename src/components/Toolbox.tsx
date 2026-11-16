@@ -151,9 +151,15 @@ const tools: Tool[] = [
   })),
 ];
 const kind = (category: string) =>
-  ({ PDF: "pdf", 圖片: "image", 影片: "video", 音訊: "audio", 文件: "office" })[
-    category
-  ] || "";
+  ({
+    PDF: "pdf",
+    圖片: "image",
+    影片: "video",
+    音訊: "audio",
+    文件: "office",
+    電子書: "ebook",
+    壓縮: "archive",
+  })[category] || "";
 export function Toolbox({
   registry,
   run,

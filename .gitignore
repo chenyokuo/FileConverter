@@ -13,6 +13,8 @@ vendor/*
 !vendor/README.md
 src-tauri/binaries/
 src-tauri/notices/
+src-tauri/bundled-engines/
+src-tauri/webview-runtime/
 src-tauri/gen/
 *.spec
 .env

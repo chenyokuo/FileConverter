@@ -63,7 +63,8 @@ def prepare():
     target=ROOT/'vendor/7zip';target.mkdir(exist_ok=True)
     for name in ['7z.exe','7z.dll','License.txt','readme.txt']:
         shutil.copy2(seven.parent/name,target/name)
-    lock=dict(SPECS)
+    lock=json.loads(LOCK.read_text(encoding='utf-8')) if LOCK.exists() else {}
+    lock.update(SPECS)
     import re
     seven_info=subprocess.check_output([str(target/'7z.exe'),'i']).decode('utf-8','replace')
     lock['7zip']={'version':re.search(r'7-Zip (\d+\.\d+)',seven_info)[1],'source':'https://www.7-zip.org/','license':'LGPL-2.1-or-later with unRAR restriction','files':{n:sha(target/n) for n in ['7z.exe','7z.dll']}}
@@ -77,6 +78,14 @@ def prepare():
         digest=sha(file)
         if spec.get('sha256') and spec['sha256']!=digest:raise RuntimeError('OCR model checksum mismatch')
         lock[key]={**spec,'sha256':digest}
+    if lock.get('font'):
+        _,archive=fetch('font',lock['font']);fonts=ROOT/'vendor/fonts';fonts.mkdir(exist_ok=True)
+        shutil.copy2(archive,fonts/'NotoSansCJKtc-Regular.otf')
+        if not (fonts/'LICENSE').exists():urllib.request.urlretrieve('https://raw.githubusercontent.com/notofonts/noto-cjk/Sans2.004/LICENSE',fonts/'LICENSE')
+    if lock.get('webview2'):
+        _,archive=fetch('webview2',lock['webview2']);webview=ROOT/'src-tauri/webview-runtime';webview.mkdir(exist_ok=True)
+        name='Microsoft.WebView2.FixedVersionRuntime.'+lock['webview2']['version']+'.x64'
+        if not (webview/name/'msedgewebview2.exe').exists():subprocess.run(['expand.exe',str(archive),'-F:*',str(webview)],stdout=subprocess.DEVNULL,check=True)
     LOCK.write_text(json.dumps(lock,indent=2)+'\n',encoding='utf-8')
     print('Runtimes prepared in vendor; no application packaging performed.',flush=True)
 

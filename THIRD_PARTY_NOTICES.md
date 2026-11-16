@@ -22,7 +22,7 @@ Research date: 2026-11-16. The application source is AGPL-3.0-or-later, selected
 | Python | build host 3.13 | PSF license, https://docs.python.org/3/license.html |
 | PyInstaller | 6.22.3 | GPL-2.0-or-later with bootloader exception, https://pyinstaller.org/en/stable/license.html |
 | FFmpeg Gyan essentials | 8.1.2 | GPL-3.0-or-later build, https://www.gyan.dev/ffmpeg/builds/ |
-| LibreOffice (separately installed) | detected from local install | MPL-2.0, LGPL and other component licenses, https://www.libreoffice.org/about-us/licenses/ |
+| LibreOffice (app-local runtime) | 26.8.3 | MPL-2.0, LGPL and other component licenses, https://www.libreoffice.org/about-us/licenses/ |
 | Playwright (development tests only) | 1.65.1 | Apache-2.0, https://github.com/microsoft/playwright |
 | Prettier (development formatting only) | 3.10.1 | MIT, https://github.com/prettier/prettier |
 
@@ -36,7 +36,7 @@ The selected FFmpeg build enables GPL codecs including libx264 / libx265. Do not
 
 Official guidance: https://ffmpeg.org/legal.html . FFmpeg's LGPL checklist applies to LGPL builds; this project's selected build is GPL. PyMuPDF preserves producer metadata in generated PDFs; the worker does not strip it. See https://pymupdf.readthedocs.io/en/latest/about.html .
 
-LibreOffice is not bundled in this build. Its detection does not grant redistribution rights to user-installed components or fonts. Microsoft WebView2 offline installer is distributed using Tauri's supported mode and remains subject to Microsoft's runtime terms. Windows installers are unsigned unless the builder supplies a signing certificate through their own secure environment.
+LibreOffice is bundled app-locally, with its own LICENSE/NOTICE and runtime DLLs. Microsoft WebView2 Fixed Version 157.0.4341.60 is bundled without changing the system Runtime; its binaries remain subject to Microsoft redistribution terms. Windows installers are unsigned unless the builder supplies a signing certificate through their own secure environment.
 
 ## Release gate
 
@@ -50,4 +50,19 @@ The File Converter application icon was supplied locally by the project owner. I
 
 Pinned acquisition sources and binary/model SHA-256 values are recorded in `engine-lock.json`. LibreOffice 26.8.3 is staged app-locally (MPL/LGPL and component licenses), Calibre 9.18.0 (GPL-3.0-or-later), Pandoc 3.14 (GPL-2.0-or-later), Ghostscript 10.08.0 (AGPL-3.0-or-later), 7-Zip 25.01 (LGPL with unRAR restriction), Deno 2.9.8 (MIT), and Tesseract fast eng/chi_tra models (Apache-2.0). These are separate local executables/resources, not system installations. Final redistribution inventories and corresponding-source requirements are checked in P5.
 
-Python additions: pillow-heif 1.8.1 (BSD wrapper, bundled codec libraries retain their own licenses), pdf2docx 0.5.13 (MIT; upstream no longer actively maintained by Artifex), OpenCV headless 5.0.0.93 (Apache-2.0 and bundled-library notices), pypdf 7.1.0 (BSD), pypdfium2 5.15.2 (BSD/Apache and PDFium notices), python-docx 1.2.0, python-pptx 1.0.2 and openpyxl 3.1.5 (MIT). PyMuPDF remains AGPL/commercial; the application remains AGPL-3.0-or-later. Exact transitive versions are in the Python lockfile. No proprietary licensing grant is claimed.
+Python additions: pillow-heif 1.8.1 (BSD-3-Clause wrapper; binary wheel includes LGPL-3.0 libheif/libde265 and GPL-2.0-or-later x265, plus MinGW runtime notices), pdf2docx 0.5.13 (MIT; upstream no longer actively maintained by Artifex), OpenCV headless 5.0.0.93 (Apache-2.0 and bundled-library notices), pypdf 7.1.0 (BSD), pypdfium2 5.15.2 (BSD/Apache and PDFium notices), python-docx 1.2.0, python-pptx 1.0.2 and openpyxl 3.1.5 (MIT). PyMuPDF remains AGPL/commercial; the application remains AGPL-3.0-or-later. Exact transitive versions are in the Python lockfile. No proprietary licensing grant is claimed.
+
+## P3/P4/P5 runtime and distribution audit
+
+- yt-dlp 2026.10.26: Unlicense library; transitive optional dependencies retain their licenses. yt-dlp-ejs 0.8.0 and bundled Deno run only the explicit network feature. No standalone third-party yt-dlp EXE with a different aggregate license is used.
+- Tauri single-instance 2.5.5: MIT OR Apache-2.0.
+- Noto Sans CJK TC Sans2.004: OFL-1.1, locally bundled for image watermark text. UI font files remain Fontsource OFL copies.
+- WebView2 Fixed Version 157.0.4341.60: Microsoft runtime redistribution terms; app-local, unmodified, Microsoft Authenticode signature checked. Download URL and CAB SHA-256 in engine-lock.json.
+- x265 4.3 source header explicitly permits GPL version 2 or later: https://github.com/Multicorewareinc/x265/blob/4.3/source/x265.h . Do not describe the pillow-heif binary wheel as merely BSD. The AGPL application uses the compatible later-version terms.
+- 7-Zip unRAR restriction applies to decoding RAR; File Converter does not create RAR.
+
+The P5 collector preserves actual runtime license files, Python wheel bundled-library notices, local npm/Rust notices, engine binary hashes, and FFmpeg build configuration. It also inventories development packages; presence in that inventory does not mean an excluded AI module is shipped. No AI model/runtime is intentionally bundled.
+
+This is an unsigned private evaluation release candidate, not a completed customer-distribution clearance. Before onward binary distribution, provide recipients with this application's complete source and build instructions and a complete corresponding-source delivery for the exact GPL/AGPL/LGPL components, including FFmpeg codec/build dependencies, Calibre, Pandoc, Ghostscript and linked codec libraries. The current repository and upstream links do not by themselves constitute a complete corresponding-source archive for all external binary builds. Private GitHub visibility does not waive that obligation. See docs/DISTRIBUTION.md for the remaining release gate.
+
+The NSIS template is copied from Tauri CLI 2.12.4 commit 993038c49185307dfc895ab7657d77ca0d5ed7c7 (MIT OR Apache-2.0); its exact upstream URL/hash is preserved in src-tauri/windows/installer.nsi.hbs. The Solid compression flag is removed and datablock deduplication is disabled to avoid large-payload mapping and search costs; NSIS uses zlib compression.

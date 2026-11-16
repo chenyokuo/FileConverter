@@ -53,6 +53,9 @@ const rpc = (method, args = {}) =>
     { method, args },
   );
 const snapshot = await rpc("snapshot");
+const originalAutomation = await rpc("automation");
+const ownedOutputDir=path.join(root,'test-results/UI 輸出 & output');
+await rpc('settings',{settings:{...snapshot.settings,outputDir:ownedOutputDir}});
 const backgroundPath = path.join(snapshot.dataDir, "background.webp");
 const originalBackground = await fs.readFile(backgroundPath).catch(() => null);
 const slider = async (name, value) => {
@@ -362,6 +365,7 @@ try {
   await rpc("settings", {
     settings: {
       ...snapshot.settings,
+      outputDir:ownedOutputDir,
       appearance: {
         ...snapshot.settings.appearance,
         background: "image",
@@ -376,15 +380,7 @@ try {
       await page.getByRole("button", { name: "轉換檔案", exact: true }).click();
       await page.getByRole("button", { name: "加入檔案", exact: true }).click();
       await expect(page.locator(".draft-row")).toHaveCount(1);
-      await expect(page.locator(".draft-row select option")).toHaveText([
-        "請選擇輸出格式",
-        "PNG",
-        "JPG",
-        "WEBP",
-        "BMP",
-        "TIFF",
-        "PDF",
-      ]);
+      await expect(page.locator(".draft-row select option")).toHaveText(["請選擇輸出格式",...snapshot.registry.edges.filter(e=>e.source==="png").map(e=>e.target.toUpperCase())]);
       await page.locator(".draft-row select").selectOption("png");
       await expect(
         page.getByRole("slider", { name: "圖片品質", exact: true }),
@@ -531,14 +527,14 @@ try {
       .click();
   };
   await check(
-    "P0 navigation, scoped application icons and persistent sidebar collapse",
+    "navigation, scoped application icons and persistent sidebar collapse",
     async () => {
       await expect(
         page.getByRole("button", { name: "網址下載", exact: true }),
-      ).toBeDisabled();
+      ).toBeEnabled();
       await expect(
         page.getByRole("button", { name: "自動化工作流程", exact: true }),
-      ).toBeDisabled();
+      ).toBeEnabled();
       await expect(page.locator(".sidebar .app-icon")).toHaveJSProperty(
         "naturalWidth",
         32,
@@ -657,7 +653,7 @@ try {
         .getByRole("combobox", { name: "指定目標格式", exact: true })
         .locator("option")
         .evaluateAll((nodes) => nodes.map((n) => n.value));
-      expect(targets).not.toContain("docx");
+      expect(targets).toContain("docx");
       expect(targets).not.toContain("mp4");
       await page
         .getByRole("button", { name: "智慧自動辨識", exact: true })
@@ -692,20 +688,20 @@ try {
     },
   );
   await check(
-    "P0 toolbox phases and registry show real engine availability",
+    "toolbox and registry show real bundled engine availability",
     async () => {
       await page.getByRole("button", { name: "工具箱", exact: true }).click();
       await expect(
         page.getByRole("button", { name: /PDF 轉 DOCX/ }),
-      ).toBeDisabled();
+      ).toBeEnabled();
       for (const category of [
         "壓縮工具",
         "電子書工具",
         "去浮水印／物件修復工具",
       ]) {
         await page.getByRole("button", { name: category, exact: true }).click();
-        await expect(page.locator(".tool-card")).toBeDisabled();
-        await expect(page.locator(".tool-card")).toContainText("P2");
+        await expect.poll(()=>page.locator(".tool-card:not([disabled])").count()).toBeGreaterThan(0);
+        expect(await page.locator(".tool-card").filter({hasText:"P2"}).count()).toBe(0);
       }
       await page
         .getByRole("button", { name: "轉換能力表", exact: true })
@@ -786,6 +782,75 @@ try {
       await page.screenshot({ path: "test-results/p0-about.png" });
     },
   );
+  await check("workflow editor validates, saves and runs a real batch", async () => {
+    await page.getByRole('button',{name:'自動化工作流程',exact:true}).click();
+    const editor=page.locator('.automation-editor');
+    await editor.getByRole('textbox',{name:'名稱',exact:true}).fill('P5 UI workflow');
+    await editor.getByRole('button',{name:'預覽／驗證流程',exact:true}).click();
+    await expect(page.locator('.workflow-route')).toContainText('PNG');
+    await editor.getByRole('button',{name:'保存配置',exact:true}).click();
+    await expect(page.locator('.automation-saved')).toContainText('P5 UI workflow');
+    await choose(['中文 alpha & 測試.png']);
+    const before=new Set((await rpc('snapshot')).jobs.map(j=>j.id));
+    await editor.getByRole('button',{name:'選檔並批次執行',exact:true}).click();
+    await expect.poll(async()=>(await rpc('snapshot')).jobs.filter(j=>!before.has(j.id)).map(j=>j.status),{timeout:30000}).toEqual(['completed']);
+    const job=(await rpc('snapshot')).jobs.find(j=>!before.has(j.id));
+    expect(job.kind).toBe('workflow');expect(job.outputs[0]).toMatch(/\.webp$/);
+    expect((await fs.stat(job.outputs[0])).size).toBeGreaterThan(50);
+    await page.screenshot({path:'test-results/p5-workflow.png'});
+    await page.getByRole('button',{name:'轉檔預設',exact:true}).click();
+    await editor.getByRole('textbox',{name:'名稱',exact:true}).fill('P5 UI preset');
+    await editor.getByRole('button',{name:'保存配置',exact:true}).click();
+    await expect(page.locator('.automation-saved')).toContainText('P5 UI preset');
+    await page.getByRole('button',{name:'轉換檔案',exact:true}).click();
+    await page.locator('.conversion-presets-panel summary').click();
+    await page.getByRole('combobox',{name:'已保存的轉檔預設',exact:true}).selectOption({label:'P5 UI preset · png → webp'});
+    await page.getByRole('button',{name:'套用至相符的勾選檔案',exact:true}).click();
+    await expect(page.locator('.draft-row').filter({hasText:'中文 alpha & 測試.png'}).locator('select')).toHaveValue('webp');
+  });
+  await check("file preview renders pages, real comparisons and keyboard dismissal", async () => {
+    await page.getByRole('button',{name:'預覽 使用說明.pdf',exact:true}).click();
+    const modal=page.getByRole('dialog');
+    await expect(modal.locator('.preview-image')).toBeVisible({timeout:20000});
+    await modal.getByRole('spinbutton',{name:'頁碼'}).fill('2');
+    await expect(modal.getByRole('spinbutton',{name:'頁碼'})).toHaveValue('2');
+    await page.keyboard.press('Escape');await expect(modal).toHaveCount(0);
+    await page.getByRole('button',{name:'歷史紀錄',exact:true}).click();
+    await page.getByRole('textbox',{name:'搜尋轉換紀錄'}).fill('P5 UI workflow');
+    await page.getByRole('button',{name:/預覽與比較.*P5 UI workflow/}).click();
+    await expect(page.getByRole('dialog').locator('.preview-image')).toHaveCount(2);
+    await expect(page.getByRole('dialog').getByText(/大小變化/)).toBeVisible();
+    await page.getByRole('button',{name:'滑動比較',exact:true}).click();
+    await expect(page.getByRole('slider',{name:'比較分隔位置'})).toBeVisible();
+    await page.keyboard.press('Escape');
+    await page.getByRole('textbox',{name:'搜尋轉換紀錄'}).fill('');
+  });
+  await check("new navigation opens downloader and tool parameters", async () => {
+    await page.getByRole('button',{name:'網址下載',exact:true}).click();
+    await expect(page.locator('.download-page')).toBeVisible();
+    await page.getByRole('button',{name:'工具箱',exact:true}).click();
+    await page.getByRole('button',{name:'圖片工具',exact:true}).click();
+    await page.getByRole('button',{name:/^批次裁切/}).click();
+    await expect(page.getByRole('dialog')).toContainText('批次裁切');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
+  await check("real tool preview updates pixels and invalidates after parameter edits",async()=>{
+    await choose(['中文 alpha & 測試.png']);
+    await page.getByRole('button',{name:/^批次裁切/}).click();
+    const modal=page.getByRole('dialog');
+    await modal.getByRole('button',{name:'加入檔案',exact:true}).click();
+    await expect(modal.locator('.region-editor img')).toBeVisible({timeout:15000});
+    await modal.getByRole('spinbutton',{name:'寬 區域百分比',exact:true}).fill('40');
+    await modal.getByRole('button',{name:'處理前後預覽',exact:true}).click();
+    await expect(modal.locator('.before-after img')).toHaveCount(2,{timeout:20000});
+    await expect(modal.locator('.before-after img').last()).toHaveJSProperty('naturalWidth',160);
+    await modal.getByRole('spinbutton',{name:'寬 區域百分比',exact:true}).fill('30');
+    await expect(modal.locator('.before-after')).toHaveCount(0);
+    await modal.getByRole('button',{name:'還原設定',exact:true}).click();
+    await expect(modal.getByRole('spinbutton',{name:'寬 區域百分比',exact:true})).toHaveValue('50');
+    await modal.getByRole('button',{name:'取消',exact:true}).click();await expect(modal).toHaveCount(0);
+  });
   await check("runtime makes no external network requests", async () => {
     expect(network).toEqual([]);
     expect(failures).toEqual([]);
@@ -806,6 +871,7 @@ try {
     ),
   );
   await rpc("settings", { settings: snapshot.settings });
+  for(const item of (await rpc('automation')).items.filter(i=>!originalAutomation.items.some(old=>old.id===i.id)))await rpc('delete_automation',{id:item.id});
   const ownJobs = (await rpc("snapshot")).jobs.filter(
     (j) => !snapshot.jobs.some((old) => old.id === j.id),
   );

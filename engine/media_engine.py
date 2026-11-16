@@ -48,12 +48,16 @@ def convert_media(job,sources,stage,engines):
             cmd+=['-map','0:v:0','-map','0:a:0?','-c:v',enc]
             bitrate=int(number(opt,'videoBitrate',0,0,200000));crf=int(number(opt,'crf',23,0,51))
             if bitrate:cmd+=['-b:v',str(bitrate)+'k']
-            elif enc in {'mpeg4','wmv2'}:cmd+=['-q:v','4']
+            elif enc in {'mpeg4','wmv2'}:cmd+=['-q:v',str({'fast':6,'balanced':4,'quality':2}[profile])]
             elif device=='cpu':cmd+=['-crf',str(crf)]+(['-b:v','0'] if codec=='vp9' else [])
             elif device=='nvidia':cmd+=['-rc','vbr','-cq',str(crf),'-b:v','0']
             elif device=='amd':cmd+=['-rc','cqp','-qp_i',str(crf),'-qp_p',str(crf)]
             else:cmd+=['-global_quality',str(crf)]
             if enc in {'libx264','libx265'}:cmd+=['-preset',{'fast':'fast','balanced':'medium','quality':'slow'}[profile]]
+            elif enc=='libvpx-vp9':cmd+=['-deadline','realtime' if profile=='fast' else 'good','-cpu-used',str({'fast':6,'balanced':3,'quality':1}[profile])]
+            elif device=='nvidia':cmd+=['-preset',{'fast':'p2','balanced':'p4','quality':'p6'}[profile]]
+            elif device=='amd':cmd+=['-quality',{'fast':'speed','balanced':'balanced','quality':'quality'}[profile]]
+            elif device=='intel':cmd+=['-preset',{'fast':'veryfast','balanced':'medium','quality':'veryslow'}[profile]]
             filters=[]
             height=int(number(opt,'videoHeight',0,0,8640))
             if height:filters+=['scale=-2:'+str(height)]

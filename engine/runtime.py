@@ -7,7 +7,8 @@ import subprocess
 
 FLAGS=0x08000000 if os.name=='nt' else 0
 def locate(root):
-    root=Path(root)
+    from fsutils import ordinary_path
+    root=Path(ordinary_path(root))
     def find(pattern):return next((str(p.resolve()) for p in root.glob(pattern) if p.is_file()),None)
     engines={
         'ffmpeg':find('ffmpeg/ffmpeg.exe'),'ffprobe':find('ffmpeg/ffprobe.exe'),
@@ -15,6 +16,7 @@ def locate(root):
         'pandoc':find('pandoc/**/pandoc.exe'),'calibre':find('calibre/**/ebook-convert.exe'),
         'ghostscript':find('ghostscript/**/gswin64c.exe'), 'sevenzip':find('7zip/7z.exe'),
         'deno':find('deno/deno.exe'), 'tessdata':str((root/'tessdata').resolve()) if (root/'tessdata/eng.traineddata').is_file() else None,
+        'font':find('fonts/NotoSansCJKtc-Regular.otf'),
     }
     for name,module in [('heif','pillow_heif'),('pdf2docx','pdf2docx'),('pypdf','pypdf'),('opencv','cv2'),('ytdlp','yt_dlp')]:
         engines[name]=module if importlib.util.find_spec(module) else None

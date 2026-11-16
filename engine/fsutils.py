@@ -5,6 +5,14 @@ import shutil
 import stat
 import time
 
+def ordinary_path(value):
+    """Remove Rust's verbatim prefix for runtimes (not all C libraries accept it)."""
+    value=os.fspath(value)
+    if os.name=='nt':
+        if value.startswith('\\\\?\\UNC\\'):return '\\\\'+value[8:]
+        if value.startswith('\\\\?\\'):return value[4:]
+    return value
+
 def remove_tree(path,allowed_parent):
     path=Path(path).resolve();parent=Path(allowed_parent).resolve()
     if path==parent or not path.is_relative_to(parent):raise ValueError('Cleanup path escaped its staging root')
@@ -40,4 +48,3 @@ def publish_file(source,out):
             elif attempts<6:
                 time.sleep(.025*2**attempts);attempts+=1
             else:raise
-

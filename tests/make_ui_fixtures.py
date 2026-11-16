@@ -17,3 +17,12 @@ with pymupdf.open() as doc:
     page=doc.new_page();page.insert_text((72,72),'File Converter UI verification')
     page=doc.new_page();page.insert_text((72,72),'Second page for PDF splitting verification')
     doc.save(root/'使用說明.pdf')
+import sys
+if '--bulk' in sys.argv:
+    import shutil,json
+    directory=root.parent/'ui-bulk';directory.mkdir(exist_ok=True);paths=[]
+    for i in range(250):
+        file=directory/(str(i).zfill(3)+'-中文 [測試] & '+('長檔案名稱'*18)+'.png')
+        if not file.exists():shutil.copy2(root/'中文 alpha & 測試.png',file)
+        paths.append(str(file))
+    (root.parent/'ui-bulk.json').write_text(json.dumps(paths,ensure_ascii=False),encoding='utf-8')
