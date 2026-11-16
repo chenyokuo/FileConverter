@@ -80,8 +80,13 @@ def _detect(path, engines, native=None):
                     mime = archive.read('mimetype').decode('ascii', 'replace')
                     fmt = {'application/epub+zip':'epub','application/vnd.oasis.opendocument.text':'odt', 'application/vnd.oasis.opendocument.spreadsheet':'ods',
                            'application/vnd.oasis.opendocument.presentation':'odp'}.get(mime, fmt)
+            if not fmt:fmt='zip'
             method = 'ZIP package entries / ODF mimetype'
         except zipfile.BadZipFile: pass
+    if not fmt and head.startswith(b'7z\xbc\xaf\x27\x1c'):fmt='7z';method='7z signature'
+    if not fmt and head.startswith(b'Rar!\x1a\x07'):fmt='rar';method='RAR signature'
+    if not fmt and head.startswith(b'\x1f\x8b'):fmt='gz';method='GZip signature'
+    if not fmt and head[257:262]==b'ustar':fmt='tar';method='TAR header'
     if not fmt and head.lstrip().startswith(b'{\\rtf'): fmt = 'rtf'; method = 'RTF header'
     if not fmt and head.startswith(bytes.fromhex('d0cf11e0a1b11ae1')):
         # CFB directory names distinguish legacy Office containers without executing macros.
@@ -101,7 +106,7 @@ def _detect(path, engines, native=None):
             if re.search(r'<(?:\w+:)?svg[\s>]',text):fmt='svg';method='SVG XML root'
             elif re.search(r'<(?:\w+:)?FictionBook[\s>]',text):fmt='fb2';method='FictionBook XML root'
             elif re.search(r'<!doctype\s+html|<html[\s>]',text,re.I):fmt='html';method='HTML document header'
-            elif ext in {'md','txt','csv','tsv'} and '\x00' not in text:
+            elif ext in {'md','txt','csv','tsv','srt','vtt','ass'} and '\x00' not in text:
                 fmt=ext;method='UTF-8 text; declared textual subtype'
         except UnicodeDecodeError:pass
     if not fmt and engines.get('ffprobe'):

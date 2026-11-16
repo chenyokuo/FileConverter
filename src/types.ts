@@ -117,6 +117,10 @@ export interface Draft extends InputFile {
 export type Status =
   "queued" | "running" | "cancelling" | "completed" | "failed" | "cancelled";
 export interface Job {
+  operation?: string;
+  params?: Record<string, unknown>;
+  previewOnly?: boolean;
+  requiresSecret?: boolean;
   id: string;
   sources: string[];
   name: string;
@@ -126,6 +130,7 @@ export interface Job {
   options: Options;
   status: Status;
   stats?: {
+    warning?: string;
     encoder?: string;
     fps?: number;
     speed?: string;

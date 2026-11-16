@@ -29,3 +29,9 @@ class ImageAdapter:
         from image_engine import convert_image
         return convert_image(job,sources,stage,engines)
 ADAPTERS['pillow']=ImageAdapter()
+
+class ArchiveAdapter:
+    def execute(self,job,sources,stage,engines):
+        from archives import execute
+        return execute(dict(job,operation='archive.convert',params={'format':job['format']}),sources,stage,engines)
+ADAPTERS['archive']=ArchiveAdapter()

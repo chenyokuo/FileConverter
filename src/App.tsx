@@ -233,6 +233,7 @@ export default function App() {
     const unsubscribers: (() => void)[] = [];
     void (async () => {
       const unlisten = await listen<Job>("engine-job", (e) => {
+        if (e.payload.previewOnly) return;
         upsert(e.payload);
         if (e.payload.status === "completed")
           notify(`${e.payload.name} 轉換完成`);
@@ -579,6 +580,9 @@ export default function App() {
           )}
           {job.stats?.hardwareFallback && (
             <p className="hint">{job.stats.hardwareFallback}</p>
+          )}
+          {job.stats?.warning && (
+            <p className="error-text">{job.stats.warning}</p>
           )}
           {job.error && <p className="error-text">{job.error}</p>}
           {active(job) && (
@@ -975,6 +979,9 @@ export default function App() {
                   )}
                   {page === "toolbox" && (
                     <Toolbox
+                      outputDir={settings.outputDir}
+                      defaults={settings.defaults}
+                      notify={notify}
                       registry={registry}
                       disabled={
                         !desktop || !ready || importing || !!engineError

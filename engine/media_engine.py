@@ -37,6 +37,10 @@ def convert_media(job,sources,stage,engines):
         enc=encoder(device);cmd=[ffmpeg,'-hide_banner','-nostdin','-n']
         if not audio and device=='nvidia' and opt.get('hardwareDecode',True):cmd+=['-hwaccel','cuda']
         cmd+=['-i',str(source)]
+        start=float(opt.get('trimStart',0));end=float(opt.get('trimEnd',0))
+        if start<0 or start>=duration and duration or end and (end<=start or end>duration+.1):raise ValueError('裁切時間超出來源範圍')
+        if start:cmd+=['-ss',str(start)]
+        if end:cmd+=['-t',str(end-start)]
         if audio:
             cmd+=['-vn','-map','0:a:0','-c:a',enc]
             if fmt not in {'wav','flac'}:cmd+=['-b:a',str(int(number(opt,'audioBitrate',192,32,320)))+'k']
@@ -53,6 +57,12 @@ def convert_media(job,sources,stage,engines):
             filters=[]
             height=int(number(opt,'videoHeight',0,0,8640))
             if height:filters+=['scale=-2:'+str(height)]
+            if job.get('operation')=='video.delogo':
+                stream=next(s for s in info['streams'] if s.get('codec_type')=='video')
+                x,y,w,h=job['params']['region'];width,height=int(stream['width']),int(stream['height'])
+                left,top,boxw,boxh=round(x*width),round(y*height),round(w*width),round(h*height)
+                if left<1 or top<1 or left+boxw>=width or top+boxh>=height:raise ValueError('修補區域必須保留影片邊界')
+                filters.insert(0,f'delogo=x={left}:y={top}:w={boxw}:h={boxh}')
             if filters:cmd+=['-vf',','.join(filters)]
             fps=number(opt,'fps',0,0,240)
             if fps:cmd+=['-r',str(fps)]
@@ -72,7 +82,7 @@ def convert_media(job,sources,stage,engines):
                 elif key=='speed':stats['speed']=value
                 elif key=='progress':emit(stats=dict(stats))
                 elif key=='out_time_us' and duration:
-                    try:emit(min(99,int(value)/1_000_000/duration*100),stats=dict(stats))
+                    try:emit(min(99,int(value)/1_000_000/max(.001,(end or duration)-start)*100),stats=dict(stats))
                     except ValueError:pass
             code=proc.wait();proc.stdout.close()
             if code:

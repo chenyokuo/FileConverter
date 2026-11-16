@@ -15,7 +15,7 @@ OFFICE = {
 }
 def category(fmt):
     fmt = normalize(fmt)
-    return 'image' if fmt in IMAGE else 'video' if fmt in VIDEO else 'audio' if fmt in AUDIO else 'pdf' if fmt=='pdf' else 'office' if fmt in OFFICE else 'ebook' if fmt in {'epub','mobi','azw3','fb2'} else 'vector' if fmt in {'svg','eps'} else 'unsupported'
+    return 'image' if fmt in IMAGE else 'video' if fmt in VIDEO else 'audio' if fmt in AUDIO else 'pdf' if fmt=='pdf' else 'office' if fmt in OFFICE else 'ebook' if fmt in {'epub','mobi','azw3','fb2'} else 'vector' if fmt in {'svg','eps'} else 'archive' if fmt in {'zip','7z','rar','tar','gz'} else 'subtitle' if fmt in {'srt','vtt','ass'} else 'unsupported'
 
 class ConversionGraph:
     def __init__(self, edges): self.edges = edges
@@ -39,13 +39,13 @@ def capabilities(engines=None):
     import json
     verified_path=Path(__file__).with_name('verified-capabilities.json')
     verified=set(json.loads(verified_path.read_text(encoding='utf-8'))) if verified_path.exists() else set()
-    sources=IMAGE|VIDEO|AUDIO|{'pdf','svg','eps','epub','mobi','azw3','fb2'}|set(OFFICE)
+    sources={'zip','7z','rar','tar','gz'}|IMAGE|VIDEO|AUDIO|{'pdf','svg','eps','epub','mobi','azw3','fb2'}|set(OFFICE)
     for source in sorted(sources):
         kind=category(source)
-        targets=sorted(IMAGE)+['pdf'] if kind=='image' else ['mp4','mov','mkv','avi','webm','wmv',*sorted(AUDIO)] if kind=='video' else sorted(AUDIO) if kind=='audio' else ['png','jpg','pdf','docx','txt','svg','eps'] if kind=='pdf' else ['pdf','png','eps'] if source=='svg' else ['pdf','png'] if source=='eps' else [x for x in ['epub','mobi','azw3','fb2'] if x!=source] if kind=='ebook' else OFFICE[source]
+        targets=sorted(IMAGE)+['pdf'] if kind=='image' else ['mp4','mov','mkv','avi','webm','wmv',*sorted(AUDIO)] if kind=='video' else sorted(AUDIO) if kind=='audio' else ['png','jpg','pdf','docx','txt','svg','eps'] if kind=='pdf' else ['pdf','png','eps'] if source=='svg' else ['pdf','png'] if source=='eps' else [x for x in ['epub','mobi','azw3','fb2'] if x!=source] if kind=='ebook' else [x for x in ['zip','7z','tar'] if x!=source] if kind=='archive' else OFFICE[source]
         for target in targets:
-            engine='ffmpeg' if kind in {'video','audio'} else 'calibre' if kind=='ebook' else 'ghostscript' if source=='eps' or target=='eps' else 'pymupdf-vector' if source=='svg' or target=='svg' else 'pdf2docx' if source=='pdf' and target=='docx' else 'pdf-text' if source=='pdf' and target=='txt' else 'pandoc' if source in {'md','html','txt'} or source=='docx' and target in {'md','html'} else 'libreoffice' if kind=='office' else 'pymupdf' if kind=='pdf' or target=='pdf' else 'pillow'
-            required={'ffmpeg':['ffmpeg','ffprobe'],'calibre':['calibre'],'ghostscript':['ghostscript'],'pdf2docx':['pdf2docx'],'pandoc':['pandoc']+(['soffice'] if target=='pdf' else []),'libreoffice':['soffice']}.get(engine,[])
+            engine='archive' if kind=='archive' else 'ffmpeg' if kind in {'video','audio'} else 'calibre' if kind=='ebook' else 'ghostscript' if source=='eps' or target=='eps' else 'pymupdf-vector' if source=='svg' or target=='svg' else 'pdf2docx' if source=='pdf' and target=='docx' else 'pdf-text' if source=='pdf' and target=='txt' else 'pandoc' if source in {'md','html','txt'} or source=='docx' and target in {'md','html'} else 'libreoffice' if kind=='office' else 'pymupdf' if kind=='pdf' or target=='pdf' else 'pillow'
+            required={'archive':['sevenzip'],'ffmpeg':['ffmpeg','ffprobe'],'calibre':['calibre'],'ghostscript':['ghostscript'],'pdf2docx':['pdf2docx'],'pandoc':['pandoc']+(['soffice'] if target=='pdf' else []),'libreoffice':['soffice']}.get(engine,[])
             if source=='heic' or target=='heic':required+=['heif']
             available=all(engines.get(k) for k in required)
             lossy=target in {'jpg','webp','heic','avif','gif','mp3','aac','m4a','ogg','opus'} or kind in {'video','office'} or source=='pdf' and target!='pdf'

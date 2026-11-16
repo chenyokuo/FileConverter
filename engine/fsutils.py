@@ -19,3 +19,21 @@ def remove_tree(path,allowed_parent):
         except OSError:
             if attempt==7:raise
             time.sleep(.05*(attempt+1))
+
+def publish_file(source,out):
+    """Atomic no-clobber publication; tolerate short Windows indexing/AV locks."""
+    target=out/source.name;index=1;attempts=0
+    while True:
+        try:
+            if os.name=='nt':os.rename(source,target)  # Windows rename never replaces an existing target
+            else:os.link(source,target);source.unlink()
+            return target
+        except (FileExistsError,IsADirectoryError):
+            target=out/f'{source.stem} ({index}){source.suffix}';index+=1;attempts=0
+        except PermissionError:
+            if target.exists():
+                target=out/f'{source.stem} ({index}){source.suffix}';index+=1;attempts=0
+            elif attempts<6:
+                time.sleep(.025*2**attempts);attempts+=1
+            else:raise
+

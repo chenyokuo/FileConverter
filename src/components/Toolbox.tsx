@@ -1,3 +1,4 @@
+import { AdvancedTools } from "./AdvancedTools";
 import { useState } from "react";
 import { ArrowUpRight, Search, Wrench } from "lucide-react";
 import type { Options, Registry } from "../types";
@@ -140,15 +141,6 @@ const tools: Tool[] = [
     source: "",
     target: "pdf",
   },
-  {
-    id: "archive",
-    category: "壓縮",
-    name: "壓縮與解壓縮",
-    detail: "P2：尚未整合 7-Zip Adapter",
-    source: "",
-    target: "",
-    phase: "P2",
-  },
   ...["epub", "mobi", "azw3", "fb2"].map((target) => ({
     id: "ebook-" + target,
     category: "電子書",
@@ -157,15 +149,6 @@ const tools: Tool[] = [
     source: "",
     target,
   })),
-  {
-    id: "repair",
-    category: "去浮水印／物件修復",
-    name: "局部物件修復",
-    detail: "P2：尚未整合本機模型與遮罩編輯器",
-    source: "",
-    target: "",
-    phase: "P2",
-  },
 ];
 const kind = (category: string) =>
   ({ PDF: "pdf", 圖片: "image", 影片: "video", 音訊: "audio", 文件: "office" })[
@@ -175,7 +158,13 @@ export function Toolbox({
   registry,
   run,
   disabled,
+  outputDir,
+  defaults,
+  notify,
 }: {
+  outputDir: string;
+  defaults: Options;
+  notify: (message: string, error?: boolean) => void;
   registry: Registry;
   run: (tool: Tool) => void;
   disabled: boolean;
@@ -301,6 +290,15 @@ export function Toolbox({
               );
             })}
         </div>
+      )}
+      {!matrix && (
+        <AdvancedTools
+          category={category}
+          disabled={disabled}
+          outputDir={outputDir}
+          defaults={defaults}
+          notify={notify}
+        />
       )}
     </div>
   );

@@ -22,4 +22,3 @@ def prevent_orphans(process_handle=None):
     if not handle or not k.SetInformationJobObject(handle,9,ctypes.byref(limits),ctypes.sizeof(limits)) or not k.AssignProcessToJobObject(handle,process_handle or k.GetCurrentProcess()):
         raise RuntimeError('Windows Job Object 初始化失敗，無法保證程序清理')
     return handle  # intentionally held for lifetime of service
-

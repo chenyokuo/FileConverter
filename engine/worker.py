@@ -85,6 +85,9 @@ def media(job,sources,stage,engines):
     return convert_media(job,sources,stage,engines)
 
 def convert(job, stage, engines):
+    if job.get('operation'):
+        from tools_engine import execute
+        return execute(job,stage,engines)
     from detection import detect, normalize
     from registry import category, validate
     from adapters import ADAPTERS

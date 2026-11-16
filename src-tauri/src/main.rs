@@ -13,7 +13,7 @@ struct Bridge {
 
 #[tauri::command]
 async fn engine_call(bridge: tauri::State<'_, Arc<Bridge>>, method: String, mut args: Value) -> Result<Value,String> {
-    const ALLOWED: &[&str] = &["snapshot","inspect","enqueue","settings","background","engines","cancel","retry","clear","open_output","registry","plan","hardware"];
+    const ALLOWED: &[&str] = &["snapshot","inspect","enqueue","settings","background","engines","cancel","retry","clear","open_output","registry","plan","hardware","tools","enqueue_tool","preview","preview_status","clear_preview"];
     if !ALLOWED.contains(&method.as_str()) { return Err("Command is not allowed".into()); }
     let bridge = Arc::clone(bridge.inner());
     tauri::async_runtime::spawn_blocking(move || {

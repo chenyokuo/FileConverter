@@ -20,10 +20,10 @@ def locate(root):
         engines[name]=module if importlib.util.find_spec(module) else None
     return engines
 
-def command(args, timeout=600, **kwargs):
+def command(args, timeout=600, return_stderr=False, **kwargs):
     import ctypes
     from windows_jobs import prevent_orphans
-    proc=subprocess.Popen([str(a) for a in args],stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+    proc=subprocess.Popen([str(a) for a in args],stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
         creationflags=FLAGS | (4 if os.name=='nt' else 0),**kwargs)
     handle=None
     try:
@@ -33,9 +33,11 @@ def command(args, timeout=600, **kwargs):
             if resume(int(proc._handle))!=0:raise RuntimeError('Could not resume runtime')
         stdout,stderr=proc.communicate(timeout=timeout)
         if proc.returncode:raise RuntimeError((stderr+stdout).decode('utf-8','replace')[-4000:] or f'Engine exit {proc.returncode}')
-        return stdout
+        return stderr if return_stderr else stdout
     finally:
         if proc.poll() is None:proc.kill();proc.wait()
+        if proc.stdout:proc.stdout.close()
+        if proc.stderr:proc.stderr.close()
         if handle:
             from ctypes import wintypes
             close=ctypes.WinDLL('kernel32').CloseHandle;close.argtypes=[wintypes.HANDLE]
