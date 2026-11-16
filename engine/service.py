@@ -35,26 +35,7 @@ def publish_file(source,out):
                 time.sleep(.025*2**attempts);attempts+=1
             else:raise
 
-def prevent_orphans(process_handle=None):
-    """Windows job kills all descendants if service dies or desktop closes."""
-    if os.name != 'nt': return
-    from ctypes import wintypes as w
-    class Basic(ctypes.Structure):
-        _fields_ = [('ProcessTime',ctypes.c_int64),('JobTime',ctypes.c_int64),('LimitFlags',w.DWORD),('Min',ctypes.c_size_t),('Max',ctypes.c_size_t),('Active',w.DWORD),('Affinity',ctypes.c_size_t),('Priority',w.DWORD),('Scheduling',w.DWORD)]
-    class Io(ctypes.Structure):
-        _fields_ = [(n,ctypes.c_uint64) for n in ['ReadOps','WriteOps','OtherOps','ReadBytes','WriteBytes','OtherBytes']]
-    class Limits(ctypes.Structure):
-        _fields_ = [('Basic',Basic),('Io',Io),('ProcessMemory',ctypes.c_size_t),('JobMemory',ctypes.c_size_t),('PeakProcess',ctypes.c_size_t),('PeakJob',ctypes.c_size_t)]
-    k=ctypes.WinDLL('kernel32',use_last_error=True)
-    k.CreateJobObjectW.restype=w.HANDLE
-    k.SetInformationJobObject.argtypes=[w.HANDLE,ctypes.c_int,ctypes.c_void_p,w.DWORD]
-    k.AssignProcessToJobObject.argtypes=[w.HANDLE,w.HANDLE]
-    k.GetCurrentProcess.restype=w.HANDLE
-    handle=k.CreateJobObjectW(None,None)
-    limits=Limits();limits.Basic.LimitFlags=0x2000
-    if not handle or not k.SetInformationJobObject(handle,9,ctypes.byref(limits),ctypes.sizeof(limits)) or not k.AssignProcessToJobObject(handle,process_handle or k.GetCurrentProcess()):
-        raise RuntimeError('Windows Job Object 初始化失敗，無法保證程序清理')
-    return handle  # intentionally held for lifetime of service
+from windows_jobs import prevent_orphans
 
 class Service:
     def __init__(self, data_dir, engine_root=None):
@@ -70,15 +51,27 @@ class Service:
         for job in self.jobs.values():
             if job['status'] in {'running','queued','cancelling'}:
                 job.update(status='cancelled',error='程式上次關閉，任務已安全中止',finished=time.time());self.save(job)
+        self.hardware_cache=[{'id':'cpu','label':'CPU','available':True,'encoder':'libx264','codecs':{'h264':True,'h265':True},'reason':''}]+[
+            {'id':key,'label':label,'available':False,'encoder':'','reason':'偵測中','pending':True} for key,label in [('nvidia','NVIDIA'),('amd','AMD'),('intel','Intel')]]
+        self.hardware_detecting=False
+        self.refresh_hardware()
         threading.Thread(target=self.scheduler,daemon=True).start()
 
     def detect_engines(self):
-        def find(name, extra=()):
-            paths=[self.engine_root/'ffmpeg'/(name+'.exe'),self.engine_root/(name+'.exe'),*map(Path,extra)]
-            return next((str(p) for p in paths if p.is_file()),shutil.which(name))
-        return {'ffmpeg':find('ffmpeg'),'ffprobe':find('ffprobe'),'soffice':find('soffice',[
-            os.path.join(os.environ.get('PROGRAMFILES','C:/Program Files'),'LibreOffice/program/soffice.exe'),
-            os.path.join(os.environ.get('PROGRAMFILES(X86)','C:/Program Files (x86)'),'LibreOffice/program/soffice.exe')])}
+        from runtime import locate
+        return locate(self.engine_root)
+
+    def refresh_hardware(self):
+        if self.hardware_detecting:return
+        self.hardware_detecting=True
+        self.hardware_cache=[dict(row,available=False,pending=True,reason='偵測中') if row['id']!='cpu' else row for row in self.hardware_cache]
+        def run():
+            from runtime import hardware
+            try:
+                result=hardware(self.engines.get('ffmpeg'),refresh=True)
+                with self.lock:self.hardware_cache=result
+            finally:self.hardware_detecting=False
+        threading.Thread(target=run,daemon=True).start()
 
     def save(self,job):
         self.db.execute('INSERT OR REPLACE INTO jobs VALUES (?,?)',(job['id'],json.dumps(job,ensure_ascii=True)));self.db.commit()
@@ -117,7 +110,7 @@ class Service:
         try:
             out=Path(job['outputDir']);out.mkdir(parents=True,exist_ok=True)
             stage=Path(tempfile.mkdtemp(prefix='.rai-',dir=out));self.stages[job['id']]=stage
-            spec={'job':dict(job),'engines':self.engines,'stage':str(stage)}
+            spec={'job':dict(job),'engines':self.engines,'stage':str(stage),'hardwareCapabilities':self.hardware_cache}
             command=[sys.executable] if getattr(sys,'frozen',False) else [sys.executable,str(Path(__file__).resolve())]
             with self.lock:
                 if job['status']=='cancelling': raise InterruptedError()
@@ -145,6 +138,7 @@ class Service:
                 except ValueError:continue
                 with self.lock:
                     if job['status']=='cancelling':continue
+                    if 'stats' in message:job.setdefault('stats',{}).update(message['stats']);self.event(job)
                     if 'progress' in message: job['progress']=min(99,message['progress']);self.event(job)
                     if 'files' in message:files=message['files']
                     if 'error' in message:error=message['error']
@@ -174,7 +168,10 @@ class Service:
                 job.update(status='cancelled' if isinstance(error,InterruptedError) or job['status']=='cancelling' else 'failed',error=None if isinstance(error,InterruptedError) else str(error),finished=time.time())
                 self.save(job);self.event(job)
         finally:
-            if stage:shutil.rmtree(stage,ignore_errors=True)
+            if stage:
+                from fsutils import remove_tree
+                try:remove_tree(stage,Path(job['outputDir']))
+                except OSError as error:job.setdefault('stats',{})['cleanupWarning']=str(error);self.save(job)
             with self.lock:self.processes.pop(job['id'],None);self.stages.pop(job['id'],None)
 
     def inspect(self,paths,native_hints=None):
@@ -192,7 +189,7 @@ class Service:
                         buf=io.BytesIO();image.convert('RGBA').save(buf,format='PNG');preview='data:image/png;base64,'+base64.b64encode(buf.getvalue()).decode()
                 except Exception:pass
             required='soffice' if kind=='office' else 'ffmpeg' if kind in {'video','audio'} else None
-            result.append({'path':str(p),'name':p.name,'size':p.stat().st_size,'extension':ext,'category':kind,'formats':outputs(ext),'preview':preview,'dimensions':dimensions,'available':bool(ext) and (not required or bool(self.engines.get(required))), 'detection':detection, 'reason':detection['warning'] if not ext else ''})
+            result.append({'path':str(p),'name':p.name,'size':p.stat().st_size,'extension':ext,'category':kind,'formats':outputs(ext),'preview':preview,'dimensions':dimensions,'available':bool(ext) and any(e['available'] for e in registry(self.engines)['edges'] if e['source']==ext), 'detection':detection, 'reason':detection['warning'] if not ext else ''})
         return result
 
     def call(self,method,args):
@@ -201,6 +198,9 @@ class Service:
                 return {'jobs':list(self.jobs.values()),'settings':self.settings,'engines':self.engines,'dataDir':str(self.root),'registry':registry(self.engines)}
             if method=='inspect':return self.inspect(args['paths'],args.get('nativeHints'))
             if method=='registry':return registry(self.engines)
+            if method=='hardware':
+                if args.get('refresh'):self.refresh_hardware()
+                return self.hardware_cache
             if method=='plan':
                 route=ConversionGraph(registry(self.engines)['edges']).path(args['source'],args['target'])
                 return {'route':route,'executable':len(route)==1,'intermediate':len(route)>1}

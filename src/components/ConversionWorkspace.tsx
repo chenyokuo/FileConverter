@@ -23,7 +23,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import type { Draft, Options, Registry } from "../types";
+import type { Draft, Options, Registry, HardwareDevice } from "../types";
 import { Button } from "./ui";
 import { OptionsEditor } from "./OptionsEditor";
 
@@ -33,7 +33,9 @@ const types = [
   ["audio", "音訊"],
   ["image", "圖片"],
   ["pdf", "PDF"],
-  ["office", "Office"],
+  ["office", "文件"],
+  ["vector", "向量"],
+  ["ebook", "電子書"],
 ] as const;
 const sizeLabel = (size: number) =>
   size < 1024 ** 2
@@ -42,6 +44,7 @@ const sizeLabel = (size: number) =>
       ? `${(size / 1024 ** 2).toFixed(1)} MB`
       : `${(size / 1024 ** 3).toFixed(2)} GB`;
 interface Props {
+  hardware: HardwareDevice[];
   registry: Registry;
   modeBar: ReactNode;
   totalProgress: number;
@@ -359,6 +362,7 @@ export function ConversionWorkspace(p: Props) {
                     )}
                     {focused.format ? (
                       <OptionsEditor
+                        hardware={p.hardware}
                         category={focused.category}
                         format={focused.format}
                         value={focused.options}

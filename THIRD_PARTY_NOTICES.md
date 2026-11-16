@@ -45,3 +45,9 @@ Local development / private evaluation builds are provided. Public or customer r
 ## Application artwork
 
 The File Converter application icon was supplied locally by the project owner. Its preserved original and SHA-256 manifest are in `src-tauri/icons/source/`. Tauri Icon Generator produced platform assets; `scripts/icons.py` reproducibly generates Windows multi-size ICO and density-aware PNG assets using Pillow Lanczos without changing the original. No permission to reuse unrelated trademarks or artwork is implied. Only this application uses these assets; no system file associations or other applications are changed.
+
+## P1 runtime additions
+
+Pinned acquisition sources and binary/model SHA-256 values are recorded in `engine-lock.json`. LibreOffice 26.8.3 is staged app-locally (MPL/LGPL and component licenses), Calibre 9.18.0 (GPL-3.0-or-later), Pandoc 3.14 (GPL-2.0-or-later), Ghostscript 10.08.0 (AGPL-3.0-or-later), 7-Zip 25.01 (LGPL with unRAR restriction), Deno 2.9.8 (MIT), and Tesseract fast eng/chi_tra models (Apache-2.0). These are separate local executables/resources, not system installations. Final redistribution inventories and corresponding-source requirements are checked in P5.
+
+Python additions: pillow-heif 1.8.1 (BSD wrapper, bundled codec libraries retain their own licenses), pdf2docx 0.5.13 (MIT; upstream no longer actively maintained by Artifex), OpenCV headless 5.0.0.93 (Apache-2.0 and bundled-library notices), pypdf 7.1.0 (BSD), pypdfium2 5.15.2 (BSD/Apache and PDFium notices), python-docx 1.2.0, python-pptx 1.0.2 and openpyxl 3.1.5 (MIT). PyMuPDF remains AGPL/commercial; the application remains AGPL-3.0-or-later. Exact transitive versions are in the Python lockfile. No proprietary licensing grant is claimed.

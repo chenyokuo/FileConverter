@@ -641,17 +641,16 @@ export function SettingsPage({
                   <div className="inline-note">
                     <ShieldCheck size={18} />
                     <span>
-                      Office 轉檔需要另行安裝
-                      LibreOffice，安裝後可重新檢測引擎。
+                      使用隨附的離線 Runtime。若顯示缺少引擎，請修復 File
+                      Converter 套件。
                     </span>
                   </div>
                   <hr />
                   <h3>功能邊界</h3>
                   <p className="hint">
-                    PDF 轉 DOCX
-                    尚未實作。原生整個視窗透明度尚未通過相容性驗證。NVENC
-                    會在實際編碼前檢測，無法使用時提供明確錯誤。未安裝
-                    LibreOffice 時仍可使用圖片、PDF 與影音功能。
+                    PDF → DOCX 可能失去版面保真；掃描文件請先
+                    OCR。原生整窗透明度仍未通過相容性驗證。硬體編碼會先實際探測，失敗後使用
+                    CPU 備援。
                   </p>
                 </section>
               </>

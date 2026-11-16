@@ -42,6 +42,7 @@ import type { LucideIcon } from "lucide-react";
 import { call, desktop, pickFiles, pickFolder } from "./api";
 import { defaults, mergeSettings } from "./defaults";
 import type {
+  HardwareDevice,
   Draft,
   Registry,
   ConversionMode,
@@ -133,6 +134,17 @@ export default function App() {
     ffprobe: null,
     soffice: null,
   });
+  const [hardware, setHardware] = useState<HardwareDevice[]>([]);
+  const hardwarePending = hardware.some((device) => device.pending);
+  useEffect(() => {
+    if (!desktop || !hardwarePending) return;
+    const timer = setInterval(() => {
+      void call<HardwareDevice[]>("hardware")
+        .then(setHardware)
+        .catch(() => {});
+    }, 1500);
+    return () => clearInterval(timer);
+  }, [hardwarePending]);
   const [dataDir, setDataDir] = useState("");
   const [ready, setReady] = useState(false);
   const [engineError, setEngineError] = useState("");
@@ -182,6 +194,9 @@ export default function App() {
       lastSaved.current = JSON.stringify(merged);
       setJobs(s.jobs);
       setRegistry(s.registry);
+      void call<HardwareDevice[]>("hardware")
+        .then(setHardware)
+        .catch(() => {});
       setEngines(s.engines);
       setDataDir(s.dataDir);
       setReady(true);
@@ -379,6 +394,9 @@ export default function App() {
     try {
       const detected = await call<Engines>("engines");
       setEngines(detected);
+      void call<HardwareDevice[]>("hardware", { refresh: true })
+        .then(setHardware)
+        .catch(() => {});
       setRegistry(await call<Registry>("registry"));
       setDrafts((old) =>
         old.map((f) => ({
@@ -553,6 +571,15 @@ export default function App() {
             <span className="dot-separator">·</span>
             {relativeDate(job.created)}
           </span>
+          {job.stats?.encoder && (
+            <span>
+              {job.stats.encoder} · {job.stats.fps || 0} FPS ·{" "}
+              {job.stats.speed || "處理中"}
+            </span>
+          )}
+          {job.stats?.hardwareFallback && (
+            <p className="hint">{job.stats.hardwareFallback}</p>
+          )}
           {job.error && <p className="error-text">{job.error}</p>}
           {active(job) && (
             <div className="progress-track">
@@ -813,6 +840,7 @@ export default function App() {
                 >
                   {page === "converter" && (
                     <ConversionWorkspace
+                      hardware={hardware}
                       modeBar={
                         <ConversionModeBar
                           mode={mode}
@@ -964,6 +992,7 @@ export default function App() {
                             影片: "video",
                             音訊: "audio",
                             文件: "office",
+                            電子書: "ebook",
                           }[tool.category];
                           const valid = found.filter((f) =>
                             tool.merge

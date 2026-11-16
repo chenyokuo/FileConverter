@@ -6,6 +6,9 @@ import type {
   Settings,
 } from "./types";
 export const defaultOptions: Options = {
+  hardware: "auto",
+  hardwareDecode: true,
+  qualityPreset: "balanced",
   quality: 90,
   width: 0,
   height: 0,

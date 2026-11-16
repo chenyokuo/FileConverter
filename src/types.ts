@@ -58,7 +58,19 @@ export interface Settings {
   reducedMotion: boolean;
   sidebarCollapsed: boolean;
 }
+export interface HardwareDevice {
+  pending?: boolean;
+  id: string;
+  label: string;
+  available: boolean;
+  encoder: string;
+  reason: string;
+  codecs?: Record<string, boolean>;
+}
 export interface Options {
+  hardware: "auto" | "cpu" | "nvidia" | "amd" | "intel";
+  hardwareDecode: boolean;
+  qualityPreset: "fast" | "balanced" | "quality";
   quality: number;
   width: number;
   height: number;
@@ -113,6 +125,13 @@ export interface Job {
   outputDir: string;
   options: Options;
   status: Status;
+  stats?: {
+    encoder?: string;
+    fps?: number;
+    speed?: string;
+    hardwareFallback?: string;
+    [key: string]: unknown;
+  };
   progress: number;
   created: number;
   started?: number;
@@ -121,6 +140,7 @@ export interface Job {
   error: string | null;
 }
 export interface Engines {
+  [name: string]: string | null;
   ffmpeg: string | null;
   ffprobe: string | null;
   soffice: string | null;

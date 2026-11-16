@@ -26,7 +26,7 @@ def probe(path, ffprobe):
     if result.returncode: raise ValueError(result.stderr.decode('utf-8', 'replace')[-2000:])
     return json.loads(result.stdout)
 
-def media(job, sources, stage, engines):
+def _legacy_media(job, sources, stage, engines):
     ffmpeg, ffprobe = engines.get('ffmpeg'), engines.get('ffprobe')
     if not ffmpeg or not ffprobe: raise RuntimeError('FFmpeg / ffprobe 未安裝。請查看設定 → 引擎狀態。')
     source = sources[0]; ext = job['format']; opt = job['options']
@@ -79,6 +79,10 @@ def media(job, sources, stage, engines):
         if code:
             errors.seek(0); raise RuntimeError(errors.read().decode('utf-8', 'replace')[-4000:])
     return [target]
+
+def media(job,sources,stage,engines):
+    from media_engine import convert_media
+    return convert_media(job,sources,stage,engines)
 
 def convert(job, stage, engines):
     from detection import detect, normalize
@@ -148,6 +152,8 @@ def convert_pdf(job, sources, stage, engines):
 
 def convert_image(job, sources, stage, engines):
     from PIL import Image, ImageOps
+    from runtime import image_plugins
+    image_plugins()
     kind = job['category']; fmt = job['format']; opt = job.get('options', {})
     with Image.open(sources[0]) as source:
         image = ImageOps.exif_transpose(source)
@@ -163,7 +169,7 @@ def convert_image(job, sources, stage, engines):
             else: base.paste(image.convert('RGB'))
             image = base
         target = stage / f'{sources[0].stem}.{fmt}'
-        image.save(target, format={'jpg':'JPEG','tiff':'TIFF'}.get(fmt,fmt.upper()), quality=int(number(opt,'quality',90,1,100)))
+        image.save(target, format={'jpg':'JPEG','tiff':'TIFF','heic':'HEIF'}.get(fmt,fmt.upper()), quality=int(number(opt,'quality',90,1,100)))
         return [target]
 
 def convert_office(job, sources, stage, engines):
@@ -179,7 +185,7 @@ def convert_office(job, sources, stage, engines):
 
 
 def run_worker(spec):
-    job, engines, stage = spec['job'], spec['engines'], Path(spec['stage'])
+    job, engines, stage = spec['job'], dict(spec['engines'],hardwareCapabilities=spec.get('hardwareCapabilities')), Path(spec['stage'])
     try:
         files = convert(job, stage, engines)
         emit(100, files=[str(p) for p in files])

@@ -1,11 +1,13 @@
-import type { Options } from "../types";
+import type { Options, HardwareDevice } from "../types";
 import { Slider, Toggle } from "./ui";
 export function OptionsEditor({
   category,
   format,
   value,
   onChange,
+  hardware = [],
 }: {
+  hardware?: HardwareDevice[];
   category: string;
   format: string;
   value: Options;
@@ -57,7 +59,7 @@ export function OptionsEditor({
     <div className="options-stack">
       {category === "image" && format !== "pdf" && (
         <>
-          {["jpg", "webp"].includes(format) ? (
+          {["jpg", "webp", "heic", "avif"].includes(format) ? (
             <Slider
               label="圖片品質"
               value={value.quality}
@@ -89,7 +91,58 @@ export function OptionsEditor({
       )}
       {category === "video" && !isAudio && (
         <>
-          {!["webm", "avi"].includes(format) &&
+          <label className="field">
+            <span>硬體加速</span>
+            <select
+              aria-label="硬體加速"
+              value={value.hardware || "auto"}
+              onChange={(e) => set("hardware", e.target.value)}
+            >
+              <option value="auto">自動 · 失敗改用 CPU</option>
+              <option value="cpu">CPU</option>
+              {hardware
+                .filter((d) => d.id !== "cpu")
+                .map((d) => (
+                  <option
+                    key={d.id}
+                    value={d.id}
+                    disabled={
+                      !d.available || d.codecs?.[value.videoCodec] === false
+                    }
+                  >
+                    {d.label}
+                    {d.pending ? " · 偵測中" : !d.available ? " · 不可用" : ""}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label className="field">
+            <span>品質預設</span>
+            <select
+              value={value.qualityPreset || "balanced"}
+              onChange={(e) =>
+                onChange({
+                  ...value,
+                  qualityPreset: e.target.value as Options["qualityPreset"],
+                  crf: (
+                    { fast: 26, balanced: 23, quality: 18 } as Record<
+                      string,
+                      number
+                    >
+                  )[e.target.value],
+                })
+              }
+            >
+              <option value="fast">快速</option>
+              <option value="balanced">平衡</option>
+              <option value="quality">高品質</option>
+            </select>
+          </label>
+          <p className="hint">
+            GPU 能力由實際編碼探測。硬體加速不保證比 CPU
+            畫質更好。WebM、AVI、WMV 使用相容的固定編碼器。
+          </p>
+          {!["webm", "avi", "wmv"].includes(format) &&
             select("videoCodec", "影片編碼器", [
               ["h264", "H.264 · CPU"],
               ["h265", "H.265 · CPU"],
@@ -162,7 +215,7 @@ export function OptionsEditor({
           <p className="hint">WAV / FLAC 使用無損編碼，不套用有損位元率。</p>
         </>
       )}
-      {category === "pdf" && format !== "pdf" && (
+      {category === "pdf" && ["png", "jpg"].includes(format) && (
         <Slider
           label="PDF 影像 DPI"
           min={36}
@@ -196,9 +249,15 @@ export function OptionsEditor({
           />
         </>
       )}
+      {category === "pdf" && format === "docx" && (
+        <p className="hint">
+          實驗性 PDF → DOCX：文字、表格、字型和版面可能失真。掃描文件請先執行
+          OCR。
+        </p>
+      )}
       {category === "office" && (
         <p className="hint">
-          由本機 LibreOffice 執行；字型與排版可能因電腦環境而異。CSV
+          由隨附文件引擎執行；字型與排版可能因電腦環境而異。CSV
           僅輸出作用中的工作表。
         </p>
       )}

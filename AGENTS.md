@@ -28,8 +28,9 @@ Keep clean-machine and physical DPI limitations explicit.
 - Preserve the supplied icon original and user-data compatibility.
 - Only update this application's icons and shortcuts. Never change other apps,
   Windows default applications, global file-type icons, or file associations.
-- Do not push to GitHub before the user's final integration acceptance. Local
-  phase commits are authorized. Keep credentials, caches, test files, engines,
-  and build artifacts out of Git.
+- The user authorized continuing P1 → P5 without phase confirmation. Commit each
+  phase locally. After P5 succeeds, integrate into main, tag and push to the
+  existing private chenyokuo/FileConverter repository without force pushing.
+  Keep credentials, caches, test files, engines and build artifacts out of Git.
 
 The user's latest explicit instructions take precedence over this workflow.

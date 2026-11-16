@@ -6,7 +6,7 @@ import subprocess
 import struct
 import zipfile
 
-ALIASES = {'jpeg': 'jpg', 'tif': 'tiff', 'm4v': 'mp4'}
+ALIASES = {'jpeg': 'jpg', 'tif': 'tiff', 'm4v': 'mp4', 'heif':'heic', 'htm':'html', 'markdown':'md'}
 def normalize(value):
     value = str(value).lower().lstrip('.')
     return ALIASES.get(value, value)
@@ -52,6 +52,8 @@ def detect(path, engines, native=None):
 
 def _detect(path, engines, native=None):
     from PIL import Image
+    from runtime import image_plugins
+    image_plugins()
     p = Path(path)
     ext = normalize(p.suffix)
     with p.open('rb') as stream: head = stream.read(16384)
@@ -76,7 +78,7 @@ def _detect(path, engines, native=None):
                         if part in names: fmt = office; break
                 if 'mimetype' in names and archive.getinfo('mimetype').file_size < 256:
                     mime = archive.read('mimetype').decode('ascii', 'replace')
-                    fmt = {'application/vnd.oasis.opendocument.text':'odt', 'application/vnd.oasis.opendocument.spreadsheet':'ods',
+                    fmt = {'application/epub+zip':'epub','application/vnd.oasis.opendocument.text':'odt', 'application/vnd.oasis.opendocument.spreadsheet':'ods',
                            'application/vnd.oasis.opendocument.presentation':'odp'}.get(mime, fmt)
             method = 'ZIP package entries / ODF mimetype'
         except zipfile.BadZipFile: pass
@@ -86,6 +88,22 @@ def _detect(path, engines, native=None):
         streams = compound_streams(p,head)
         fmt = 'doc' if 'WordDocument' in streams else 'xls' if streams & {'Workbook','Book'} else 'ppt' if 'PowerPoint Document' in streams else ''
         method = 'OLE compound stream directory'
+    if not fmt and head.startswith(b'%!PS-Adobe') and b'EPSF' in head[:128]:fmt='eps';method='PostScript EPS header'
+    if not fmt and b'BOOKMOBI' in head[:80]:
+        offset=struct.unpack_from('>I',head,78)[0]
+        with p.open('rb') as stream:
+            stream.seek(offset+36);version=struct.unpack('>I',stream.read(4))[0]
+        fmt='azw3' if version>=8 else 'mobi';method='Palm/MOBI header version'
+    if not fmt:
+        try:
+            text=head.decode('utf-8-sig')
+            import re
+            if re.search(r'<(?:\w+:)?svg[\s>]',text):fmt='svg';method='SVG XML root'
+            elif re.search(r'<(?:\w+:)?FictionBook[\s>]',text):fmt='fb2';method='FictionBook XML root'
+            elif re.search(r'<!doctype\s+html|<html[\s>]',text,re.I):fmt='html';method='HTML document header'
+            elif ext in {'md','txt','csv','tsv'} and '\x00' not in text:
+                fmt=ext;method='UTF-8 text; declared textual subtype'
+        except UnicodeDecodeError:pass
     if not fmt and engines.get('ffprobe'):
         probe = subprocess.run([engines['ffprobe'], '-v','error','-show_format','-show_streams','-of','json',str(p)],
             capture_output=True, timeout=30, creationflags=0x08000000 if os.name=='nt' else 0)
@@ -97,6 +115,7 @@ def _detect(path, engines, native=None):
             if 'mov' in names:
                 fmt = 'mov' if head[8:12] == b'qt  ' else 'mp4' if video else 'm4a'
             elif 'matroska' in names: fmt = 'webm' if b'webm' in head[:4096] else 'mkv'
+            elif 'asf' in names: fmt='wmv' if video else ''
             elif 'ogg' in names: fmt = 'opus' if any(s.get('codec_name')=='opus' for s in streams) else 'ogg'
             else: fmt = next((n for n in names if n in {'avi','mp3','wav','flac','aac'}), '')
             method = 'FFprobe streams + container header'
