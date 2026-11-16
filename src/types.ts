@@ -1,4 +1,4 @@
-export type Page = "converter" | "toolbox" | "history" | "settings";
+export type Page = "converter" | "toolbox" | "download" | "workflow" | "history" | "settings";
 export type ConversionMode = "auto" | "preset";
 export interface Capability {
   id: string;
@@ -54,6 +54,7 @@ export interface Settings {
   presets: { name: string; appearance: Appearance }[];
   concurrency: number;
   outputDir: string;
+  downloadDir:string;
   defaults: Options;
   reducedMotion: boolean;
   sidebarCollapsed: boolean;
@@ -117,6 +118,7 @@ export interface Draft extends InputFile {
 export type Status =
   "queued" | "running" | "cancelling" | "completed" | "failed" | "cancelled";
 export interface Job {
+  kind?:string;
   operation?: string;
   params?: Record<string, unknown>;
   previewOnly?: boolean;

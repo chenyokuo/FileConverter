@@ -63,6 +63,7 @@ export const defaults: Settings = {
   presets: [],
   concurrency: 2,
   outputDir: "",
+  downloadDir:"",
   defaults: defaultOptions,
   reducedMotion: false,
   sidebarCollapsed: false,

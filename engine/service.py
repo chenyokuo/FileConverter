@@ -157,6 +157,10 @@ class Service:
                 self.save(job);self.event(job)
         finally:
             self.secrets.pop(job['id'],None)
+            if job.get('kind')=='download' and job['status']=='completed':
+                from fsutils import remove_tree
+                try:remove_tree(job['downloadCache'],self.root/'download-cache')
+                except OSError as error:job.setdefault('stats',{})['cleanupWarning']=str(error);self.save(job)
             if stage:
                 from fsutils import remove_tree
                 try:remove_tree(stage,Path(job['outputDir']))
@@ -195,7 +199,29 @@ class Service:
             'status':'queued','progress':0,'created':time.time(),'outputs':[],'error':None}
         self.jobs[id]=job;self.save(job);self.event(job);return [dict(job)]
 
+    def create_download(self,args,resume=None):
+        if not self.engines.get('ytdlp') or not self.engines.get('ffmpeg'):raise ValueError('下載 Runtime 不完整')
+        from downloads import selected
+        items=[resume['download']] if resume else selected(args['analysisId'],args['items'])
+        created=[]
+        for item in items:
+            id=uuid.uuid4().hex;cache_key=resume.get('downloadCacheKey') if resume else id
+            if not isinstance(cache_key,str) or len(cache_key)!=32 or any(c not in '0123456789abcdef' for c in cache_key):raise ValueError('無效下載快取')
+            cache=self.root/'download-cache'/cache_key
+            out=Path(args.get('outputDir') or self.settings.get('downloadDir') or self.root/'Downloads').resolve()
+            job={'id':id,'kind':'download','sources':[],'download':item,'downloadCache':str(cache),'downloadCacheKey':cache_key,
+                'name':item['title'],'category':'audio' if item['audioOnly'] else 'video','format':item['audioFormat'] if item['audioOnly'] else item.get('convertTo') or 'video',
+                'outputDir':str(out),'options':self.settings.get('defaults',{}),'status':'queued','progress':0,'created':time.time(),'outputs':[],'error':None}
+            self.jobs[id]=job;self.save(job);self.event(job);created.append(dict(job))
+        return created
+
     def call(self,method,args):
+        if method=='analyze_url':
+            from downloads import analyze
+            return analyze(args['url'],self.engines,args.get('page',1))
+        if method=='resolve_download':
+            from downloads import resolve
+            return resolve(args['analysisId'],args['key'],self.engines)
         if method=='preview':
             from previews import preview
             return preview(args['path'],self.engines,args.get('page',0),args.get('time',0))
@@ -206,6 +232,7 @@ class Service:
             if method=='tools':
                 from tool_catalog import catalog
                 return catalog(self.engines)
+            if method=='enqueue_download':return self.create_download(args)
             if method=='enqueue_tool':return self.create_tool(args)
             if method=='preview_status':return dict(self.jobs[args['id']])
             if method=='clear_preview':
@@ -264,6 +291,7 @@ class Service:
             if method=='retry':
                 job=self.jobs[args['id']]
                 if job['status'] not in {'failed','cancelled','completed'}:raise ValueError('任務仍在執行')
+                if job.get('kind')=='download':return self.create_download({'outputDir':job['outputDir']},resume=job)
                 if job.get('operation'):
                     if job.get('requiresSecret'):raise ValueError('請重新開啟工具輸入密碼，密碼不會保存在歷史')
                     return self.create_tool({k:job[k] for k in ['sources','operation','params','outputDir']})
@@ -302,6 +330,7 @@ def main():
     service=Service(data,engines)
     from concurrent.futures import ThreadPoolExecutor
     preview_pool=ThreadPoolExecutor(max_workers=2)
+    network_pool=ThreadPoolExecutor(max_workers=2)
     try:
         for line in sys.stdin:
             request={}
@@ -310,9 +339,10 @@ def main():
                 def handle(req):
                     try:service.send({'id':req['id'],'result':service.call(req['method'],req.get('args',{}))})
                     except Exception as error:service.send({'id':req['id'],'error':str(error)})
-                if request['method']=='preview':preview_pool.submit(handle,dict(request))
+                if request['method'] in {'analyze_url','resolve_download'}:network_pool.submit(handle,dict(request))
+                elif request['method']=='preview':preview_pool.submit(handle,dict(request))
                 else:handle(request)
             except Exception as error:service.send({'id':request.get('id'),'error':str(error)})
-    finally:service.close();preview_pool.shutdown(wait=False,cancel_futures=True)
+    finally:service.close();preview_pool.shutdown(wait=False,cancel_futures=True);network_pool.shutdown(wait=False,cancel_futures=True)
 
 if __name__=='__main__':main()

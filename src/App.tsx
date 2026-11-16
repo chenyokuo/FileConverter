@@ -1,3 +1,4 @@
+import { DownloadPage } from "./components/DownloadPage";
 import { AppIcon } from "./components/AppIcon";
 import {
   useCallback,
@@ -68,7 +69,7 @@ const navigation: {
   phase?: string;
 }[] = [
   { id: "converter", label: "轉換檔案", icon: ArrowLeftRight },
-  { id: "download", label: "網址下載", icon: Download, phase: "P3" },
+  { id: "download", label: "網址下載", icon: Download },
   { id: "toolbox", label: "工具箱", icon: Wrench },
   { id: "workflow", label: "自動化工作流程", icon: Workflow, phase: "P4" },
   { id: "history", label: "歷史紀錄", icon: History },
@@ -581,6 +582,7 @@ export default function App() {
           {job.stats?.hardwareFallback && (
             <p className="hint">{job.stats.hardwareFallback}</p>
           )}
+          {job.kind==='download'&&job.stats&&<span>{String(job.stats.phase||'下載')} · {typeof job.stats.downloadedBytes==='number'?`${(job.stats.downloadedBytes/1024**2).toFixed(1)} MB`:''}{typeof job.stats.downloadSpeed==='number'?` · ${(job.stats.downloadSpeed/1024**2).toFixed(2)} MB/s`:''}{typeof job.stats.downloadEta==='number'?` · 剩餘 ${Math.ceil(job.stats.downloadEta)} 秒`:''}</span>}
           {job.stats?.warning && (
             <p className="error-text">{job.stats.warning}</p>
           )}
@@ -791,7 +793,7 @@ export default function App() {
                       ? "File Converter"
                       : page === "history"
                         ? "轉換紀錄"
-                        : page === "toolbox"
+                        : page === "download" ? "網址下載" : page === "toolbox"
                           ? "工具箱"
                           : "設定"}
                   </h1>
@@ -977,6 +979,7 @@ export default function App() {
                       }
                     />
                   )}
+                  {page === 'download' && <DownloadPage disabled={!desktop||!ready||!!engineError||!engines.ytdlp} outputDir={settings.downloadDir} onDirectory={path=>setSettings(old=>({...old,downloadDir:path}))} notify={notify}/>}
                   {page === "toolbox" && (
                     <Toolbox
                       outputDir={settings.outputDir}
