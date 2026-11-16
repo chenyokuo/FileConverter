@@ -28,3 +28,17 @@ src-tauri/gen/
 Thumbs.db
 .idea/
 .vscode/
+# Bundled conversion engines
+/src-tauri/bundled-engines/
+
+# Microsoft WebView2 Runtime
+/src-tauri/webview-runtime/
+
+# Build outputs
+/src-tauri/target/
+/release/
+
+# Development dependencies
+/node_modules/
+.venv/
+__pycache__/
