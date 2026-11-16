@@ -1,3 +1,4 @@
+import { AppIcon } from "./components/AppIcon";
 import {
   useCallback,
   useEffect,
@@ -11,6 +12,11 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
   ArrowLeftRight,
+  Download,
+  Workflow,
+  Wrench,
+  PanelLeftClose,
+  PanelLeftOpen,
   ArrowRight,
   AudioLines,
   CircleAlert,
@@ -37,6 +43,8 @@ import { call, desktop, pickFiles, pickFolder } from "./api";
 import { defaults, mergeSettings } from "./defaults";
 import type {
   Draft,
+  Registry,
+  ConversionMode,
   Engines,
   InputFile,
   Job,
@@ -49,9 +57,20 @@ import { Button, Modal } from "./components/ui";
 import { ConversionWorkspace } from "./components/ConversionWorkspace";
 import { SettingsPage } from "./components/SettingsPage";
 
-const navigation: { id: Page; label: string; icon: LucideIcon }[] = [
-  { id: "converter", label: "檔案轉換", icon: ArrowLeftRight },
-  { id: "history", label: "轉換紀錄", icon: History },
+import { ConversionModeBar } from "./components/ConversionModeBar";
+import { Toolbox, type Tool } from "./components/Toolbox";
+import { conversionIssue } from "./conversion";
+const navigation: {
+  id: Page | "download" | "workflow";
+  label: string;
+  icon: LucideIcon;
+  phase?: string;
+}[] = [
+  { id: "converter", label: "轉換檔案", icon: ArrowLeftRight },
+  { id: "download", label: "網址下載", icon: Download, phase: "P3" },
+  { id: "toolbox", label: "工具箱", icon: Wrench },
+  { id: "workflow", label: "自動化工作流程", icon: Workflow, phase: "P4" },
+  { id: "history", label: "歷史紀錄", icon: History },
   { id: "settings", label: "設定", icon: Settings2 },
 ];
 const categories = [
@@ -90,6 +109,22 @@ function rgb(hex: string) {
 
 export default function App() {
   const [page, setPage] = useState<Page>("converter");
+  const [registry, setRegistry] = useState<Registry>({
+    version: 1,
+    edges: [],
+    sources: [],
+    adapters: [],
+    execution: "",
+  });
+  const [mode, setMode] = useState<ConversionMode>("auto");
+  const [presetSource, setPresetSource] = useState("");
+  const [presetTarget, setPresetTarget] = useState("");
+  const presetRef = useRef({
+    mode,
+    source: presetSource,
+    target: presetTarget,
+  });
+  presetRef.current = { mode, source: presetSource, target: presetTarget };
   const [settings, setSettings] = useState<Settings>(defaults);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [drafts, setDrafts] = useState<Draft[]>([]);
@@ -105,6 +140,7 @@ export default function App() {
   const [importing, setImporting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [details, setDetails] = useState(true);
+  const [activityExpanded, setActivityExpanded] = useState(false);
   const [focused, setFocused] = useState<string | null>(null);
   const [toasts, setToasts] = useState<
     { id: number; text: string; error: boolean }[]
@@ -145,6 +181,7 @@ export default function App() {
       setSettings(merged);
       lastSaved.current = JSON.stringify(merged);
       setJobs(s.jobs);
+      setRegistry(s.registry);
       setEngines(s.engines);
       setDataDir(s.dataDir);
       setReady(true);
@@ -232,7 +269,7 @@ export default function App() {
         event.preventDefault();
         try {
           await call("settings", { settings: settingsRef.current });
-          await getCurrentWindow().destroy();
+          await invoke("shutdown_app");
         } catch (e) {
           notify(`無法儲存設定：${String(e)}`, true);
         }
@@ -251,8 +288,17 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
   const importPaths = useCallback(
-    async (paths: string[]) => {
+    async (paths: string[], tool?: Tool) => {
       if (!paths.length) return;
+      if (
+        !tool &&
+        presetRef.current.mode === "preset" &&
+        (!presetRef.current.source || !presetRef.current.target)
+      ) {
+        setDragging(false);
+        notify("請先選擇來源與目標格式，再匯入檔案", true);
+        return;
+      }
       setImporting(true);
       try {
         const found = await call<InputFile[]>("inspect", { paths });
@@ -261,22 +307,25 @@ export default function App() {
         const next = accepted.map((f) => ({
           ...f,
           id: crypto.randomUUID(),
-          format:
-            f.category === "video"
-              ? "mp4"
-              : f.category === "audio"
-                ? "mp3"
-                : f.category === "image"
-                  ? "webp"
-                  : "pdf",
-          options: { ...settingsRef.current.defaults },
+          format: tool
+            ? tool.target
+            : presetRef.current.mode === "preset"
+              ? presetRef.current.target
+              : "",
+          expectedSource:
+            tool?.source ||
+            (presetRef.current.mode === "preset"
+              ? presetRef.current.source
+              : undefined),
+          options: { ...settingsRef.current.defaults, ...tool?.options },
           selected: true,
         }));
         setDrafts((old) => [
-          ...old,
-          ...next.filter((n) => !old.some((f) => f.path === n.path)),
+          ...old.map((f) => (tool ? { ...f, selected: false } : f)),
+          ...next.filter((n) => tool || !old.some((f) => f.path === n.path)),
         ]);
         setPage("converter");
+        if (tool?.merge) setMergeOpen(true);
         if (next[0]) setFocused(next[0].id);
         notify(
           `已加入 ${accepted.length} 個檔案${unsupported ? `；${unsupported} 個格式尚未支援` : ""}`,
@@ -330,6 +379,7 @@ export default function App() {
     try {
       const detected = await call<Engines>("engines");
       setEngines(detected);
+      setRegistry(await call<Registry>("registry"));
       setDrafts((old) =>
         old.map((f) => ({
           ...f,
@@ -349,6 +399,10 @@ export default function App() {
   const submit = async (merge = false) => {
     const selected = drafts.filter((f) => f.selected && f.available);
     if (!selected.length) return;
+    if (!merge && selected.some((f) => conversionIssue(f, registry))) {
+      notify("請先為所有勾選檔案設定有效的轉換選項", true);
+      return;
+    }
     setSubmitting(true);
     try {
       const specs = merge
@@ -561,7 +615,7 @@ export default function App() {
       transition={{ duration: 0.2 }}
     >
       <div
-        className={`app theme-${theme} ${a.nativeMica ? "native-mica" : ""} ${settings.reducedMotion ? "reduced-motion" : ""}`}
+        className={`app ${settings.sidebarCollapsed ? "sidebar-collapsed" : ""} theme-${theme} ${a.nativeMica ? "native-mica" : ""} ${settings.reducedMotion ? "reduced-motion" : ""}`}
         style={vars as CSSProperties}
       >
         <div
@@ -591,7 +645,7 @@ export default function App() {
         />
         <header className="titlebar" data-tauri-drag-region>
           <span data-tauri-drag-region>
-            <span className="title-dot" />
+            <AppIcon size={18} />
             File Converter
           </span>
           <div className="window-controls">
@@ -621,16 +675,44 @@ export default function App() {
         <div className="app-body">
           <aside className="sidebar glass" data-material="sidebar">
             <div className="brand">
-              <span className="brand-mark">R</span>
+              <AppIcon />
               <strong>File Converter</strong>
             </div>
+            <Button
+              compact
+              className="sidebar-toggle"
+              aria-label={
+                settings.sidebarCollapsed ? "展開側邊欄" : "收合側邊欄"
+              }
+              onClick={() =>
+                setSettings({
+                  ...settings,
+                  sidebarCollapsed: !settings.sidebarCollapsed,
+                })
+              }
+            >
+              {settings.sidebarCollapsed ? (
+                <PanelLeftOpen size={19} />
+              ) : (
+                <PanelLeftClose size={19} />
+              )}
+              <span>收合導覽</span>
+            </Button>
             <nav aria-label="主要導覽">
               {navigation.map((item) => (
                 <button
                   key={item.id}
                   aria-label={item.label}
                   className={`nav-item ${page === item.id ? "active" : ""}`}
-                  onClick={() => setPage(item.id)}
+                  disabled={!!item.phase}
+                  title={
+                    item.phase
+                      ? `${item.label} · ${item.phase} 尚未實作`
+                      : item.label
+                  }
+                  onClick={() => {
+                    if (!item.phase) setPage(item.id as Page);
+                  }}
                 >
                   {page === item.id && (
                     <motion.span
@@ -645,6 +727,9 @@ export default function App() {
                   )}
                   <item.icon size={21} />
                   <span>{item.label}</span>
+                  {item.phase && (
+                    <small className="nav-phase">{item.phase}</small>
+                  )}
                   {item.id === "converter" &&
                     drafts.length + running.length > 0 && (
                       <b>{drafts.length + running.length}</b>
@@ -653,7 +738,7 @@ export default function App() {
               ))}
             </nav>
             <div className="sidebar-bottom">
-              <span>v0.2.0</span>
+              <span>v0.3.0</span>
               <Button
                 compact
                 aria-label="開啟個人化設定"
@@ -675,14 +760,18 @@ export default function App() {
                       ? "File Converter"
                       : page === "history"
                         ? "轉換紀錄"
-                        : "設定"}
+                        : page === "toolbox"
+                          ? "工具箱"
+                          : "設定"}
                   </h1>
                   <p>
                     {page === "converter"
                       ? "加入檔案，選擇輸出格式後開始轉換。"
                       : page === "history"
                         ? "搜尋已完成、失敗或取消的任務。"
-                        : "調整外觀、轉檔偏好與引擎設定。"}
+                        : page === "toolbox"
+                          ? "選擇工具、匯入檔案，並檢查輸出設定。"
+                          : "調整外觀、轉檔偏好與引擎設定。"}
                   </p>
                 </div>
                 {page === "converter" && (
@@ -724,6 +813,59 @@ export default function App() {
                 >
                   {page === "converter" && (
                     <ConversionWorkspace
+                      modeBar={
+                        <ConversionModeBar
+                          mode={mode}
+                          setMode={(v) => {
+                            setMode(v);
+                            if (v === "auto")
+                              setDrafts((old) =>
+                                old.map((f) => ({
+                                  ...f,
+                                  expectedSource: undefined,
+                                })),
+                              );
+                          }}
+                          source={presetSource}
+                          target={presetTarget}
+                          setSource={(v) => {
+                            setPresetSource(v);
+                            setPresetTarget("");
+                          }}
+                          setTarget={setPresetTarget}
+                          registry={registry}
+                          drafts={drafts}
+                          apply={(target, source) => {
+                            setDrafts((old) =>
+                              old.map((f) => {
+                                if (
+                                  !f.selected ||
+                                  !f.formats.includes(target) ||
+                                  (source && f.extension !== source)
+                                )
+                                  return f;
+                                return {
+                                  ...f,
+                                  format: target,
+                                  expectedSource: source,
+                                };
+                              }),
+                            );
+                            notify(
+                              "已套用至相容的勾選檔案；不相容的檔案保留原設定",
+                            );
+                          }}
+                        />
+                      }
+                      registry={registry}
+                      totalProgress={totalProgress}
+                      runningCount={running.length}
+                      cancelAll={() =>
+                        running.forEach((j) => {
+                          if (j.status !== "cancelling")
+                            void act("cancel", { id: j.id });
+                        })
+                      }
                       drafts={drafts}
                       setDrafts={setDrafts}
                       focusedFile={focusedFile}
@@ -744,7 +886,7 @@ export default function App() {
                       activity={
                         jobs.length > 0 ? (
                           <section
-                            className="queue-panel glass activity-panel"
+                            className={`queue-panel glass activity-panel ${drafts.length && !activityExpanded ? "compact-activity" : ""}`}
                             data-material="card"
                             aria-label="轉換進度與狀態"
                           >
@@ -758,6 +900,21 @@ export default function App() {
                                 )}
                               </h2>
                               <div className="row">
+                                {drafts.length > 0 && (
+                                  <Button
+                                    compact
+                                    onClick={() =>
+                                      setActivityExpanded(!activityExpanded)
+                                    }
+                                    aria-label={
+                                      activityExpanded
+                                        ? "收合轉換進度"
+                                        : "展開轉換進度"
+                                    }
+                                  >
+                                    {activityExpanded ? "收合進度" : "展開進度"}
+                                  </Button>
+                                )}
                                 <Button
                                   compact
                                   disabled={!jobs.some((j) => !active(j))}
@@ -786,6 +943,48 @@ export default function App() {
                           </section>
                         ) : null
                       }
+                    />
+                  )}
+                  {page === "toolbox" && (
+                    <Toolbox
+                      registry={registry}
+                      disabled={
+                        !desktop || !ready || importing || !!engineError
+                      }
+                      run={async (tool) => {
+                        try {
+                          const paths = await pickFiles();
+                          if (!paths.length) return;
+                          const found = await call<InputFile[]>("inspect", {
+                            paths,
+                          });
+                          const category = {
+                            PDF: "pdf",
+                            圖片: "image",
+                            影片: "video",
+                            音訊: "audio",
+                            文件: "office",
+                          }[tool.category];
+                          const valid = found.filter((f) =>
+                            tool.merge
+                              ? ["image", "pdf"].includes(f.category) &&
+                                (tool.category !== "圖片" ||
+                                  f.category === "image")
+                              : f.category === category &&
+                                f.formats.includes(tool.target),
+                          );
+                          if (valid.length !== found.length)
+                            notify("已略過不符合此工具的檔案", true);
+                          if (!valid.length) return;
+                          setMode("auto");
+                          await importPaths(
+                            valid.map((f) => f.path),
+                            tool,
+                          );
+                        } catch (e) {
+                          notify(String(e), true);
+                        }
+                      }}
                     />
                   )}
                   {page === "history" && (

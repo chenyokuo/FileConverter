@@ -12,11 +12,28 @@ struct Bridge {
 }
 
 #[tauri::command]
-async fn engine_call(bridge: tauri::State<'_, Arc<Bridge>>, method: String, args: Value) -> Result<Value,String> {
-    const ALLOWED: &[&str] = &["snapshot","inspect","enqueue","settings","background","engines","cancel","retry","clear","open_output"];
+async fn engine_call(bridge: tauri::State<'_, Arc<Bridge>>, method: String, mut args: Value) -> Result<Value,String> {
+    const ALLOWED: &[&str] = &["snapshot","inspect","enqueue","settings","background","engines","cancel","retry","clear","open_output","registry","plan"];
     if !ALLOWED.contains(&method.as_str()) { return Err("Command is not allowed".into()); }
     let bridge = Arc::clone(bridge.inner());
     tauri::async_runtime::spawn_blocking(move || {
+        if method == "inspect" {
+            let mut hints = serde_json::Map::new();
+            if let Some(paths) = args["paths"].as_array() {
+                for path in paths.iter().filter_map(Value::as_str) {
+                    use std::io::Read;
+                    if let Ok(file) = std::fs::File::open(path) {
+                        let mut bytes = Vec::new();
+                        if file.take(16384).read_to_end(&mut bytes).is_ok() {
+                            if let Some(kind) = infer::get(&bytes) {
+                                hints.insert(path.to_string(), json!({"extension":kind.extension(),"mime":kind.mime_type()}));
+                            }
+                        }
+                    }
+                }
+            }
+            args["nativeHints"] = Value::Object(hints);
+        }
         let id = bridge.serial.fetch_add(1, Ordering::Relaxed);
         let (tx,rx) = mpsc::channel();
         bridge.pending.lock().map_err(|e| e.to_string())?.insert(id,tx);
@@ -31,6 +48,13 @@ async fn engine_call(bridge: tauri::State<'_, Arc<Bridge>>, method: String, args
         if let Ok(mut pending)=bridge.pending.lock() { pending.remove(&id); }
         result
     }).await.map_err(|e|e.to_string())?
+}
+
+#[tauri::command]
+fn shutdown_app(app: tauri::AppHandle) {
+    // The frontend flushes settings before requesting application exit.
+    // Explicit exit also closes hidden windows and invokes sidecar cleanup.
+    app.exit(0);
 }
 
 #[tauri::command]
@@ -55,7 +79,7 @@ fn start_engine(app: &tauri::App) -> Result<Arc<Bridge>, Box<dyn std::error::Err
     };
     #[cfg(not(debug_assertions))]
     let mut command = {
-        let mut c = Command::new(resource.join("binaries/rai-engine/rai-engine.exe"));
+        let mut c = Command::new(resource.join("binaries/FileConverterEngine/FileConverterEngine.exe"));
         c.arg("--engines").arg(resource.join("engines")); c
     };
     let _ = resource;
@@ -92,8 +116,8 @@ fn start_engine(app: &tauri::App) -> Result<Arc<Bridge>, Box<dyn std::error::Err
 fn main() {
     tauri::Builder::default().plugin(tauri_plugin_dialog::init())
         .setup(|app| { app.manage(start_engine(app)?); Ok(()) })
-        .invoke_handler(tauri::generate_handler![engine_call,native_material])
-        .build(tauri::generate_context!()).expect("Could not start RAI Converter")
+        .invoke_handler(tauri::generate_handler![engine_call,native_material,shutdown_app])
+        .build(tauri::generate_context!()).expect("Could not start File Converter")
         .run(|app,event| {
             if let tauri::RunEvent::Exit = event {
                 if let Some(bridge)=app.try_state::<Arc<Bridge>>() {

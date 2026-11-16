@@ -15,4 +15,5 @@ Image.new('RGB',(640,400),(100,150,170)).save(root/'產品圖片.jpg')
 import pymupdf
 with pymupdf.open() as doc:
     page=doc.new_page();page.insert_text((72,72),'File Converter UI verification')
+    page=doc.new_page();page.insert_text((72,72),'Second page for PDF splitting verification')
     doc.save(root/'使用說明.pdf')

@@ -1,4 +1,190 @@
 @import "tailwindcss";
+.app-icon {
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+.titlebar > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.mode-bar {
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.mode-switch {
+  display: flex;
+  gap: 6px;
+}
+.mode-switch button,
+.quick-formats button,
+.toolbox-tabs button {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--control);
+  padding: 7px 11px;
+  font-size: 15px;
+}
+.mode-switch button[aria-pressed="true"],
+.toolbox-tabs button[aria-pressed="true"] {
+  background: rgb(var(--accent-rgb) / 0.18);
+  color: var(--text);
+  border-color: rgb(var(--accent-rgb) / 0.65);
+}
+.quick-formats {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+.quick-formats button {
+  padding: 4px 9px;
+  font-size: 14px;
+}
+.preset-format-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.preset-format-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.preset-format-row select {
+  min-width: 115px;
+  padding: 6px 9px;
+}
+.toolbar-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.sidebar-toggle {
+  margin: 0 16px 14px;
+  justify-content: flex-start;
+  font-size: 14px;
+}
+.nav-item .nav-phase {
+  margin-left: auto;
+  font-size: 14px;
+}
+.nav-item:disabled {
+  opacity: 0.68;
+}
+.sidebar-collapsed .sidebar {
+  width: 76px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.sidebar-collapsed .brand {
+  padding-left: 10px;
+  padding-right: 10px;
+  justify-content: center;
+}
+.sidebar-collapsed .brand strong,
+.sidebar-collapsed .nav-item > span:not(.nav-active-bg),
+.sidebar-collapsed .nav-item b,
+.sidebar-collapsed .nav-phase,
+.sidebar-collapsed .sidebar-toggle span,
+.sidebar-collapsed .sidebar-bottom > span {
+  display: none;
+}
+.sidebar-collapsed .nav-item {
+  justify-content: center;
+  padding: 12px;
+}
+.sidebar-collapsed .sidebar-toggle {
+  margin: 0 8px 14px;
+  justify-content: center;
+}
+.sidebar-collapsed .sidebar-bottom {
+  justify-content: center;
+}
+.toolbox-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.toolbox-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+.tool-card {
+  padding: 20px;
+  min-height: 165px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  text-align: left;
+  border: 1px solid var(--border);
+  transition:
+    transform 0.16s,
+    border-color 0.16s;
+}
+.tool-card .row {
+  width: 100%;
+}
+.tool-card strong {
+  font-size: 17px;
+  font-weight: 550;
+}
+.tool-card > span {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.tool-card:not(:disabled):hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+.tool-card:disabled {
+  opacity: 0.75;
+}
+.registry-panel {
+  padding: 20px;
+}
+.registry-table-wrap {
+  overflow: auto;
+  margin-top: 16px;
+}
+.registry-panel table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+.registry-panel td,
+.registry-panel th {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  min-width: 110px;
+}
+.registry-panel small {
+  display: block;
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.detection-note {
+  overflow-wrap: anywhere;
+}
 @theme {
   --font-sans: "Inter", "Noto Sans TC", sans-serif;
 }
@@ -1900,4 +2086,106 @@ input[type="range"]::-webkit-slider-thumb {
 .reduced-motion *:after {
   animation-duration: 0.001ms !important;
   transition-duration: 0.001ms !important;
+}
+
+.draft-row select.unassigned-format {
+  width: 170px;
+}
+.draft-info > span.error-text {
+  white-space: normal;
+  overflow: visible;
+}
+@media (max-width: 1150px) {
+  .draft-row {
+    display: grid;
+    grid-template-columns: 20px 34px minmax(0, 1fr) 28px;
+    gap: 8px;
+  }
+  .draft-row > input {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .draft-row > .file-thumbnail,
+  .draft-row > .file-icon {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .draft-row > .draft-info {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .draft-row > .format-arrow {
+    display: none;
+  }
+  .draft-row > select,
+  .draft-row > select.unassigned-format {
+    grid-column: 2 / 4;
+    grid-row: 2;
+    width: 100%;
+  }
+  .draft-row > .draft-actions {
+    grid-column: 4;
+    grid-row: 1 / 3;
+  }
+}
+@media (max-width: 930px) {
+  .sidebar-toggle {
+    margin-left: 0;
+    margin-right: 0;
+    justify-content: center;
+  }
+  .sidebar-toggle span,
+  .nav-phase {
+    display: none;
+  }
+}
+/* Preserve a usable file list after adding mode controls and task history. */
+.mode-bar {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.converter-layout {
+  min-height: 270px;
+}
+@media (max-height: 900px) {
+  .converter-page {
+    overflow: auto;
+  }
+  .converter-page .page-heading {
+    padding: 10px 14px;
+    margin-bottom: 14px;
+  }
+  .converter-page .page-heading p {
+    display: none;
+  }
+  .converter-workspace {
+    gap: 12px;
+  }
+  .dropzone {
+    min-height: 82px;
+    padding: 12px 18px;
+  }
+  .activity-panel {
+    max-height: 135px;
+  }
+  .conversion-toolbar {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    flex-shrink: 0;
+  }
+}
+@media (max-height: 650px) {
+  .converter-layout {
+    height: 270px;
+  }
+}
+
+.activity-panel.compact-activity {
+  max-height: none;
+}
+.compact-activity .activity-list {
+  display: none;
 }

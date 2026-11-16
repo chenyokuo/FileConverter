@@ -1,6 +1,6 @@
 {
-  "name": "rai-converter",
-  "version": "0.2.0",
+  "name": "file-converter",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {

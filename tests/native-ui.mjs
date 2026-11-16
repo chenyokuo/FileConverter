@@ -53,6 +53,8 @@ const rpc = (method, args = {}) =>
     { method, args },
   );
 const snapshot = await rpc("snapshot");
+const backgroundPath = path.join(snapshot.dataDir, "background.webp");
+const originalBackground = await fs.readFile(backgroundPath).catch(() => null);
 const slider = async (name, value) => {
   const el = page.getByRole("slider", { name, exact: true });
   await el.evaluate((node, value) => {
@@ -78,7 +80,7 @@ async function check(name, run) {
 try {
   await page.addInitScript(
     ({ image, source, out }) => {
-      window.__raiPickerFiles = [source];
+      window.__fileConverterPickerFiles = [source];
       const original = window.fetch.bind(window);
       window.fetch = (request, options) => {
         if (
@@ -89,7 +91,7 @@ try {
             ? out
             : opts.filters?.length
               ? image
-              : window.__raiPickerFiles;
+              : window.__fileConverterPickerFiles;
           return Promise.resolve(
             new Response(JSON.stringify(result), {
               status: 200,
@@ -119,7 +121,7 @@ try {
       await expect(
         page.locator(".hero,.category-grid,.privacy-card"),
       ).toHaveCount(0);
-      await expect(page.locator(".sidebar nav button")).toHaveCount(3);
+      await expect(page.locator(".sidebar nav button")).toHaveCount(6);
       const metrics = await page.evaluate(() => ({
         body: parseFloat(
           getComputedStyle(document.querySelector(".app")).fontSize,
@@ -295,10 +297,10 @@ try {
   await check(
     "mixed queue filtering, reordering and batch options remain functional",
     async () => {
-      await page.getByRole("button", { name: "檔案轉換", exact: true }).click();
+      await page.getByRole("button", { name: "轉換檔案", exact: true }).click();
       await page.evaluate(
         (paths) => {
-          window.__raiPickerFiles = paths;
+          window.__fileConverterPickerFiles = paths;
         },
         [
           path.join(root, ".tools/ui-fixtures/中文 alpha & 測試.png"),
@@ -311,6 +313,11 @@ try {
       await page
         .getByRole("button", { name: "中文 alpha & 測試.png", exact: true })
         .click();
+      await page
+        .locator(".draft-row")
+        .first()
+        .locator("select")
+        .selectOption("webp");
       await slider("圖片品質", 78);
       await page
         .getByRole("button", { name: "套用至勾選的同類檔案", exact: true })
@@ -366,10 +373,11 @@ try {
   await check(
     "GUI file inspect, lawful format list and actual queued conversion",
     async () => {
-      await page.getByRole("button", { name: "檔案轉換", exact: true }).click();
+      await page.getByRole("button", { name: "轉換檔案", exact: true }).click();
       await page.getByRole("button", { name: "加入檔案", exact: true }).click();
       await expect(page.locator(".draft-row")).toHaveCount(1);
       await expect(page.locator(".draft-row select option")).toHaveText([
+        "請選擇輸出格式",
         "PNG",
         "JPG",
         "WEBP",
@@ -456,7 +464,7 @@ try {
     },
   );
   await check("history search and real retry", async () => {
-    await page.getByRole("button", { name: "轉換紀錄", exact: true }).click();
+    await page.getByRole("button", { name: "歷史紀錄", exact: true }).click();
     await page
       .getByRole("textbox", { name: "搜尋轉換紀錄" })
       .fill("中文 alpha");
@@ -485,7 +493,7 @@ try {
       .click();
   });
   await check("125 / 150 / 200 percent layout emulation", async () => {
-    await page.getByRole("button", { name: "檔案轉換", exact: true }).click();
+    await page.getByRole("button", { name: "轉換檔案", exact: true }).click();
     const cdp = await context.newCDPSession(page);
     for (const scale of [1.25, 1.5, 2]) {
       const width = Math.floor(1920 / scale),
@@ -503,7 +511,7 @@ try {
         ),
       ).toBe(true);
       await expect(
-        page.getByRole("button", { name: "檔案轉換", exact: true }),
+        page.getByRole("button", { name: "轉換檔案", exact: true }),
       ).toBeVisible();
       const controls = await page.locator(".conversion-toolbar").boundingBox();
       expect(controls.y + controls.height).toBeLessThanOrEqual(height + 1);
@@ -511,6 +519,273 @@ try {
     }
     await cdp.send("Emulation.clearDeviceMetricsOverride");
   });
+  const fixture = (name) => path.join(root, ".tools/ui-fixtures", name);
+  const choose = async (names) => {
+    await page.evaluate((paths) => {
+      window.__fileConverterPickerFiles = paths;
+    }, names.map(fixture));
+  };
+  const clearDrafts = async () => {
+    await page
+      .getByRole("button", { name: "清空待轉換檔案", exact: true })
+      .click();
+  };
+  await check(
+    "P0 navigation, scoped application icons and persistent sidebar collapse",
+    async () => {
+      await expect(
+        page.getByRole("button", { name: "網址下載", exact: true }),
+      ).toBeDisabled();
+      await expect(
+        page.getByRole("button", { name: "自動化工作流程", exact: true }),
+      ).toBeDisabled();
+      await expect(page.locator(".sidebar .app-icon")).toHaveJSProperty(
+        "naturalWidth",
+        32,
+      );
+      const originalCollapsed =
+        (await rpc("snapshot")).settings.sidebarCollapsed || false;
+      const collapse = page.getByRole("button", {
+        name: "收合側邊欄",
+        exact: true,
+      });
+      if (await collapse.count()) await collapse.click();
+      await expect(page.locator(".app")).toHaveClass(/sidebar-collapsed/);
+      await expect
+        .poll(async () => (await rpc("snapshot")).settings.sidebarCollapsed)
+        .toBe(true);
+      await page.reload();
+      await expect(page.locator(".app")).toHaveClass(/sidebar-collapsed/);
+      await page
+        .getByRole("button", { name: "展開側邊欄", exact: true })
+        .click();
+      await expect
+        .poll(async () => (await rpc("snapshot")).settings.sidebarCollapsed)
+        .toBe(false);
+      expect(originalCollapsed === true || originalCollapsed === false).toBe(
+        true,
+      );
+    },
+  );
+  await check(
+    "P0 automatic mode starts unassigned and blocks meaningless PDF passthrough",
+    async () => {
+      await choose(["中文 alpha & 測試.png", "使用說明.pdf"]);
+      await page.getByRole("button", { name: "加入檔案", exact: true }).click();
+      await expect(page.locator(".draft-row")).toHaveCount(2);
+      for (const select of await page.locator(".draft-row select").all())
+        await expect(select).toHaveValue("");
+      await expect(
+        page.getByRole("button", { name: /開始轉換/ }),
+      ).toBeDisabled();
+      const infos = await rpc("inspect", {
+        paths: [fixture("中文 alpha & 測試.png")],
+      });
+      expect(infos[0].detection.native.mime).toBe("image/png");
+      const pdf = page.locator(".draft-row").filter({
+        has: page.getByRole("button", { name: "使用說明.pdf", exact: true }),
+      });
+      const png = page.locator(".draft-row").filter({
+        has: page.getByRole("button", {
+          name: "中文 alpha & 測試.png",
+          exact: true,
+        }),
+      });
+      await png.locator("select").selectOption("webp");
+      await pdf.locator("select").selectOption("pdf");
+      await expect(pdf.locator(".error-text")).toContainText("設定頁碼");
+      await expect(
+        page.getByRole("button", { name: /開始轉換/ }),
+      ).toBeDisabled();
+      await pdf
+        .getByRole("button", { name: "使用說明.pdf", exact: true })
+        .click();
+      await page
+        .getByRole("combobox", { name: "順時針旋轉", exact: true })
+        .selectOption("90");
+      await expect(
+        page.getByRole("button", { name: /開始轉換/ }),
+      ).toBeEnabled();
+      await clearDrafts();
+    },
+  );
+  await check(
+    "P0 specified mode detects mismatches and executes a real matching conversion",
+    async () => {
+      await page
+        .getByRole("button", { name: "指定格式轉換", exact: true })
+        .click();
+      await page
+        .getByRole("combobox", { name: "指定來源格式", exact: true })
+        .selectOption("png");
+      await page
+        .getByRole("combobox", { name: "指定目標格式", exact: true })
+        .selectOption("jpg");
+      await choose(["中文 alpha & 測試.png", "產品圖片.jpg"]);
+      await page.getByRole("button", { name: "加入檔案", exact: true }).click();
+      await expect(page.locator(".draft-row")).toHaveCount(2);
+      await expect(page.locator(".draft-row .error-text")).toContainText(
+        "指定來源為 PNG",
+      );
+      await expect(
+        page.getByRole("button", { name: /開始轉換/ }),
+      ).toBeDisabled();
+      await page
+        .getByRole("checkbox", { name: "選擇 產品圖片.jpg", exact: true })
+        .uncheck();
+      const before = new Set((await rpc("snapshot")).jobs.map((j) => j.id));
+      await page.getByRole("button", { name: /開始轉換/ }).click();
+      await expect
+        .poll(
+          async () =>
+            (await rpc("snapshot")).jobs
+              .filter((j) => !before.has(j.id))
+              .map((j) => j.status),
+          { timeout: 30000 },
+        )
+        .toEqual(["completed"]);
+      const created = (await rpc("snapshot")).jobs.find(
+        (j) => !before.has(j.id),
+      );
+      expect(created.format).toBe("jpg");
+      expect((await fs.stat(created.outputs[0])).size).toBeGreaterThan(50);
+      await clearDrafts();
+      await page
+        .getByRole("combobox", { name: "指定來源格式", exact: true })
+        .selectOption("pdf");
+      const targets = await page
+        .getByRole("combobox", { name: "指定目標格式", exact: true })
+        .locator("option")
+        .evaluateAll((nodes) => nodes.map((n) => n.value));
+      expect(targets).not.toContain("docx");
+      expect(targets).not.toContain("mp4");
+      await page
+        .getByRole("button", { name: "智慧自動辨識", exact: true })
+        .click();
+    },
+  );
+  await check(
+    "P0 toolbox executes PDF splitting through the existing queue",
+    async () => {
+      await page.getByRole("button", { name: "工具箱", exact: true }).click();
+      await expect(page.locator(".toolbox-tabs button")).toHaveCount(9);
+      await choose(["使用說明.pdf"]);
+      await page.getByRole("button", { name: /^分割 PDF/ }).click();
+      await expect(
+        page.getByRole("switch", { name: "逐頁分割 PDF", exact: true }),
+      ).toBeChecked();
+      const before = new Set((await rpc("snapshot")).jobs.map((j) => j.id));
+      await page.getByRole("button", { name: /開始轉換/ }).click();
+      await expect
+        .poll(
+          async () =>
+            (await rpc("snapshot")).jobs
+              .filter((j) => !before.has(j.id))
+              .map((j) => j.status),
+          { timeout: 30000 },
+        )
+        .toEqual(["completed"]);
+      const job = (await rpc("snapshot")).jobs.find((j) => !before.has(j.id));
+      expect(job.outputs.length).toBe(2);
+      for (const file of job.outputs)
+        expect((await fs.stat(file)).size).toBeGreaterThan(50);
+    },
+  );
+  await check(
+    "P0 toolbox phases and registry show real engine availability",
+    async () => {
+      await page.getByRole("button", { name: "工具箱", exact: true }).click();
+      await expect(
+        page.getByRole("button", { name: /PDF 轉 DOCX/ }),
+      ).toBeDisabled();
+      for (const category of [
+        "壓縮工具",
+        "電子書工具",
+        "去浮水印／物件修復工具",
+      ]) {
+        await page.getByRole("button", { name: category, exact: true }).click();
+        await expect(page.locator(".tool-card")).toBeDisabled();
+        await expect(page.locator(".tool-card")).toContainText("P2");
+      }
+      await page
+        .getByRole("button", { name: "轉換能力表", exact: true })
+        .click();
+      await page
+        .getByRole("textbox", { name: "搜尋轉換能力", exact: true })
+        .fill("docx");
+      expect(
+        await page.locator(".registry-panel tbody tr").count(),
+      ).toBeGreaterThan(0);
+      if (!snapshot.engines.soffice)
+        await expect(
+          page.locator(".registry-panel tbody").first(),
+        ).toContainText("需要本機 LibreOffice");
+      await page
+        .getByRole("textbox", { name: "搜尋轉換能力", exact: true })
+        .fill("");
+      await page.getByRole("button", { name: "PDF工具", exact: true }).click();
+      await page.waitForTimeout(350);
+      await page.screenshot({ path: "test-results/p0-toolbox.png" });
+    },
+  );
+  await check(
+    "P0 populated workspace at desktop and DPI sizes, and About uses new branding",
+    async () => {
+      await page.getByRole("button", { name: "轉換檔案", exact: true }).click();
+      await choose(["中文 alpha & 測試.png", "產品圖片.jpg", "使用說明.pdf"]);
+      await page.getByRole("button", { name: "加入檔案", exact: true }).click();
+      await expect(page.locator(".draft-row")).toHaveCount(3);
+      const cdp = await context.newCDPSession(page);
+      for (const scale of [1, 1.25, 1.5, 2]) {
+        const width = scale === 1 ? 1500 : Math.floor(1920 / scale),
+          height = scale === 1 ? 960 : Math.floor(1080 / scale);
+        await cdp.send("Emulation.setDeviceMetricsOverride", {
+          width,
+          height,
+          deviceScaleFactor: scale,
+          mobile: false,
+        });
+        await page.waitForTimeout(220);
+        expect(
+          await page
+            .locator(".draft-list")
+            .evaluate((e) => e.scrollWidth <= e.clientWidth + 1),
+        ).toBe(true);
+        const toolbar = await page.locator(".conversion-toolbar").boundingBox();
+        expect(toolbar.y + toolbar.height).toBeLessThanOrEqual(height + 1);
+        if (scale === 1) {
+          await page
+            .locator(".toast-stack button")
+            .click()
+            .catch(() => {});
+          await expect(page.locator(".activity-panel")).toHaveClass(
+            /compact-activity/,
+          );
+          await page
+            .getByRole("button", { name: "展開轉換進度", exact: true })
+            .click();
+          await expect(page.locator(".activity-list")).toBeVisible();
+          await page
+            .getByRole("button", { name: "收合轉換進度", exact: true })
+            .click();
+          await page.waitForTimeout(350);
+          await page.screenshot({ path: "test-results/p0-home.png" });
+        }
+      }
+      await cdp.send("Emulation.clearDeviceMetricsOverride");
+      await page.getByRole("button", { name: "設定", exact: true }).click();
+      await page
+        .getByRole("button", { name: "關於 File Converter", exact: true })
+        .click();
+      await expect(page.locator(".about-card h2")).toHaveText("File Converter");
+      await expect(page.locator(".about-card .app-icon")).toBeVisible();
+      await expect(page.locator(".app")).not.toContainText(
+        /RAI Converter|RAI Studio|關於 RAI/,
+      );
+      await page.waitForTimeout(350);
+      await page.screenshot({ path: "test-results/p0-about.png" });
+    },
+  );
   await check("runtime makes no external network requests", async () => {
     expect(network).toEqual([]);
     expect(failures).toEqual([]);
@@ -531,7 +806,13 @@ try {
     ),
   );
   await rpc("settings", { settings: snapshot.settings });
-  if (!snapshot.jobs.length) await rpc("clear");
+  const ownJobs = (await rpc("snapshot")).jobs.filter(
+    (j) => !snapshot.jobs.some((old) => old.id === j.id),
+  );
+  await rpc("clear", { ids: ownJobs.map((j) => j.id) });
+  if (originalBackground)
+    await fs.writeFile(backgroundPath, originalBackground);
+  else await fs.unlink(backgroundPath).catch(() => {});
   await page.reload();
   await browser.close();
 }

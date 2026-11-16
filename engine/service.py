@@ -14,7 +14,8 @@ import threading
 import time
 import uuid
 
-from formats import category, outputs
+from registry import category, outputs, registry, validate, ConversionGraph
+from detection import detect, normalize
 from worker import CREATE_NO_WINDOW, run_worker
 
 def publish_file(source,out):
@@ -176,12 +177,12 @@ class Service:
             if stage:shutil.rmtree(stage,ignore_errors=True)
             with self.lock:self.processes.pop(job['id'],None);self.stages.pop(job['id'],None)
 
-    def inspect(self,paths):
+    def inspect(self,paths,native_hints=None):
         result=[]
         for raw in paths:
             p=Path(raw).resolve()
             if not p.is_file():raise ValueError(f'檔案不存在：{p}')
-            ext=p.suffix.lower()[1:];kind=category(ext);preview=None;dimensions=None
+            detection=detect(p,self.engines,(native_hints or {}).get(str(p)));ext=detection['format'];kind=category(ext);preview=None;dimensions=None
             if kind=='image':
                 try:
                     from PIL import Image,ImageOps
@@ -191,14 +192,18 @@ class Service:
                         buf=io.BytesIO();image.convert('RGBA').save(buf,format='PNG');preview='data:image/png;base64,'+base64.b64encode(buf.getvalue()).decode()
                 except Exception:pass
             required='soffice' if kind=='office' else 'ffmpeg' if kind in {'video','audio'} else None
-            result.append({'path':str(p),'name':p.name,'size':p.stat().st_size,'extension':ext,'category':kind,'formats':outputs(ext),'preview':preview,'dimensions':dimensions,'available':not required or bool(self.engines.get(required))})
+            result.append({'path':str(p),'name':p.name,'size':p.stat().st_size,'extension':ext,'category':kind,'formats':outputs(ext),'preview':preview,'dimensions':dimensions,'available':bool(ext) and (not required or bool(self.engines.get(required))), 'detection':detection, 'reason':detection['warning'] if not ext else ''})
         return result
 
     def call(self,method,args):
         with self.lock:
             if method=='snapshot':
-                return {'jobs':list(self.jobs.values()),'settings':self.settings,'engines':self.engines,'dataDir':str(self.root)}
-            if method=='inspect':return self.inspect(args['paths'])
+                return {'jobs':list(self.jobs.values()),'settings':self.settings,'engines':self.engines,'dataDir':str(self.root),'registry':registry(self.engines)}
+            if method=='inspect':return self.inspect(args['paths'],args.get('nativeHints'))
+            if method=='registry':return registry(self.engines)
+            if method=='plan':
+                route=ConversionGraph(registry(self.engines)['edges']).path(args['source'],args['target'])
+                return {'route':route,'executable':len(route)==1,'intermediate':len(route)>1}
             if method=='engines':self.engines=self.detect_engines();return self.engines
             if method=='settings':
                 settings=args['settings']
@@ -221,10 +226,13 @@ class Service:
                 for item in args['jobs']:
                     sources=[str(Path(p).resolve()) for p in item['sources']]
                     if not sources or any(not Path(p).is_file() for p in sources):raise ValueError('無效來源檔案')
-                    if item['format'] not in outputs(Path(sources[0]).suffix.lower()[1:]):raise ValueError('不支援的輸出格式')
+                    detected=detect(sources[0],self.engines)['format']
+                    # Corrupt known inputs become isolated failed jobs, preserving the rest of a batch.
+                    source_format=detected or normalize(Path(sources[0]).suffix)
+                    validate(source_format,item['format'],self.engines,item.get('options'),len(sources))
                     out=Path(item.get('outputDir') or sources[0]).resolve()
-                    if not item.get('outputDir'):out=out.parent/'RAI Output'
-                    job={'id':uuid.uuid4().hex,'sources':sources,'name':Path(sources[0]).name+(' + '+str(len(sources)-1) if len(sources)>1 else ''),'category':category(Path(sources[0]).suffix.lower()[1:]),'format':item['format'],'outputDir':str(out),'options':item.get('options',{}),'status':'queued','progress':0,'created':time.time(),'outputs':[],'error':None}
+                    if not item.get('outputDir'):out=out.parent/'File Converter Output'
+                    job={'id':uuid.uuid4().hex,'sources':sources,'name':Path(sources[0]).name+(' + '+str(len(sources)-1) if len(sources)>1 else ''),'category':category(source_format),'sourceFormat':source_format,'format':item['format'],'outputDir':str(out),'options':item.get('options',{}),'status':'queued','progress':0,'created':time.time(),'outputs':[],'error':None}
                     self.jobs[job['id']]=job;self.save(job);self.event(job);created.append(job)
                 return created
             if method=='cancel':
@@ -241,8 +249,9 @@ class Service:
                 return self.call('enqueue',{'jobs':[{k:job[k] for k in ['sources','format','outputDir','options']}]})
             if method=='clear':
                 active={'running','queued','cancelling'}
+                ids=set(args['ids']) if 'ids' in args else None
                 for key,job in list(self.jobs.items()):
-                    if job['status'] not in active:self.db.execute('DELETE FROM jobs WHERE id=?',(key,));del self.jobs[key]
+                    if job['status'] not in active and (ids is None or key in ids):self.db.execute('DELETE FROM jobs WHERE id=?',(key,));del self.jobs[key]
                 self.db.commit();return True
             if method=='open_output':
                 job=self.jobs[args['id']];path=Path(job['outputDir'])

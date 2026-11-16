@@ -1,3 +1,4 @@
+import { conversionIssue } from "../conversion";
 import {
   useState,
   type Dispatch,
@@ -22,7 +23,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import type { Draft, Options } from "../types";
+import type { Draft, Options, Registry } from "../types";
 import { Button } from "./ui";
 import { OptionsEditor } from "./OptionsEditor";
 
@@ -41,6 +42,11 @@ const sizeLabel = (size: number) =>
       ? `${(size / 1024 ** 2).toFixed(1)} MB`
       : `${(size / 1024 ** 3).toFixed(2)} GB`;
 interface Props {
+  registry: Registry;
+  modeBar: ReactNode;
+  totalProgress: number;
+  runningCount: number;
+  cancelAll: () => void;
   drafts: Draft[];
   setDrafts: Dispatch<SetStateAction<Draft[]>>;
   focusedFile: Draft | undefined;
@@ -73,6 +79,7 @@ export function ConversionWorkspace(p: Props) {
     );
   return (
     <div className="converter-workspace">
+      {p.modeBar}
       {p.dropzone}
       <div className={`converter-layout ${p.details ? "with-details" : ""}`}>
         <section
@@ -151,6 +158,7 @@ export function ConversionWorkspace(p: Props) {
             <div className="draft-list">
               {visible.map((file) => {
                 const index = p.drafts.findIndex((f) => f.id === file.id);
+                const issue = conversionIssue(file, p.registry);
                 return (
                   <motion.div
                     key={file.id}
@@ -202,17 +210,29 @@ export function ConversionWorkspace(p: Props) {
                           ? ` · ${file.dimensions.join(" × ")}`
                           : ""}
                       </span>
-                      {!file.available && (
-                        <span className="error-text">
-                          需要安裝{" "}
-                          {file.category === "office"
-                            ? "LibreOffice"
-                            : "FFmpeg"}
-                        </span>
+                      {file.detection?.warning && (
+                        <span className="hint">{file.detection.warning}</span>
                       )}
+                      {issue &&
+                        (file.format ||
+                          !file.available ||
+                          file.expectedSource) && (
+                          <span
+                            className={
+                              file.format ||
+                              !file.available ||
+                              file.expectedSource
+                                ? "error-text"
+                                : "hint"
+                            }
+                          >
+                            {issue}
+                          </span>
+                        )}
                     </div>
                     <ArrowRight size={16} className="format-arrow" />
                     <select
+                      className={!file.format ? "unassigned-format" : ""}
                       aria-label={`${file.name} 輸出格式`}
                       value={file.format}
                       onChange={(e) =>
@@ -225,6 +245,7 @@ export function ConversionWorkspace(p: Props) {
                         )
                       }
                     >
+                      <option value="">請選擇輸出格式</option>
                       {file.formats.map((fmt) => (
                         <option key={fmt} value={fmt}>
                           {fmt.toUpperCase()}
@@ -322,20 +343,34 @@ export function ConversionWorkspace(p: Props) {
                         <strong title={focused.name}>{focused.name}</strong>
                         <span>
                           {focused.extension.toUpperCase()} →{" "}
-                          {focused.format.toUpperCase()}
+                          {focused.format
+                            ? focused.format.toUpperCase()
+                            : "請選擇輸出格式"}
                         </span>
                       </div>
                     </div>
-                    <OptionsEditor
-                      category={focused.category}
-                      format={focused.format}
-                      value={focused.options}
-                      onChange={setOptions}
-                    />
+                    {focused.detection && (
+                      <p
+                        className="hint detection-note"
+                        title={focused.detection.method}
+                      >
+                        來源已依檔案內容辨識為 {focused.extension.toUpperCase()}
+                      </p>
+                    )}
+                    {focused.format ? (
+                      <OptionsEditor
+                        category={focused.category}
+                        format={focused.format}
+                        value={focused.options}
+                        onChange={setOptions}
+                      />
+                    ) : (
+                      <p className="hint">請先在檔案列選擇輸出格式。</p>
+                    )}
                     <Button
                       className="apply-options"
                       compact
-                      disabled={!selected.length}
+                      disabled={!selected.length || !focused.format}
                       onClick={() => {
                         p.setDrafts((old) =>
                           old.map((f) =>
@@ -374,18 +409,36 @@ export function ConversionWorkspace(p: Props) {
             aria-label="選擇輸出資料夾"
             onClick={p.chooseOutput}
             disabled={!p.canUseDesktop}
-            title={p.outputDir || "來源資料夾 / RAI Output"}
+            title={p.outputDir || "來源資料夾 / File Converter Output"}
           >
             <FolderOpen size={19} />
-            <span>{p.outputDir || "來源資料夾 / RAI Output"}</span>
+            <span>{p.outputDir || "來源資料夾 / File Converter Output"}</span>
             <ChevronDown size={17} />
           </button>
         </div>
+        <div className="toolbar-progress" aria-live="polite">
+          <span>
+            可轉換{" "}
+            {selected.filter((f) => !conversionIssue(f, p.registry)).length} /{" "}
+            {selected.length}
+          </span>
+          {p.runningCount > 0 && (
+            <span>
+              處理中 {p.runningCount} · {Math.floor(p.totalProgress)}%
+            </span>
+          )}
+        </div>
+        {p.runningCount > 0 && (
+          <Button compact onClick={p.cancelAll}>
+            取消全部
+          </Button>
+        )}
         <Button
           variant="primary"
           className="start-conversion"
           disabled={
-            !selected.some((f) => f.available) ||
+            !selected.length ||
+            selected.some((f) => !!conversionIssue(f, p.registry)) ||
             p.submitting ||
             !p.ready ||
             p.hasError
@@ -400,7 +453,7 @@ export function ConversionWorkspace(p: Props) {
           開始轉換
           {selected.length > 0 && (
             <span className="button-count">
-              {selected.filter((f) => f.available).length}
+              {selected.filter((f) => !conversionIssue(f, p.registry)).length}
             </span>
           )}
         </Button>

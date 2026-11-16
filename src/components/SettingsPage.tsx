@@ -1,3 +1,4 @@
+import { AppIcon } from "./AppIcon";
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { motion, AnimatePresence } from "motion/react";
@@ -31,7 +32,7 @@ const sections = [
   ["performance", "效能", Cpu],
   ["files", "檔案管理", FolderOpen],
   ["advanced", "進階", ShieldCheck],
-  ["about", "關於 RAI", Info],
+  ["about", "關於 File Converter", Info],
 ] as const;
 export function SettingsPage({
   settings,
@@ -581,7 +582,8 @@ export function SettingsPage({
                 >
                   <h3>預設輸出位置</h3>
                   <p className="path-box">
-                    {settings.outputDir || "來源檔案所在資料夾 / RAI Output"}
+                    {settings.outputDir ||
+                      "來源檔案所在資料夾 / File Converter Output"}
                   </p>
                   <div className="row">
                     <Button onClick={folder}>
@@ -659,11 +661,11 @@ export function SettingsPage({
                 className="about-card settings-card glass"
                 data-material="settings"
               >
-                <div className="brand-mark large">R</div>
+                <AppIcon size={80} />
 
-                <h2>RAI Converter</h2>
+                <h2>File Converter</h2>
 
-                <span className="badge">v0.2.0 · Windows x64</span>
+                <span className="badge">v0.3.0 · Windows x64</span>
                 <hr />
                 <div className="about-stack">
                   <p>React · Tauri · Rust · Python</p>

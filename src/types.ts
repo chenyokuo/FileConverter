@@ -1,4 +1,27 @@
-export type Page = "converter" | "history" | "settings";
+export type Page = "converter" | "toolbox" | "history" | "settings";
+export type ConversionMode = "auto" | "preset";
+export interface Capability {
+  id: string;
+  source: string;
+  target: string;
+  category: string;
+  engine: string;
+  available: boolean;
+  reason: string;
+  testStatus: string;
+  lossy: boolean;
+  settings: string[];
+  qualityNote: string;
+  intermediate: boolean;
+  operationRequired: boolean;
+}
+export interface Registry {
+  version: number;
+  edges: Capability[];
+  sources: string[];
+  adapters: { id: string; available: boolean }[];
+  execution: string;
+}
 export type MaterialName =
   "sidebar" | "main" | "card" | "modal" | "toolbar" | "settings";
 export interface Material {
@@ -33,6 +56,7 @@ export interface Settings {
   outputDir: string;
   defaults: Options;
   reducedMotion: boolean;
+  sidebarCollapsed: boolean;
 }
 export interface Options {
   quality: number;
@@ -62,12 +86,21 @@ export interface InputFile {
   preview: string | null;
   dimensions: number[] | null;
   available: boolean;
+  reason?: string;
+  detection?: {
+    format: string;
+    extension: string;
+    method: string;
+    warning: string;
+    native?: { mime: string; extension: string };
+  };
 }
 export interface Draft extends InputFile {
   id: string;
   format: string;
   options: Options;
   selected: boolean;
+  expectedSource?: string;
 }
 export type Status =
   "queued" | "running" | "cancelling" | "completed" | "failed" | "cancelled";
@@ -97,4 +130,5 @@ export interface Snapshot {
   jobs: Job[];
   engines: Engines;
   dataDir: string;
+  registry: Registry;
 }

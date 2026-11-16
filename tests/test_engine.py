@@ -22,7 +22,7 @@ import psutil
 class Client:
     def __init__(self,root):
         command=[sys.executable,str(ROOT/'engine/service.py')]
-        if os.environ.get('RAI_TEST_FROZEN'):command=[os.environ['RAI_TEST_FROZEN']]
+        if os.environ.get('FILE_CONVERTER_TEST_FROZEN'):command=[os.environ['FILE_CONVERTER_TEST_FROZEN']]
         self.proc=subprocess.Popen(command+['--data',str(root),'--engines',str(ROOT/'vendor')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         self.messages=queue.Queue();self.events=[];self.serial=0
         def read():
@@ -189,9 +189,79 @@ class EngineTests(unittest.TestCase):
                 self.assertTrue(info['streams'])
     def test_17_missing_office_dependency_error(self):
         if self.client.call('engines')['soffice']:self.skipTest('LibreOffice is present')
-        source=self.inputs/'test.docx';source.write_bytes(b'placeholder; adapter must fail explicitly before invoking a missing engine')
+        source=self.inputs/'test.docx'
+        import zipfile
+        with zipfile.ZipFile(source,'w') as archive:
+            archive.writestr('[Content_Types].xml','<Types/>');archive.writestr('word/document.xml','<document/>')
         job=self.enqueue(source,'pdf');result=self.client.wait([job['id']])[0]
         self.assertEqual(result['status'],'failed');self.assertIn('LibreOffice',result['error'])
+
+    def test_18_disguised_content_worker_and_inspect(self):
+        renamed=self.inputs/'實際 PNG 偽裝 [PDF] & 測試.pdf';renamed.write_bytes(self.image.read_bytes())
+        info=self.client.call('inspect',{'paths':[str(renamed)]})[0]
+        self.assertEqual(info['extension'],'png');self.assertEqual(info['category'],'image')
+        self.assertIn('副檔名',info['detection']['warning']);self.assertIn('jpg',info['formats'])
+        result=self.finish(self.enqueue(renamed,'jpg'))
+        with Image.open(result['outputs'][0]) as image:self.assertEqual(image.format,'JPEG')
+        corrupt=self.inputs/'損壞.pdf';corrupt.write_bytes(b'%PDF-1.7\ncorrupt')
+        infos=self.client.call('inspect',{'paths':[str(corrupt),str(self.image)]})
+        self.assertFalse(infos[0]['available']);self.assertTrue(infos[1]['available'])
+
+    def test_19_registry_metadata_and_graph(self):
+        registry=self.client.call('registry');self.assertGreater(len(registry['edges']),100)
+        for edge in registry['edges']:
+            for key in ['source','target','engine','available','testStatus','lossy','settings','qualityNote','intermediate']:
+                self.assertIn(key,edge)
+        direct=self.client.call('plan',{'source':'png','target':'jpg'})
+        self.assertTrue(direct['executable']);self.assertFalse(direct['intermediate'])
+        indirect=self.client.call('plan',{'source':'pdf','target':'webp'})
+        self.assertFalse(indirect['executable']);self.assertTrue(indirect['intermediate'])
+        self.assertEqual(len(indirect['route']),2)
+        impossible=self.client.call('plan',{'source':'pdf','target':'mp4'})
+        self.assertEqual(impossible['route'],[])
+        self.assertEqual(self.client.call('snapshot')['registry'],registry)
+
+    def test_20_pdf_requires_real_operation(self):
+        with self.assertRaisesRegex(ValueError,'PDF → PDF'):
+            self.enqueue(self.pdf,'pdf')
+        self.assertEqual(self.client.call('snapshot')['jobs'],[])
+        rotated=self.finish(self.enqueue(self.pdf,'pdf',{'rotation':90}))
+        with pymupdf.open(rotated['outputs'][0]) as doc:self.assertEqual(doc[0].rotation,90)
+
+    def test_21_container_detection_not_extension(self):
+        import zipfile
+        for part,fmt in [('word/document.xml','docx'),('xl/workbook.xml','xlsx'),('ppt/presentation.xml','pptx')]:
+            p=self.inputs/f'{fmt} 偽裝.png'
+            with zipfile.ZipFile(p,'w') as z:z.writestr('[Content_Types].xml','<Types/>');z.writestr(part,'<root/>')
+            item=self.client.call('inspect',{'paths':[str(p)]})[0]
+            self.assertEqual(item['extension'],fmt);self.assertEqual(item['category'],'office')
+            self.assertEqual(item['formats'],outputs(fmt))
+        if self.video.exists():
+            p=self.inputs/'實際影片 偽裝.mp3';p.write_bytes(self.video.read_bytes())
+            info=self.client.call('inspect',{'paths':[str(p)]})[0]
+            self.assertEqual(info['extension'],'mp4');self.assertEqual(info['category'],'video')
+
+    def test_22_legacy_office_compound_directory(self):
+        import struct
+        from detection import detect
+        header=bytearray(512);header[:8]=bytes.fromhex('d0cf11e0a1b11ae1')
+        struct.pack_into('<H',header,30,9);struct.pack_into('<I',header,48,1)
+        struct.pack_into('<I',header,68,0xfffffffe)
+        struct.pack_into('<109I',header,76,0,*([0xffffffff]*108))
+        fat=struct.pack('<128I',0xfffffffd,0xfffffffe,*([0xffffffff]*126))
+        for name,fmt in [('WordDocument','doc'),('Workbook','xls'),('PowerPoint Document','ppt')]:
+            directory=bytearray(512);encoded=(name+'\0').encode('utf-16le');directory[:len(encoded)]=encoded
+            struct.pack_into('<H',directory,64,len(encoded));directory[66]=2
+            p=self.inputs/f'{fmt} container.bin';p.write_bytes(header+fat+directory)
+            self.assertEqual(detect(p,{})['format'],fmt)
+
+    def test_23_scoped_history_cleanup_preserves_other_records(self):
+        first=self.finish(self.enqueue(self.image,'webp'))
+        second=self.finish(self.enqueue(self.image,'png'))
+        self.client.call('clear',{'ids':[first['id']]})
+        self.assertEqual([j['id'] for j in self.client.call('snapshot')['jobs']],[second['id']])
+        self.assertTrue(Path(first['outputs'][0]).is_file())
+        self.assertTrue(Path(second['outputs'][0]).is_file())
 
 def uuid_name():
     import uuid

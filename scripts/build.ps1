@@ -1,5 +1,6 @@
 param([switch]$SkipTests, [switch]$NoInstaller)
 $ErrorActionPreference = 'Stop'
+$env:PYTHONUTF8 = '1'
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Set-Location $ProjectRoot
 if (Test-Path '.tools\cargo\bin') {
@@ -20,12 +21,19 @@ Invoke-Checked { & $PythonExe scripts\freeze.py }
 Invoke-Checked { node tests\appearance-settings.mjs }
 if (!$SkipTests) {
     Invoke-Checked { & $PythonExe tests\test_engine.py }
-    $env:RAI_TEST_FROZEN = Join-Path $ProjectRoot 'src-tauri\binaries\rai-engine\rai-engine.exe'
+    $env:FILE_CONVERTER_TEST_FROZEN = Join-Path $ProjectRoot 'src-tauri\binaries\FileConverterEngine\FileConverterEngine.exe'
     try { Invoke-Checked { & $PythonExe tests\test_engine.py } }
-    finally { Remove-Item Env:RAI_TEST_FROZEN -ErrorAction SilentlyContinue }
+    finally { Remove-Item Env:FILE_CONVERTER_TEST_FROZEN -ErrorAction SilentlyContinue }
 }
 Invoke-Checked { & $PythonExe scripts\licenses.py }
 if ($NoInstaller) { Invoke-Checked { npm run package -- --no-bundle } }
 else { Invoke-Checked { npm run package } }
-Invoke-Checked { & $PythonExe scripts\portable.py }
+$IconTargets = @('src-tauri\target\release\FileConverter.exe', 'src-tauri\binaries\FileConverterEngine\FileConverterEngine.exe')
+if (!$NoInstaller) {
+    $BuildVersion = (Get-Content package.json -Raw | ConvertFrom-Json).version
+    $IconTargets += "src-tauri\target\release\bundle\nsis\File Converter_${BuildVersion}_x64-setup.exe"
+}
+Invoke-Checked { & $PythonExe tests\test_icons.py @IconTargets }
+if ($NoInstaller) { Invoke-Checked { & $PythonExe scripts\portable.py --no-installer } }
+else { Invoke-Checked { & $PythonExe scripts\portable.py } }
 Write-Host 'Build finished. See release/ and docs/VALIDATION.md for tested scope.'

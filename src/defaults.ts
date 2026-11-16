@@ -62,6 +62,7 @@ export const defaults: Settings = {
   outputDir: "",
   defaults: defaultOptions,
   reducedMotion: false,
+  sidebarCollapsed: false,
 };
 export const materialNames: Record<MaterialName, string> = {
   sidebar: "側邊導覽",

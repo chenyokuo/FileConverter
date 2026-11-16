@@ -26,9 +26,17 @@ Service stdout 為 JSONL response / job event；Rust 以 request ID 配對回應
 
 ## 已知邊界
 
-檔案匯入以副檔名建立初始分類；真正轉檔由解碼器驗證內容。不是完整 MIME 魔術位元探測器。250 筆匯入已測試，數千筆列表仍需虛擬化與效能量測。單檔設定與同類批次設定皆實作，既有執行任務不能重排；待提交清單可重排。ETA 只有執行中任務進度足夠、沒有等待任務時才顯示。
+P0 由 Rust infer 提供 16 KiB 檔頭提示，Python 依 Pillow 解碼器、PDF、OOXML/ODF ZIP、OLE CFB 串流目錄、RTF、FFprobe 與容器標頭辨識實際內容。副檔名只供交叉檢查；工作程序轉檔前再次驗證。250 筆匯入已測試，數千筆列表仍需虛擬化與效能量測。單檔設定與同類批次設定皆實作，既有執行任務不能重排；待提交清單可重排。ETA 只有執行中任務進度足夠、沒有等待任務時才顯示。
 
 Office adapter 已實作，沒有安裝 LibreOffice 的測試機不能宣稱已驗證所有 Office 組合。PDF → DOCX 未實作且無可點的假操作。未加入非必要動畫套件、網路服務、登入功能或追蹤。
 
 
 v0.2.0 以 ConversionWorkspace 元件重構轉檔首頁，移除 Dashboard 宣傳內容。外觀 schema version 2 遷移舊版預設，保留自訂背景與使用者參數；主工作區的歷史 blur 值一律停用。所有轉檔命令、格式矩陣、SQLite 與 subprocess 佇列架構沿用。
+
+## P0 統一能力與雙模式
+
+`registry.py` 是唯一相容矩陣，`formats.py` 僅保留相容匯出。每條 edge 包含來源、目標、Adapter、引擎可用性、回歸案例覆蓋、損失風險、輸出設定、品質提示與中介資訊。`snapshot`、`registry` 供兩種 UI 模式及工具箱共用。worker 執行前使用同一個 `validate`，不信任前端格式選擇。`ConversionGraph.path` 以 BFS 規劃可用路徑；P0 僅執行直接 edge，不把跨格式鏈結當成已完成的轉檔能力。
+
+Adapter 介面拆出 `adapters.py`，實際 Pillow / MuPDF / FFmpeg / LibreOffice 處理沿用並分成獨立函式。自動模式目標為空；指定模式記錄預期來源，來源不符必須取消勾選或重新設定。PDF → PDF 必須明確指定頁碼、旋轉、分割或多檔合併。
+
+產品／主程式更名為 File Converter / FileConverter.exe，但 `studio.rai.converter`、SQLite schema 與舊瀏覽器外觀 key 保留，維持既有設定／歷史相容。原圖保存在圖示來源目錄，打包只包含新版 FileConverterEngine。未加入 Windows 檔案關聯或全系統圖示變更。

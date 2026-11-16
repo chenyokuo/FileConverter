@@ -7,6 +7,7 @@ Research date: 2026-11-16. The application source is AGPL-3.0-or-later, selected
 | Tauri Rust | 2.12.5 | MIT OR Apache-2.0, https://github.com/tauri-apps/tauri |
 | Tauri JS API / CLI | 2.12.4 | MIT OR Apache-2.0 |
 | Tauri dialog | 2.8.4 | MIT OR Apache-2.0 |
+| infer | 0.22.0 (direct, pinned; previously transitive) | MIT, https://github.com/bojand/infer |
 | window-vibrancy | 0.8.1 | MIT OR Apache-2.0 |
 | React / React DOM | 19.3.1 | MIT, https://github.com/facebook/react |
 | Vite / React plugin | 8.3.8 / 6.3.0 | MIT, https://github.com/vitejs/vite |
@@ -40,3 +41,7 @@ LibreOffice is not bundled in this build. Its detection does not grant redistrib
 ## Release gate
 
 Local development / private evaluation builds are provided. Public or customer redistribution requires a complete license inventory and corresponding-source delivery, code signing as appropriate, and clean-machine installation testing. No licensing review or clean-machine certification is implied by a successful compile.
+
+## Application artwork
+
+The File Converter application icon was supplied locally by the project owner. Its preserved original and SHA-256 manifest are in `src-tauri/icons/source/`. Tauri Icon Generator produced platform assets; `scripts/icons.py` reproducibly generates Windows multi-size ICO and density-aware PNG assets using Pillow Lanczos without changing the original. No permission to reuse unrelated trademarks or artwork is implied. Only this application uses these assets; no system file associations or other applications are changed.
