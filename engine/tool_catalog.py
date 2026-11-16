@@ -58,6 +58,19 @@ def validate_tool(id,params,sources,engines):
     if not definition:raise ValueError('不允許的工具')
     if not definition['available']:raise ValueError(definition['reason'])
     if len(sources)<definition['minSources'] or definition['maxSources'] and len(sources)>definition['maxSources']:raise ValueError('來源檔案數量不符合工具要求')
+    clean=validate_params(definition,params)
+    formats=[]
+    for raw in sources:
+        path=Path(raw)
+        if not path.is_file() and not (id=='archive.pack' and path.is_dir()):raise ValueError('來源不存在或不是檔案')
+        if 'any' not in definition['sources']:
+            fmt=detect(path,engines)['format'];formats.append(fmt)
+            if category(fmt) not in definition['sources']:raise ValueError('來源格式不符合此工具：'+path.name)
+    if id=='video.mux-subtitles' and (category(formats[0])!='video' or category(formats[1])!='subtitle'):raise ValueError('請依序加入影片及文字字幕')
+    if id=='office.remove-watermark' and any(f not in {'docx','pptx'} for f in formats):raise ValueError('只支援 DOCX／PPTX')
+    return definition,clean
+
+def validate_params(definition,params):
     clean={}
     for f in definition['fields']:
         value=params.get(f['key'],f['default'])
@@ -75,13 +88,4 @@ def validate_tool(id,params,sources,engines):
             value=str(value)
             if len(value)>10000:raise ValueError('參數過長')
         clean[f['key']]=value
-    formats=[]
-    for raw in sources:
-        path=Path(raw)
-        if not path.is_file() and not (id=='archive.pack' and path.is_dir()):raise ValueError('來源不存在或不是檔案')
-        if 'any' not in definition['sources']:
-            fmt=detect(path,engines)['format'];formats.append(fmt)
-            if category(fmt) not in definition['sources']:raise ValueError('來源格式不符合此工具：'+path.name)
-    if id=='video.mux-subtitles' and (category(formats[0])!='video' or category(formats[1])!='subtitle'):raise ValueError('請依序加入影片及文字字幕')
-    if id=='office.remove-watermark' and any(f not in {'docx','pptx'} for f in formats):raise ValueError('只支援 DOCX／PPTX')
-    return definition,clean
+    return clean

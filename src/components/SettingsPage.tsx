@@ -1,4 +1,5 @@
 import { AppIcon } from "./AppIcon";
+import { ContextIntegration } from "./ContextIntegration";
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { motion, AnimatePresence } from "motion/react";
@@ -609,6 +610,7 @@ export function SettingsPage({
             )}
             {section === "advanced" && (
               <>
+                <ContextIntegration notify={notify} />
                 <div className="section-heading">
                   <div>
                     <h2>引擎與離線狀態</h2>

@@ -26,6 +26,7 @@ import {
 import type { Draft, Options, Registry, HardwareDevice } from "../types";
 import { Button } from "./ui";
 import { OptionsEditor } from "./OptionsEditor";
+import { FilePreview } from "./FilePreview";
 
 const types = [
   ["all", "全部"],
@@ -70,6 +71,7 @@ interface Props {
   activity: ReactNode;
 }
 export function ConversionWorkspace(p: Props) {
+  const [previewPath, setPreviewPath] = useState<string | null>(null);
   const [category, setCategory] = useState("all");
   const selected = p.drafts.filter((f) => f.selected);
   const visible = p.drafts.filter(
@@ -256,6 +258,13 @@ export function ConversionWorkspace(p: Props) {
                       ))}
                     </select>
                     <div className="draft-actions">
+                      <Button
+                        compact
+                        aria-label={`預覽 ${file.name}`}
+                        onClick={() => setPreviewPath(file.path)}
+                      >
+                        預覽
+                      </Button>
                       <Button
                         compact
                         aria-label={`上移 ${file.name}`}
@@ -463,6 +472,12 @@ export function ConversionWorkspace(p: Props) {
         </Button>
       </div>
       {p.activity}
+      {previewPath && (
+        <FilePreview
+          paths={[previewPath]}
+          onClose={() => setPreviewPath(null)}
+        />
+      )}
     </div>
   );
 }

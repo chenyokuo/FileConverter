@@ -11,9 +11,38 @@ struct Bridge {
     serial: AtomicU64,
 }
 
+#[derive(Default)]
+struct OpenRequests(Mutex<Vec<Value>>);
+
+fn queue_open(app: &tauri::AppHandle, args: Vec<String>, cwd: &str) {
+    let mut target = String::new();
+    let mut paths = Vec::new();
+    let mut iter = args.iter().skip(1);
+    while let Some(arg) = iter.next() {
+        if arg == "--target" {
+            if let Some(value) = iter.next() { if ["pdf","jpg","mp3"].contains(&value.as_str()) { target=value.clone(); } }
+        } else if arg == "--open" {
+            if let Some(value) = iter.next() {
+                let p=std::path::Path::new(value);
+                let p=if p.is_absolute() { p.to_path_buf() } else { std::path::Path::new(cwd).join(p) };
+                if p.is_file() { paths.push(p.to_string_lossy().into_owned()); }
+            }
+        }
+    }
+    if !paths.is_empty() {
+        if let Some(requests)=app.try_state::<OpenRequests>() { if let Ok(mut list)=requests.0.lock() { list.push(json!({"paths":paths,"target":target})); } }
+        let _=app.emit("open-files-ready", ());
+    }
+}
+
+#[tauri::command]
+fn take_open_requests(requests: tauri::State<'_, OpenRequests>) -> Vec<Value> {
+    requests.0.lock().map(|mut list|std::mem::take(&mut *list)).unwrap_or_default()
+}
+
 #[tauri::command]
 async fn engine_call(bridge: tauri::State<'_, Arc<Bridge>>, method: String, mut args: Value) -> Result<Value,String> {
-    const ALLOWED: &[&str] = &["snapshot","inspect","enqueue","settings","background","engines","cancel","retry","clear","open_output","registry","plan","hardware","tools","enqueue_tool","preview","preview_status","clear_preview","analyze_url","resolve_download","enqueue_download"];
+    const ALLOWED: &[&str] = &["snapshot","inspect","enqueue","settings","background","engines","cancel","retry","clear","open_output","registry","plan","hardware","tools","enqueue_tool","preview","preview_status","clear_preview","analyze_url","resolve_download","enqueue_download","automation","save_automation","delete_automation","watch_action","plan_workflow","enqueue_workflow","context_menu"];
     if !ALLOWED.contains(&method.as_str()) { return Err("Command is not allowed".into()); }
     let bridge = Arc::clone(bridge.inner());
     tauri::async_runtime::spawn_blocking(move || {
@@ -83,7 +112,7 @@ fn start_engine(app: &tauri::App) -> Result<Arc<Bridge>, Box<dyn std::error::Err
         c.arg("--engines").arg(resource.join("engines")); c
     };
     let _ = resource;
-    command.arg("--data").arg(data).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
+    command.arg("--data").arg(data).arg("--app-exe").arg(std::env::current_exe()?).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
     #[cfg(windows)] {
         use std::os::windows::process::CommandExt;
         command.creation_flags(0x08000000);
@@ -114,9 +143,19 @@ fn start_engine(app: &tauri::App) -> Result<Arc<Bridge>, Box<dyn std::error::Err
 }
 
 fn main() {
-    tauri::Builder::default().plugin(tauri_plugin_dialog::init())
-        .setup(|app| { app.manage(start_engine(app)?); Ok(()) })
-        .invoke_handler(tauri::generate_handler![engine_call,native_material,shutdown_app])
+    tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app,args,cwd| {
+            queue_open(app,args,&cwd);
+            if let Some(window)=app.get_webview_window("main") { let _=window.unminimize(); let _=window.show(); let _=window.set_focus(); }
+        }))
+        .plugin(tauri_plugin_dialog::init())
+        .manage(OpenRequests::default())
+        .setup(|app| {
+            app.manage(start_engine(app)?);
+            queue_open(app.handle(),std::env::args().collect(),&std::env::current_dir()?.to_string_lossy());
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![engine_call,native_material,shutdown_app,take_open_requests])
         .build(tauri::generate_context!()).expect("Could not start File Converter")
         .run(|app,event| {
             if let tauri::RunEvent::Exit = event {

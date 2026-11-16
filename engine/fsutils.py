@@ -8,6 +8,10 @@ import time
 def remove_tree(path,allowed_parent):
     path=Path(path).resolve();parent=Path(allowed_parent).resolve()
     if path==parent or not path.is_relative_to(parent):raise ValueError('Cleanup path escaped its staging root')
+    # LibreOffice profiles contain deeply nested language/extension caches. Use the
+    # Windows extended path form after checking the ordinary resolved boundary.
+    if os.name=='nt' and not str(path).startswith('\\\\?\\'):
+        value=str(path);path=Path('\\\\?\\UNC\\'+value[2:] if value.startswith('\\\\') else '\\\\?\\'+value)
     def writable(function,name,error):
         target=Path(name)
         if not target.resolve().is_relative_to(path):raise ValueError('Unsafe cleanup link')

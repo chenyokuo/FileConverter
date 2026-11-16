@@ -32,7 +32,7 @@ class Service:
         self.db.execute('CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, payload TEXT NOT NULL)')
         self.jobs={r[0]:json.loads(r[1]) for r in self.db.execute('SELECT id,payload FROM jobs')}
         row=self.db.execute('SELECT payload FROM settings WHERE id=1').fetchone();self.settings=json.loads(row[0]) if row else {}
-        self.secrets={};self.processes={};self.process_jobs={};self.stages={};self.reserved=set();self.engines=self.detect_engines()
+        self.app_exe=None;self.secrets={};self.processes={};self.process_jobs={};self.stages={};self.reserved=set();self.engines=self.detect_engines()
         for job in self.jobs.values():
             if job['status'] in {'running','queued','cancelling'}:
                 job.update(status='cancelled',error='程式上次關閉，任務已安全中止',finished=time.time());self.save(job)
@@ -40,6 +40,8 @@ class Service:
             {'id':key,'label':label,'available':False,'encoder':'','reason':'偵測中','pending':True} for key,label in [('nvidia','NVIDIA'),('amd','AMD'),('intel','Intel')]]
         self.hardware_detecting=False
         self.refresh_hardware()
+        from automation import Automation
+        self.automation=Automation(self)
         threading.Thread(target=self.scheduler,daemon=True).start()
 
     def detect_engines(self):
@@ -224,8 +226,21 @@ class Service:
             return resolve(args['analysisId'],args['key'],self.engines)
         if method=='preview':
             from previews import preview
-            return preview(args['path'],self.engines,args.get('page',0),args.get('time',0))
+            scratch=self.root/'preview-work';scratch.mkdir(exist_ok=True)
+            return preview(args['path'],self.engines,args.get('page',0),args.get('time',0),bool(args.get('play')),scratch)
         with self.lock:
+            if method=='automation':return self.automation.snapshot()
+            if method=='save_automation':return self.automation.put(args)
+            if method=='delete_automation':return self.automation.delete(args['id'])
+            if method=='watch_action':return self.automation.watch_action(args['id'],args['action'])
+            if method=='plan_workflow':
+                from workflows import plan
+                return plan(args['config'],self.engines)
+            if method=='enqueue_workflow':return self.automation.enqueue(args['config'],args['paths'],args.get('outputDir'))
+            if method=='context_menu':
+                from context_menu import status,update
+                if 'enabled' in args:return update(self.app_exe,bool(args['enabled']),self.engines)
+                return status(self.app_exe)
             if method=='snapshot':
                 return {'jobs':[j for j in self.jobs.values() if not j.get('previewOnly')],'settings':self.settings,'engines':self.engines,'dataDir':str(self.root),'registry':registry(self.engines)}
             if method=='inspect':return self.inspect(args['paths'],args.get('nativeHints'))
@@ -292,6 +307,7 @@ class Service:
                 job=self.jobs[args['id']]
                 if job['status'] not in {'failed','cancelled','completed'}:raise ValueError('任務仍在執行')
                 if job.get('kind')=='download':return self.create_download({'outputDir':job['outputDir']},resume=job)
+                if job.get('kind')=='workflow':return self.automation.enqueue(job['workflow'],job['sources'],job['outputDir'])
                 if job.get('operation'):
                     if job.get('requiresSecret'):raise ValueError('請重新開啟工具輸入密碼，密碼不會保存在歷史')
                     return self.create_tool({k:job[k] for k in ['sources','operation','params','outputDir']})
@@ -328,6 +344,7 @@ def main():
     data=sys.argv[sys.argv.index('--data')+1] if '--data' in sys.argv else str(Path.home()/'.rai-converter')
     engines=sys.argv[sys.argv.index('--engines')+1] if '--engines' in sys.argv else None
     service=Service(data,engines)
+    service.app_exe=sys.argv[sys.argv.index('--app-exe')+1] if '--app-exe' in sys.argv else None
     from concurrent.futures import ThreadPoolExecutor
     preview_pool=ThreadPoolExecutor(max_workers=2)
     network_pool=ThreadPoolExecutor(max_workers=2)

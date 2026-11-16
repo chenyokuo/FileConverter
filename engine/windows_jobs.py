@@ -22,3 +22,20 @@ def prevent_orphans(process_handle=None):
     if not handle or not k.SetInformationJobObject(handle,9,ctypes.byref(limits),ctypes.sizeof(limits)) or not k.AssignProcessToJobObject(handle,process_handle or k.GetCurrentProcess()):
         raise RuntimeError('Windows Job Object 初始化失敗，無法保證程序清理')
     return handle  # intentionally held for lifetime of service
+
+def finish_job(handle):
+    """Terminate and wait for all helpers before deleting their private working tree."""
+    if os.name!='nt' or not handle:return
+    import time
+    from ctypes import wintypes as w
+    class Accounting(ctypes.Structure):
+        _fields_=[('User',ctypes.c_int64),('Kernel',ctypes.c_int64),('PeriodUser',ctypes.c_int64),('PeriodKernel',ctypes.c_int64),('Faults',w.DWORD),('Total',w.DWORD),('Active',w.DWORD),('Terminated',w.DWORD)]
+    k=ctypes.WinDLL('kernel32',use_last_error=True)
+    k.TerminateJobObject.argtypes=[w.HANDLE,w.UINT];k.QueryInformationJobObject.argtypes=[w.HANDLE,ctypes.c_int,ctypes.c_void_p,w.DWORD,ctypes.c_void_p];k.CloseHandle.argtypes=[w.HANDLE]
+    try:
+        k.TerminateJobObject(handle,1)
+        for _ in range(100):
+            info=Accounting()
+            if not k.QueryInformationJobObject(handle,1,ctypes.byref(info),ctypes.sizeof(info),None) or not info.Active:break
+            time.sleep(.03)
+    finally:k.CloseHandle(handle)

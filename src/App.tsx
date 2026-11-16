@@ -1,4 +1,7 @@
 import { DownloadPage } from "./components/DownloadPage";
+import { AutomationPage } from "./components/AutomationPage";
+import { ConversionPresets } from "./components/ConversionPresets";
+import { FilePreview } from "./components/FilePreview";
 import { AppIcon } from "./components/AppIcon";
 import {
   useCallback,
@@ -71,7 +74,7 @@ const navigation: {
   { id: "converter", label: "轉換檔案", icon: ArrowLeftRight },
   { id: "download", label: "網址下載", icon: Download },
   { id: "toolbox", label: "工具箱", icon: Wrench },
-  { id: "workflow", label: "自動化工作流程", icon: Workflow, phase: "P4" },
+  { id: "workflow", label: "自動化工作流程", icon: Workflow },
   { id: "history", label: "歷史紀錄", icon: History },
   { id: "settings", label: "設定", icon: Settings2 },
 ];
@@ -162,6 +165,7 @@ export default function App() {
   const [filter, setFilter] = useState("all");
   const [confirmClear, setConfirmClear] = useState(false);
   const [mergeOpen, setMergeOpen] = useState(false);
+  const [previewPaths, setPreviewPaths] = useState<string[] | null>(null);
   const [clock, setClock] = useState(Date.now());
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -357,6 +361,38 @@ export default function App() {
     },
     [notify],
   );
+  useEffect(() => {
+    if (!desktop || !ready) return;
+    let disposed = false;
+    let off: (() => void) | undefined;
+    const take = async () => {
+      try {
+        const requests =
+          await invoke<{ paths: string[]; target: string }[]>(
+            "take_open_requests",
+          );
+        for (const request of requests) {
+          // Shell actions only stage files and target selection. Starting a conversion remains explicit.
+          if (request.target)
+            await importPaths(request.paths, {
+              target: request.target,
+            } as Tool);
+          else await importPaths(request.paths);
+        }
+      } catch (e) {
+        notify(String(e), true);
+      }
+    };
+    void listen("open-files-ready", () => void take()).then((fn) => {
+      if (disposed) fn();
+      else off = fn;
+      void take();
+    });
+    return () => {
+      disposed = true;
+      off?.();
+    };
+  }, [ready, importPaths, notify]);
   useEffect(() => {
     if (!desktop) return;
     let disposed = false;
@@ -582,7 +618,20 @@ export default function App() {
           {job.stats?.hardwareFallback && (
             <p className="hint">{job.stats.hardwareFallback}</p>
           )}
-          {job.kind==='download'&&job.stats&&<span>{String(job.stats.phase||'下載')} · {typeof job.stats.downloadedBytes==='number'?`${(job.stats.downloadedBytes/1024**2).toFixed(1)} MB`:''}{typeof job.stats.downloadSpeed==='number'?` · ${(job.stats.downloadSpeed/1024**2).toFixed(2)} MB/s`:''}{typeof job.stats.downloadEta==='number'?` · 剩餘 ${Math.ceil(job.stats.downloadEta)} 秒`:''}</span>}
+          {job.kind === "download" && job.stats && (
+            <span>
+              {String(job.stats.phase || "下載")} ·{" "}
+              {typeof job.stats.downloadedBytes === "number"
+                ? `${(job.stats.downloadedBytes / 1024 ** 2).toFixed(1)} MB`
+                : ""}
+              {typeof job.stats.downloadSpeed === "number"
+                ? ` · ${(job.stats.downloadSpeed / 1024 ** 2).toFixed(2)} MB/s`
+                : ""}
+              {typeof job.stats.downloadEta === "number"
+                ? ` · 剩餘 ${Math.ceil(job.stats.downloadEta)} 秒`
+                : ""}
+            </span>
+          )}
           {job.stats?.warning && (
             <p className="error-text">{job.stats.warning}</p>
           )}
@@ -627,6 +676,21 @@ export default function App() {
               onClick={() => retry(job)}
             >
               <RotateCcw size={15} />
+            </Button>
+          )}
+          {job.status === "completed" && (
+            <Button
+              compact
+              aria-label={`預覽與比較 ${job.name}`}
+              onClick={() =>
+                setPreviewPaths(
+                  job.sources.length
+                    ? [job.sources[0], job.outputs[0]]
+                    : [job.outputs[0]],
+                )
+              }
+            >
+              預覽
             </Button>
           )}
           {job.status === "completed" && (
@@ -793,18 +857,26 @@ export default function App() {
                       ? "File Converter"
                       : page === "history"
                         ? "轉換紀錄"
-                        : page === "download" ? "網址下載" : page === "toolbox"
-                          ? "工具箱"
-                          : "設定"}
+                        : page === "workflow"
+                          ? "自動化工作流程"
+                          : page === "download"
+                            ? "網址下載"
+                            : page === "toolbox"
+                              ? "工具箱"
+                              : "設定"}
                   </h1>
                   <p>
                     {page === "converter"
                       ? "加入檔案，選擇輸出格式後開始轉換。"
                       : page === "history"
                         ? "搜尋已完成、失敗或取消的任務。"
-                        : page === "toolbox"
-                          ? "選擇工具、匯入檔案，並檢查輸出設定。"
-                          : "調整外觀、轉檔偏好與引擎設定。"}
+                        : page === "download"
+                          ? "解析實際畫質與字幕，選擇項目後下載。"
+                          : page === "workflow"
+                            ? "保存轉檔配置、串連處理步驟與監看指定資料夾。"
+                            : page === "toolbox"
+                              ? "選擇工具、匯入檔案，並檢查輸出設定。"
+                              : "調整外觀、轉檔偏好與引擎設定。"}
                   </p>
                 </div>
                 {page === "converter" && (
@@ -848,48 +920,70 @@ export default function App() {
                     <ConversionWorkspace
                       hardware={hardware}
                       modeBar={
-                        <ConversionModeBar
-                          mode={mode}
-                          setMode={(v) => {
-                            setMode(v);
-                            if (v === "auto")
+                        <>
+                          <ConversionPresets
+                            focused={focusedFile}
+                            notify={notify}
+                            onApply={(source, target, options) => {
                               setDrafts((old) =>
-                                old.map((f) => ({
-                                  ...f,
-                                  expectedSource: undefined,
-                                })),
+                                old.map((f) =>
+                                  f.selected &&
+                                  f.extension === source &&
+                                  f.formats.includes(target)
+                                    ? {
+                                        ...f,
+                                        format: target,
+                                        options: { ...f.options, ...options },
+                                      }
+                                    : f,
+                                ),
                               );
-                          }}
-                          source={presetSource}
-                          target={presetTarget}
-                          setSource={(v) => {
-                            setPresetSource(v);
-                            setPresetTarget("");
-                          }}
-                          setTarget={setPresetTarget}
-                          registry={registry}
-                          drafts={drafts}
-                          apply={(target, source) => {
-                            setDrafts((old) =>
-                              old.map((f) => {
-                                if (
-                                  !f.selected ||
-                                  !f.formats.includes(target) ||
-                                  (source && f.extension !== source)
-                                )
-                                  return f;
-                                return {
-                                  ...f,
-                                  format: target,
-                                  expectedSource: source,
-                                };
-                              }),
-                            );
-                            notify(
-                              "已套用至相容的勾選檔案；不相容的檔案保留原設定",
-                            );
-                          }}
-                        />
+                              notify("已套用至來源格式相符的勾選檔案");
+                            }}
+                          />
+                          <ConversionModeBar
+                            mode={mode}
+                            setMode={(v) => {
+                              setMode(v);
+                              if (v === "auto")
+                                setDrafts((old) =>
+                                  old.map((f) => ({
+                                    ...f,
+                                    expectedSource: undefined,
+                                  })),
+                                );
+                            }}
+                            source={presetSource}
+                            target={presetTarget}
+                            setSource={(v) => {
+                              setPresetSource(v);
+                              setPresetTarget("");
+                            }}
+                            setTarget={setPresetTarget}
+                            registry={registry}
+                            drafts={drafts}
+                            apply={(target, source) => {
+                              setDrafts((old) =>
+                                old.map((f) => {
+                                  if (
+                                    !f.selected ||
+                                    !f.formats.includes(target) ||
+                                    (source && f.extension !== source)
+                                  )
+                                    return f;
+                                  return {
+                                    ...f,
+                                    format: target,
+                                    expectedSource: source,
+                                  };
+                                }),
+                              );
+                              notify(
+                                "已套用至相容的勾選檔案；不相容的檔案保留原設定",
+                              );
+                            }}
+                          />
+                        </>
                       }
                       registry={registry}
                       totalProgress={totalProgress}
@@ -979,7 +1073,27 @@ export default function App() {
                       }
                     />
                   )}
-                  {page === 'download' && <DownloadPage disabled={!desktop||!ready||!!engineError||!engines.ytdlp} outputDir={settings.downloadDir} onDirectory={path=>setSettings(old=>({...old,downloadDir:path}))} notify={notify}/>}
+                  {page === "download" && (
+                    <DownloadPage
+                      disabled={
+                        !desktop || !ready || !!engineError || !engines.ytdlp
+                      }
+                      outputDir={settings.downloadDir}
+                      onDirectory={(path) =>
+                        setSettings((old) => ({ ...old, downloadDir: path }))
+                      }
+                      notify={notify}
+                    />
+                  )}
+                  {page === "workflow" && (
+                    <AutomationPage
+                      registry={registry}
+                      defaults={settings.defaults}
+                      hardware={hardware}
+                      outputDir={settings.outputDir}
+                      notify={notify}
+                    />
+                  )}
                   {page === "toolbox" && (
                     <Toolbox
                       outputDir={settings.outputDir}
@@ -1181,6 +1295,12 @@ export default function App() {
             ))}
           </AnimatePresence>
         </div>
+        {previewPaths && (
+          <FilePreview
+            paths={previewPaths}
+            onClose={() => setPreviewPaths(null)}
+          />
+        )}
         <Modal
           open={confirmClear}
           onOpenChange={setConfirmClear}

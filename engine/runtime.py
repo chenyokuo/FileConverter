@@ -39,9 +39,8 @@ def command(args, timeout=600, return_stderr=False, **kwargs):
         if proc.stdout:proc.stdout.close()
         if proc.stderr:proc.stderr.close()
         if handle:
-            from ctypes import wintypes
-            close=ctypes.WinDLL('kernel32').CloseHandle;close.argtypes=[wintypes.HANDLE]
-            close(handle)  # terminate any helper processes before profile cleanup
+            from windows_jobs import finish_job
+            finish_job(handle)
 
 
 def image_plugins():
