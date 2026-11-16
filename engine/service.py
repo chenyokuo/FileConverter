@@ -206,13 +206,14 @@ class Service:
                 if not 1<=int(settings.get('concurrency',2))<=4:raise ValueError('Concurrency must be 1–4')
                 self.settings=settings;self.db.execute('INSERT OR REPLACE INTO settings VALUES (1,?)',(json.dumps(settings),));self.db.commit();return settings
             if method=='background':
-                from PIL import Image
+                from PIL import Image,ImageOps
                 p=Path(args['path'])
                 if p.suffix.lower() not in {'.jpg','.jpeg','.png','.webp'}:raise ValueError('僅支援 JPG、PNG、WebP 背景')
                 # Decode and re-encode: do not trust extension or retain external file references.
                 with Image.open(p) as image:
                     import io
-                    buf=io.BytesIO();image.convert('RGB').save(buf,format='WEBP',quality=92)
+                    image=ImageOps.exif_transpose(image)
+                    buf=io.BytesIO();image.convert('RGBA' if 'A' in image.getbands() else 'RGB').save(buf,format='WEBP',lossless=True)
                 data=buf.getvalue();(self.root/'background.webp').write_bytes(data)
                 return 'data:image/webp;base64,'+base64.b64encode(data).decode()
             if method=='enqueue':

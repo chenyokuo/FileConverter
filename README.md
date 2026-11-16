@@ -4,13 +4,15 @@ Windows 本機萬用轉檔器。深色玻璃介面、可保存的個人化外觀
 
 ![RAI Converter 實際桌面畫面](docs/dashboard.png)
 
-**目前版本：0.1.0，私人測試版。** 請閱讀 [驗收紀錄](docs/VALIDATION.md) 中已實測與尚待驗證的區別。此版本不是跨所有 Windows 版本完成驗收的正式商業發行版。
+**目前版本：0.2.0，私人測試版。** 請閱讀 [驗收紀錄](docs/VALIDATION.md) 中已實測與尚待驗證的區別。此版本不是跨所有 Windows 版本完成驗收的正式商業發行版。
+
+[v0.2.0 UI 整改前後比較與實際畫面](docs/UI_REWORK.md)。
 
 ## 功能
 
-- Dashboard、Converter、History、Settings 四個完整頁面；繁體中文介面、自訂標題列及原創圖示。
-- 六種獨立玻璃材質：Sidebar / Main / File Card / Modal / Floating Toolbar / Settings。各自設定不透明度、模糊、色彩、邊框、陰影；文字不隨材質透明度改變。
-- JPG / PNG / WebP 背景匯入、預設極光／漸層／純色、縮放／位置／裁切、背景透明度／亮度／模糊／暗色遮罩、深色／淺色／系統模式、強調色及外觀配置保存。
+- 啟動即進入轉檔工作區；檔案類型篩選、可收合輸出設定、轉換紀錄與設定頁。繁體中文介面及自訂標題列。
+- 側邊欄、檔案面板、Modal、工具列、設定面板使用獨立玻璃材質；主工作區只調整底色／透明度，永不套用全域模糊。內文 16px，次要資訊與標籤至少 14px。
+- JPG / PNG / WebP 全尺寸無損背景匯入，預設模糊 0px；清晰背景／毛玻璃背景預設、縮放／位置／裁切、獨立透明度／亮度／模糊／遮罩、深淺色與自訂配置持久化。
 - 圖片轉 PNG / JPG / WebP / BMP / TIFF / PDF，尺寸、品質與透明區域底色設定。
 - FFmpeg 影音轉檔、音軌擷取、CRF／bitrate／解析度／FPS／取樣率／聲道設定；NVENC 在編碼前實際檢測。FFmpeg 的 duration / out_time_us 提供真實進度。
 - PDF 轉 PNG / JPG、圖片與 PDF 混合合併、頁碼擷取、逐頁分割、旋轉。
@@ -57,6 +59,7 @@ npm run desktop
 
 ```powershell
 npm run build
+npm run test:appearance
 cargo check --manifest-path src-tauri/Cargo.toml
 .\.venv\Scripts\python.exe tests\test_engine.py
 .\.venv\Scripts\python.exe scripts\freeze.py
@@ -79,8 +82,8 @@ powershell -ExecutionPolicy Bypass -File scripts/build.ps1 -NoInstaller
 
 輸出：
 
-- `release/RAI-Converter-0.1.0-windows-x64-portable.zip`
-- `release/RAI Converter_0.1.0_x64-setup.exe`（成功執行安裝包建置時）
+- `release/RAI-Converter-0.2.0-windows-x64-portable.zip`
+- `release/RAI Converter_0.2.0_x64-setup.exe`（成功執行安裝包建置時）
 - `release/SHA256SUMS.json`
 - 原始 NSIS 產物位於 `src-tauri/target/release/bundle/nsis/`。
 
@@ -91,7 +94,7 @@ powershell -ExecutionPolicy Bypass -File scripts/build.ps1 -NoInstaller
 ```powershell
 .\.venv\Scripts\python.exe tests\make_ui_fixtures.py
 $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS='--remote-debugging-port=9222'
-& '.\release\RAI-Converter-Portable\RAI Converter.exe'
+& '.\release\RAI-Converter-0.2.0-Portable\RAI Converter.exe'
 npm test
 Remove-Item Env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS
 ```

@@ -116,6 +116,10 @@ class EngineTests(unittest.TestCase):
     def test_07_background_and_settings_persist(self):
         image=self.client.call('background',{'path':str(self.image)})
         self.assertTrue(image.startswith('data:image/webp;base64,'));self.assertEqual(base64.b64decode(image.split(',')[1]),(self.dir/'data/background.webp').read_bytes())
+        import io
+        with Image.open(io.BytesIO(base64.b64decode(image.split(',')[1]))) as saved:
+            self.assertEqual(saved.size,(80,40))
+            self.assertEqual(saved.convert('RGBA').getpixel((0,0)),(255,0,0,128))
         settings={'concurrency':3,'appearance':{'image':image,'imageOpacity':37,'materials':{'card':{'opacity':22,'blur':31}}}}
         self.client.call('settings',{'settings':settings});self.client.close();self.client=Client(self.dir/'data')
         self.assertEqual(self.client.call('snapshot')['settings'],settings)

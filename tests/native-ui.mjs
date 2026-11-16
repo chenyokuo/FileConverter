@@ -6,7 +6,26 @@ import path from "node:path";
 const root = process.cwd();
 const browser = await chromium.connectOverCDP("http://127.0.0.1:9222");
 const context = browser.contexts()[0];
-const page = context.pages().find((p) => p.url().includes("tauri.localhost"));
+await expect
+  .poll(
+    () =>
+      context
+        .pages()
+        .some(
+          (p) =>
+            p.url().includes("tauri.localhost") ||
+            p.url().startsWith("http://127.0.0.1:1420"),
+        ),
+    { timeout: 15000 },
+  )
+  .toBe(true);
+const page = context
+  .pages()
+  .find(
+    (p) =>
+      p.url().includes("tauri.localhost") ||
+      p.url().startsWith("http://127.0.0.1:1420"),
+  );
 if (!page)
   throw new Error(
     "Start the release app with WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222",
@@ -18,6 +37,7 @@ page.on("pageerror", (e) => failures.push(e.message));
 page.on("request", (r) => {
   if (
     !r.url().startsWith("http://tauri.localhost") &&
+    !r.url().startsWith("http://127.0.0.1:1420") &&
     !r.url().startsWith("http://ipc.localhost") &&
     !r.url().startsWith("data:") &&
     !r.url().startsWith("blob:") &&
@@ -58,6 +78,7 @@ async function check(name, run) {
 try {
   await page.addInitScript(
     ({ image, source, out }) => {
+      window.__raiPickerFiles = [source];
       const original = window.fetch.bind(window);
       window.fetch = (request, options) => {
         if (
@@ -68,7 +89,7 @@ try {
             ? out
             : opts.filters?.length
               ? image
-              : [source];
+              : window.__raiPickerFiles;
           return Promise.resolve(
             new Response(JSON.stringify(result), {
               status: 200,
@@ -89,10 +110,50 @@ try {
     },
   );
   await page.reload();
+  await check(
+    "home opens directly on conversion and uses readable typography",
+    async () => {
+      await expect(
+        page.getByRole("heading", { name: "File Converter", exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.locator(".hero,.category-grid,.privacy-card"),
+      ).toHaveCount(0);
+      await expect(page.locator(".sidebar nav button")).toHaveCount(3);
+      const metrics = await page.evaluate(() => ({
+        body: parseFloat(
+          getComputedStyle(document.querySelector(".app")).fontSize,
+        ),
+        nav: parseFloat(
+          getComputedStyle(document.querySelector(".nav-item")).fontSize,
+        ),
+        button: parseFloat(
+          getComputedStyle(document.querySelector(".start-conversion"))
+            .fontSize,
+        ),
+        secondary: parseFloat(
+          getComputedStyle(document.querySelector(".drop-subtitle")).fontSize,
+        ),
+        mainBlur: getComputedStyle(document.querySelector(".main-panel"))
+          .backdropFilter,
+        mainFilter: getComputedStyle(document.querySelector(".main-panel"))
+          .filter,
+      }));
+      expect(metrics.body).toBe(16);
+      expect(metrics.nav).toBeGreaterThanOrEqual(15);
+      expect(metrics.button).toBeGreaterThanOrEqual(15);
+      expect(metrics.secondary).toBeGreaterThanOrEqual(14);
+      expect(metrics.mainBlur).toBe("none");
+      expect(metrics.mainFilter).toBe("none");
+    },
+  );
   await check("native background import and independent alpha", async () => {
     await page.getByRole("button", { name: "設定", exact: true }).click();
     await page.getByRole("button", { name: "匯入圖片", exact: true }).click();
     await expect(page.locator(".wallpaper")).toHaveClass(/wallpaper-image/);
+    await expect(
+      page.getByRole("slider", { name: "背景模糊", exact: true }),
+    ).toHaveValue("0");
     expect(
       await page.locator(".wallpaper").evaluate((e) => e.style.backgroundImage),
     ).toContain("data:image/webp;base64,");
@@ -124,7 +185,11 @@ try {
       for (const [key, name] of Object.entries(names)) {
         await page.getByRole("button", { name, exact: true }).click();
         await slider("面板不透明度", 27);
-        await slider("玻璃模糊", 31);
+        if (key !== "main") await slider("玻璃模糊", 31);
+        else
+          await expect(
+            page.getByRole("slider", { name: "玻璃模糊", exact: true }),
+          ).toHaveCount(0);
         expect(
           await page
             .locator(".app")
@@ -140,7 +205,7 @@ try {
               (e, key) => e.style.getPropertyValue(`--${key}-blur`),
               key,
             ),
-        ).toBe("31px");
+        ).toBe(key === "main" ? "0px" : "31px");
       }
       // Verify a mounted panel, rather than only reading the variables.
       const color = await page
@@ -189,14 +254,111 @@ try {
     await page.getByRole("switch", { name: /減少動態效果/ }).check();
     await expect(page.locator(".app")).toHaveClass(/reduced-motion/);
   });
-  // Restore default readable material levels before conversion and screenshots.
+  await check(
+    "clear / frosted background presets preserve the image and workspace sharpness",
+    async () => {
+      await page
+        .getByRole("button", { name: "個人化外觀", exact: true })
+        .click();
+      const image = await page
+        .locator(".wallpaper")
+        .evaluate((e) => e.style.backgroundImage);
+      await page
+        .getByRole("button", { name: "毛玻璃背景", exact: true })
+        .click();
+      await expect(page.locator(".wallpaper")).toHaveCSS(
+        "filter",
+        "brightness(0.95) blur(12px)",
+      );
+      await expect(page.locator(".main-panel")).toHaveCSS(
+        "backdrop-filter",
+        "none",
+      );
+      await page.getByRole("button", { name: "清晰背景", exact: true }).click();
+      await expect(page.locator(".wallpaper")).toHaveCSS("filter", "none");
+      await expect(page.locator(".wallpaper")).toHaveCSS("opacity", "1");
+      expect(
+        await page
+          .locator(".wallpaper")
+          .evaluate((e) => e.style.backgroundImage),
+      ).toBe(image);
+      await expect
+        .poll(
+          async () =>
+            (await rpc("snapshot")).settings.appearance.backgroundBlur,
+        )
+        .toBe(0);
+      await page.reload();
+      await expect(page.locator(".wallpaper")).toHaveCSS("filter", "none");
+    },
+  );
+  await check(
+    "mixed queue filtering, reordering and batch options remain functional",
+    async () => {
+      await page.getByRole("button", { name: "檔案轉換", exact: true }).click();
+      await page.evaluate(
+        (paths) => {
+          window.__raiPickerFiles = paths;
+        },
+        [
+          path.join(root, ".tools/ui-fixtures/中文 alpha & 測試.png"),
+          path.join(root, ".tools/ui-fixtures/產品圖片.jpg"),
+          path.join(root, ".tools/ui-fixtures/使用說明.pdf"),
+        ],
+      );
+      await page.getByRole("button", { name: "加入檔案", exact: true }).click();
+      await expect(page.locator(".draft-row")).toHaveCount(3);
+      await page
+        .getByRole("button", { name: "中文 alpha & 測試.png", exact: true })
+        .click();
+      await slider("圖片品質", 78);
+      await page
+        .getByRole("button", { name: "套用至勾選的同類檔案", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "產品圖片.jpg", exact: true })
+        .click();
+      await expect(
+        page.getByRole("slider", { name: "圖片品質", exact: true }),
+      ).toHaveValue("78");
+      await page
+        .getByRole("button", { name: "上移 產品圖片.jpg", exact: true })
+        .click();
+      await expect(page.locator(".draft-name").first()).toHaveText(
+        "產品圖片.jpg",
+      );
+      await page
+        .locator(".type-filters button")
+        .filter({ hasText: /^PDF/ })
+        .click();
+      await expect(page.locator(".draft-row")).toHaveCount(1);
+      await page.getByRole("button", { name: "全選", exact: true }).click();
+      await expect(
+        page.getByRole("checkbox", { name: "選擇 使用說明.pdf", exact: true }),
+      ).not.toBeChecked();
+      await page
+        .locator(".type-filters button")
+        .filter({ hasText: /^全部/ })
+        .click();
+      await expect(page.locator(".draft-row")).toHaveCount(3);
+      await page.getByRole("button", { name: "合併 PDF", exact: true }).click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(page.locator(".merge-list li")).toHaveCount(2);
+      await page.getByRole("button", { name: "關閉", exact: true }).click();
+      await page
+        .getByRole("button", { name: "清空待轉換檔案", exact: true })
+        .click();
+      await expect(page.locator(".draft-row")).toHaveCount(0);
+    },
+  );
+  // Retain the imported fixture, but use the new clear profile for conversion screenshots.
   await rpc("settings", {
     settings: {
       ...snapshot.settings,
       appearance: {
         ...snapshot.settings.appearance,
         background: "image",
-        image: (await rpc("snapshot")).settings.appearance.image,
+        ...(await rpc("snapshot")).settings.appearance,
       },
     },
   });
@@ -237,6 +399,62 @@ try {
       expect((await fs.stat(job.outputs[0])).size).toBeGreaterThan(10);
     },
   );
+  await check(
+    "1500x960 and common desktop layouts keep primary controls on screen",
+    async () => {
+      const cdp = await context.newCDPSession(page);
+      for (const [width, height] of [
+        [1500, 960],
+        [1360, 900],
+        [1280, 720],
+        [1024, 768],
+        [760, 480],
+      ]) {
+        await cdp.send("Emulation.setDeviceMetricsOverride", {
+          width,
+          height,
+          deviceScaleFactor: 1,
+          mobile: false,
+        });
+        await page.waitForTimeout(200);
+        await page.locator(".page-scroll").evaluate((e) => e.scrollTo(0, 0));
+        for (const selector of [
+          ".dropzone",
+          ".draft-panel",
+          ".conversion-toolbar",
+          ".start-conversion",
+        ]) {
+          const bounds = await page.locator(selector).boundingBox();
+          expect(bounds).not.toBeNull();
+          expect(
+            bounds.x,
+            JSON.stringify({
+              width,
+              height,
+              selector,
+              bounds,
+              scroll: await page
+                .locator(".page-scroll")
+                .evaluate((e) => [e.scrollLeft, e.scrollTop]),
+            }),
+          ).toBeGreaterThanOrEqual(0);
+          expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
+          if (selector !== ".draft-panel") {
+            expect(bounds.y).toBeGreaterThanOrEqual(0);
+            expect(bounds.y + bounds.height).toBeLessThanOrEqual(height + 1);
+          }
+        }
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        if (width === 1500)
+          await page.screenshot({ path: "test-results/ui-home-1500x960.png" });
+      }
+      await cdp.send("Emulation.clearDeviceMetricsOverride");
+    },
+  );
   await check("history search and real retry", async () => {
     await page.getByRole("button", { name: "轉換紀錄", exact: true }).click();
     await page
@@ -267,7 +485,7 @@ try {
       .click();
   });
   await check("125 / 150 / 200 percent layout emulation", async () => {
-    await page.getByRole("button", { name: "工作概覽", exact: true }).click();
+    await page.getByRole("button", { name: "檔案轉換", exact: true }).click();
     const cdp = await context.newCDPSession(page);
     for (const scale of [1.25, 1.5, 2]) {
       const width = Math.floor(1920 / scale),
@@ -285,8 +503,10 @@ try {
         ),
       ).toBe(true);
       await expect(
-        page.getByRole("button", { name: "工作概覽", exact: true }),
+        page.getByRole("button", { name: "檔案轉換", exact: true }),
       ).toBeVisible();
+      const controls = await page.locator(".conversion-toolbar").boundingBox();
+      expect(controls.y + controls.height).toBeLessThanOrEqual(height + 1);
       await page.screenshot({ path: `test-results/layout-${scale * 100}.png` });
     }
     await cdp.send("Emulation.clearDeviceMetricsOverride");

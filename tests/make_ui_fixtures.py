@@ -11,3 +11,8 @@ draw.ellipse((-700,400,1150,1800),fill='#244f63')
 draw.ellipse((750,650,2000,1900),fill='#1b354c')
 image.save(root/'玻璃背景 測試.png')
 Image.new('RGBA',(400,240),(90,150,240,160)).save(root/'中文 alpha & 測試.png')
+Image.new('RGB',(640,400),(100,150,170)).save(root/'產品圖片.jpg')
+import pymupdf
+with pymupdf.open() as doc:
+    page=doc.new_page();page.insert_text((72,72),'File Converter UI verification')
+    doc.save(root/'使用說明.pdf')

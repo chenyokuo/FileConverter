@@ -1,4 +1,4 @@
-export type Page = "dashboard" | "converter" | "history" | "settings";
+export type Page = "converter" | "history" | "settings";
 export type MaterialName =
   "sidebar" | "main" | "card" | "modal" | "toolbar" | "settings";
 export interface Material {
@@ -26,6 +26,7 @@ export interface Appearance {
   materials: Record<MaterialName, Material>;
 }
 export interface Settings {
+  appearanceVersion: number;
   appearance: Appearance;
   presets: { name: string; appearance: Appearance }[];
   concurrency: number;

@@ -17,7 +17,11 @@ import {
   ShieldCheck,
   Trash2,
 } from "lucide-react";
-import { defaultAppearance, materialNames } from "../defaults";
+import {
+  backgroundPreset,
+  defaultAppearance,
+  materialNames,
+} from "../defaults";
 import { call, desktop, pickFiles, pickFolder } from "../api";
 import type { Appearance, Engines, MaterialName, Settings } from "../types";
 import { Button, Modal, Slider, Toggle } from "./ui";
@@ -68,7 +72,7 @@ export function SettingsPage({
       const paths = await pickFiles(true);
       if (paths[0]) {
         const image = await call<string>("background", { path: paths[0] });
-        appearance({ image, background: "image" });
+        appearance({ image, background: "image", backgroundBlur: 0 });
         notify("背景已匯入，外觀自動儲存");
       }
     } catch (error) {
@@ -101,14 +105,6 @@ export function SettingsPage({
             {label}
           </button>
         ))}
-        <div className="settings-note">
-          <span className="tiny-label">MADE FOR YOU</span>
-          <p>
-            每一個細節，
-            <br />
-            都可以是你的樣子。
-          </p>
-        </div>
       </nav>
       <div className="settings-content">
         <AnimatePresence mode="wait">
@@ -123,8 +119,8 @@ export function SettingsPage({
               <>
                 <div className="section-heading">
                   <div>
-                    <h2>你的工作空間，你的風格。</h2>
-                    <p>即時預覽，自動保存。讓專注也能賞心悅目。</p>
+                    <h2>個人化外觀</h2>
+                    <p>所有調整即時預覽並自動儲存。</p>
                   </div>
                   <Button
                     compact
@@ -135,6 +131,28 @@ export function SettingsPage({
                   </Button>
                 </div>
                 <section
+                  className="appearance-presets"
+                  aria-label="背景預設配置"
+                >
+                  <Button
+                    onClick={() =>
+                      applyAppearance(backgroundPreset(a, "clear"))
+                    }
+                  >
+                    清晰背景
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      applyAppearance(backgroundPreset(a, "frosted"))
+                    }
+                  >
+                    毛玻璃背景
+                  </Button>
+                  <span className="hint">
+                    清晰背景為 0px；毛玻璃背景才會套用圖片模糊。
+                  </span>
+                </section>
+                <section
                   className="settings-card glass"
                   data-material="settings"
                 >
@@ -143,7 +161,7 @@ export function SettingsPage({
                       <Palette size={17} />
                       外觀模式
                     </h3>
-                    <span className="badge">LIVE PREVIEW</span>
+                    <span className="badge">即時預覽</span>
                   </div>
                   <div className="theme-grid">
                     {(["dark", "light", "system"] as const).map((mode, i) => (
@@ -224,12 +242,9 @@ export function SettingsPage({
                         >
                           <span>
                             {
-                              [
-                                "極光 · 預設",
-                                "暮光漸層",
-                                "純粹單色",
-                                "我的圖片",
-                              ][i]
+                              ["預設背景", "暮光漸層", "純粹單色", "我的圖片"][
+                                i
+                              ]
                             }
                           </span>
                           {a.background === bg && <Check size={15} />}
@@ -366,13 +381,19 @@ export function SettingsPage({
                             min={0}
                             onChange={(v) => updateMaterial({ opacity: v })}
                           />
-                          <Slider
-                            label="玻璃模糊"
-                            value={m.blur}
-                            max={60}
-                            unit="px"
-                            onChange={(v) => updateMaterial({ blur: v })}
-                          />
+                          {material !== "main" ? (
+                            <Slider
+                              label="玻璃模糊"
+                              value={m.blur}
+                              max={60}
+                              unit="px"
+                              onChange={(v) => updateMaterial({ blur: v })}
+                            />
+                          ) : (
+                            <p className="hint workspace-blur-note">
+                              主工作區不套用模糊；背景保持清晰。
+                            </p>
+                          )}
                           <Slider
                             label="邊框可見度"
                             value={m.border}
@@ -409,8 +430,7 @@ export function SettingsPage({
                   <div className="inline-note">
                     <Info size={16} />
                     <span>
-                      整個視窗的透明度：尚未完成
-                      WebView2、陰影與拖曳相容性驗證，暫不開放。上方控制只作用於圖片和玻璃材質。
+                      整個視窗透明度尚未提供；以上設定只調整背景與玻璃面板。
                     </span>
                   </div>
                 </section>
@@ -515,7 +535,7 @@ export function SettingsPage({
               <>
                 <div className="section-heading">
                   <div>
-                    <h2>用剛剛好的效能，完成更多事。</h2>
+                    <h2>效能</h2>
                     <p>轉檔在獨立程序執行，介面持續保持回應。</p>
                   </div>
                 </div>
@@ -551,7 +571,7 @@ export function SettingsPage({
               <>
                 <div className="section-heading">
                   <div>
-                    <h2>每個檔案，都有安心的去處。</h2>
+                    <h2>檔案管理</h2>
                     <p>保護原始檔案；同名輸出會自動加上編號。</p>
                   </div>
                 </div>
@@ -619,8 +639,8 @@ export function SettingsPage({
                   <div className="inline-note">
                     <ShieldCheck size={18} />
                     <span>
-                      所有轉檔在本機執行。沒有雲端 API、遙測、CDN 或前端 Shell
-                      權限。LibreOffice 須另行安裝；程式執行時不會下載引擎。
+                      Office 轉檔需要另行安裝
+                      LibreOffice，安裝後可重新檢測引擎。
                     </span>
                   </div>
                   <hr />
@@ -640,10 +660,10 @@ export function SettingsPage({
                 data-material="settings"
               >
                 <div className="brand-mark large">R</div>
-                <p className="eyebrow">PREMIUM GLASS EDITION</p>
+
                 <h2>RAI Converter</h2>
-                <p className="muted">讓檔案自由轉換，讓資料留在你身邊。</p>
-                <span className="badge">v0.1.0 · Windows x64</span>
+
+                <span className="badge">v0.2.0 · Windows x64</span>
                 <hr />
                 <div className="about-stack">
                   <p>React · Tauri · Rust · Python</p>

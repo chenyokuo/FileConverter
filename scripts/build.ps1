@@ -17,6 +17,7 @@ function Invoke-Checked {
 Invoke-Checked { & $PythonExe scripts\icons.py }
 if (!(Test-Path 'vendor\ffmpeg\ffprobe.exe')) { Invoke-Checked { & $PythonExe scripts\prepare.py } }
 Invoke-Checked { & $PythonExe scripts\freeze.py }
+Invoke-Checked { node tests\appearance-settings.mjs }
 if (!$SkipTests) {
     Invoke-Checked { & $PythonExe tests\test_engine.py }
     $env:RAI_TEST_FROZEN = Join-Path $ProjectRoot 'src-tauri\binaries\rai-engine\rai-engine.exe'
