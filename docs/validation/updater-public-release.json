@@ -1,0 +1,59 @@
+{
+  "version": "1.1.0-rc.3",
+  "url": "https://github.com/chenyokuo/FileConverter/releases/tag/v1.1.0-rc.3",
+  "tag": "v1.1.0-rc.3",
+  "productBuildSource": "8b60c81718fd02b186b8cdf6197115e5bf91d771",
+  "assets": [
+    {
+      "name": "BUILD-INFO.json",
+      "size": 277,
+      "digest": "sha256:21792731589542f87556e7ae364fe8ff489d9fd17a19d40bbe138ea69438e376",
+      "browser_download_url": "https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/BUILD-INFO.json"
+    },
+    {
+      "name": "FileConverter-1.1.0-rc.3-windows-x64-portable.zip",
+      "size": 1588289380,
+      "digest": "sha256:d75e4a6f40493c96949d10d1fcd7058bf7c9539f33814d793b7767ab44bb78e9",
+      "browser_download_url": "https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/FileConverter-1.1.0-rc.3-windows-x64-portable.zip"
+    },
+    {
+      "name": "FileConverter-1.1.0-rc.3-windows-x64-portable.zip.sig",
+      "size": 472,
+      "digest": "sha256:a54f864e2f803a27704ea6953aa984206c8eeefb4859e2cf8afadb39c402d984",
+      "browser_download_url": "https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/FileConverter-1.1.0-rc.3-windows-x64-portable.zip.sig"
+    },
+    {
+      "name": "FileConverter_1.1.0-rc.3_x64-setup.exe",
+      "size": 1573815378,
+      "digest": "sha256:67a2d24058622a02f559a3e3729ccd55e6cf43ba0d0b06db7f0f42ca51a6e016",
+      "browser_download_url": "https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/FileConverter_1.1.0-rc.3_x64-setup.exe"
+    },
+    {
+      "name": "FileConverter_1.1.0-rc.3_x64-setup.exe.sig",
+      "size": 456,
+      "digest": "sha256:d53f7d7b906de05ed617fc520f9e2981ef7115e60d28a7e36c46a91499cd7223",
+      "browser_download_url": "https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/FileConverter_1.1.0-rc.3_x64-setup.exe.sig"
+    },
+    {
+      "name": "latest.json",
+      "size": 3227,
+      "digest": "sha256:01f034956bb67f056ee932490f221127e02637a773a5aec403f29a03cf669885",
+      "browser_download_url": "https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/latest.json"
+    },
+    {
+      "name": "SHA256SUMS.json",
+      "size": 566,
+      "digest": "sha256:3ccd29b7f91f43bb5f6eb37cc09f2bbffe73ef9ae5577952e5c0a7bb22278c9a",
+      "browser_download_url": "https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/SHA256SUMS.json"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 528,
+      "digest": "sha256:7b2fa53d18b430596639aeae9ce39658579bebf53beed1dcd78c32700e116386",
+      "browser_download_url": "https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/SHA256SUMS.txt"
+    }
+  ],
+  "anonymousManifestFetched": true,
+  "prerelease": true,
+  "publicRepository": true
+}

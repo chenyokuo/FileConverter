@@ -1,0 +1,30 @@
+{
+  "version": "1.1.0-rc.3",
+  "publicPrerelease": true,
+  "release": "https://github.com/chenyokuo/FileConverter/releases/tag/v1.1.0-rc.3",
+  "manifest": "https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/latest.json",
+  "productBuildSource": "8b60c81718fd02b186b8cdf6197115e5bf91d771",
+  "rustIncrementalTests": 2,
+  "relatedFrozenGroups": 13,
+  "actualPEIconTests": 4,
+  "full305MatrixRepeated": false,
+  "consolidatedReleaseBuilds": 1,
+  "actualSignedUpdateAndRestart": true,
+  "modifiedCachedInstallerRejected": true,
+  "realExportAndActiveWatcherDeferredInstallation": true,
+  "portableAutoDownloadSignatureAndSHA": true,
+  "realFinalPortableStartupCheck": true,
+  "uninstallDataPreserved": [
+    "settings",
+    "jobs",
+    "automation"
+  ],
+  "originalOwnShellKeysVerified": 92,
+  "externalLimits": [
+    "No clean Windows VM",
+    "Windows10/other devices not certified",
+    "No Windows Authenticode certificate",
+    "External binary corresponding-source redistribution requirements remain documented"
+  ],
+  "bootstrapNote": "Development client with actual native version rc.2 and real production updater code; not the officially shipped updater-less rc.2; final Installer and downloaded/extracted Portable rc.3 both independently executed."
+}

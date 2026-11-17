@@ -1,0 +1,40 @@
+{
+  "mode": "install",
+  "actualNativeIPC": true,
+  "nativeVersion": "1.1.0-rc.2",
+  "check": {
+    "busy": false,
+    "channel": "rc",
+    "downloadPath": null,
+    "downloaded": 0,
+    "error": null,
+    "installed": true,
+    "message": "有新版本可下載",
+    "notes": "# File Converter 1.1.0-rc.3\n\n- 新增「設定 → 軟體更新」：手動檢查、啟動時檢查、自動下載、工作完成後自動安裝。\n- 使用 Tauri 官方 Updater 2.14.1／Process 2.4.0。更新檔與版本號須通過簽章驗證；下載顯示真實位元組進度。\n- Installer 經 NSIS 安裝後重新啟動；轉檔、網址下載、預覽或匯出仍在進行時延後安裝。啟用中的監看資料夾需先暫停。\n- Portable 可檢查並下載通過簽章驗證的 ZIP，請完整解壓到新資料夾。\n- RC 通道包含候選與正式版；正式通道排除 Prerelease，不依賴 GitHub 的 latest 重新導向尋找 RC。\n- 新增 setup.ps1 與 publish-release.ps1，沿用現有 Runtime、NSIS 和 build.ps1。\n- 保留資料識別碼 studio.rai.converter、設定與歷史。rc.2 及更早版本首次需手動安裝此版，之後才有內建更新功能。\n\n本版是 Windows x64 Prerelease。Tauri 更新簽章與 Windows Authenticode 簽章不同；目前沒有 Authenticode 憑證。既有轉檔／編輯器不在本輪重構範圍；外部 Windows／硬體驗收和第三方元件授權範圍仍見專案文件。\n",
+    "phase": "available",
+    "total": null,
+    "verified": false,
+    "version": "1.1.0-rc.3",
+    "waitReason": null
+  },
+  "download": {
+    "busy": false,
+    "channel": "rc",
+    "downloadPath": "C:\\Users\\kuoja\\AppData\\Roaming\\studio.rai.converter\\updates\\1.1.0-rc.3\\FileConverter-setup.exe",
+    "downloaded": 1573815378,
+    "error": null,
+    "installed": true,
+    "message": "簽章驗證通過，可安裝更新",
+    "notes": "# File Converter 1.1.0-rc.3\n\n- 新增「設定 → 軟體更新」：手動檢查、啟動時檢查、自動下載、工作完成後自動安裝。\n- 使用 Tauri 官方 Updater 2.14.1／Process 2.4.0。更新檔與版本號須通過簽章驗證；下載顯示真實位元組進度。\n- Installer 經 NSIS 安裝後重新啟動；轉檔、網址下載、預覽或匯出仍在進行時延後安裝。啟用中的監看資料夾需先暫停。\n- Portable 可檢查並下載通過簽章驗證的 ZIP，請完整解壓到新資料夾。\n- RC 通道包含候選與正式版；正式通道排除 Prerelease，不依賴 GitHub 的 latest 重新導向尋找 RC。\n- 新增 setup.ps1 與 publish-release.ps1，沿用現有 Runtime、NSIS 和 build.ps1。\n- 保留資料識別碼 studio.rai.converter、設定與歷史。rc.2 及更早版本首次需手動安裝此版，之後才有內建更新功能。\n\n本版是 Windows x64 Prerelease。Tauri 更新簽章與 Windows Authenticode 簽章不同；目前沒有 Authenticode 憑證。既有轉檔／編輯器不在本輪重構範圍；外部 Windows／硬體驗收和第三方元件授權範圍仍見專案文件。\n",
+    "phase": "ready",
+    "total": 1573815378,
+    "verified": true,
+    "version": "1.1.0-rc.3",
+    "waitReason": null,
+    "distinctByteCounts": 92
+  },
+  "corruptionRejected": true,
+  "realExportDeferredInstall": true,
+  "activeWatcherDeferredInstall": true,
+  "autoInstallExercised": true
+}

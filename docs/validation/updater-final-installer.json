@@ -1,0 +1,22 @@
+{
+  "mode": "controls",
+  "actualNativeIPC": true,
+  "nativeVersion": "1.1.0-rc.3",
+  "rawLifecycleCommandsBlocked": true,
+  "preferencePersistence": true,
+  "check": {
+    "busy": false,
+    "channel": "stable",
+    "downloadPath": null,
+    "downloaded": 0,
+    "error": null,
+    "installed": true,
+    "message": "此通道尚無已發布的更新",
+    "notes": "",
+    "phase": "current",
+    "total": null,
+    "verified": false,
+    "version": null,
+    "waitReason": null
+  }
+}

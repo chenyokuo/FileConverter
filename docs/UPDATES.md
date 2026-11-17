@@ -77,10 +77,35 @@ powershell -ExecutionPolicy Bypass -File scripts/publish-release.ps1 -SkipBuild
 powershell -ExecutionPolicy Bypass -File scripts/publish-release.ps1 -SkipBuild -DraftOnly
 ```
 
-草稿中斷可接續上傳；已公開 Release 與既有不同指向 Tag 不覆蓋、不 Force Push。`BUILD-INFO.json` 分開記錄產品建置 Commit 與後續僅文件／驗收的發布 Commit；若產品或建置來源已變動，拒絕拿舊包發布。
+草稿中斷可接續上傳，已上傳且 GitHub SHA-256／大小皆相符的附件直接重用。草稿查詢使用 GitHub 的數字 Release ID，預覽的 `untagged-*` 網址在公開後再核對正式 URL。附件使用無空格檔名，避免 GitHub 將空格轉為句點。
+
+已公開 Release 不覆蓋、不 Force Push。既有 Tag 永不移動；草稿接續時，若只有發布流程／文件／驗收改變而產品來源相同，可保留原 Tag 繼續；若產品來源改變，必須選新版本。`BUILD-INFO.json` 分開記錄產品建置 Commit 與後續發布 Commit。原始建置來源為 8b60c81；rc.3 Tag 為 d4ba0ee（相同產品來源，增加驗收工具），main 另有發布流程修正與最終證據。
 
 ## 本輪驗收紀錄
 
-相關模型／Manifest／版本與設定遷移測試、Rust 活動守門與 SemVer 通道測試、TypeScript 檢查及原生更新設定頁測試已執行。最終實際 GitHub 下載、NSIS 更新、重啟與設定保留結果在封裝驗收後補入 `docs/validation/updater-*`。本節不把尚未發生的實機更新宣稱為已通過。
+2026-11-18，本輪已完成下列實測；證據在 `docs/validation/updater-*`：
+
+| 檢查 | 實際結果 |
+|---|---|
+| 相關增量 | TypeScript／PowerShell 語法、Manifest／版本／舊設定遷移測試，以及 2 項 Rust 通道與工作守門測試通過 |
+| 簽章負例 | 官方 Tauri signer 產生的真實簽章可驗證；內容損毀、錯誤簽署版本皆拒絕。另以官方 `Update.install()` 驗證被修改的完整安裝檔，拒絕且程式不退出 |
+| 一次集中封裝 | 重用已驗證且無 AI 套件的 venv／Runtime 快取，13 組既有 frozen 邊界檢查及 4 項實際圖示資源測試通過；未重跑 305 格式矩陣 |
+| GitHub 發布 | 真正公開 Prerelease，8 個資產皆 uploaded；GitHub SHA-256 與本機相符，匿名取得 Manifest，所有平台 URL 與正式資產相符 |
+| Installer 下載 | 實際 1,573,815,378 bytes，92 個不同下載數值；官方驗證通過，快取重驗亦通過 |
+| 工作／監看 | 真正 CPU 影片匯出進行中延後安裝，啟用中的真實監看同樣延後；測試自己的工作取消／監看停止後才允許更新 |
+| 自動安裝 | 開啟自動安裝選項後，官方 Updater 啟動真正 NSIS，更新後 EXE 符合 Installer payload SHA，實際原生視窗重新啟動、使用 app-local frozen Sidecar，更新偏好及原有外觀／轉檔設定保留 |
+| 最終 Installer | 更新後真正 rc.3 再測更新偏好保存、正式通道排除 RC、直接外掛生命週期指令被阻擋；system-only PATH 與 app-local Fixed WebView2，正常退出 |
+| Portable | 自動下載真正 GitHub ZIP 1,588,289,380 bytes、92 個進度數值，官方簽章驗證與整份 ZIP SHA 相符；完整解壓後實際啟動原生版本 rc.3，沒有按檢查按鈕即可由啟動選項取得最新版本 |
+| 正常啟動 | 真正下載解壓版另以無 CDP、system-only PATH 啟動與關閉，沒有殘留 Sidecar |
+| 資料／清理 | 移除隔離的 QA 安裝後，settings／jobs／automation 語意雜湊相同，原有 92 個本程式右鍵 keys 逐值比較相同；只還原 QA 偏好，不清除使用者資料 |
+| 發布不可覆蓋 | 再執行同版發布會在建置前拒絕，沒有移動 Tag 或覆寫公開資產 |
+
+實測抓到的 GitHub 檔名正規化、草稿按 Tag 查詢 404 與 `untagged-*` 預覽 URL 差異，均於草稿階段修正；接續重用已驗證的大型附件，未因此重建應用程式或 Runtime。簽章、Manifest 等小型中繼資料重新產生後，才公開並進行真正客戶端升級測試。
 
 首版 rc.3 的升級路徑使用「具更新元件、原生版本 rc.2 的測試 bootstrap」驗證，因正式 rc.2 未帶 Updater。這是測試前一版客戶端的方式，不會發布 bootstrap，也不宣稱正式 rc.2 能自行檢查更新。最終 rc.3 本身仍須以真正 Installer／Portable 驗證正常啟動、通道與目前版本結果。
+
+上述真正 Installer 與下載解壓的 Portable 均已完成驗證。測試用 bootstrap 需要完整相鄰資源，不作為單檔 Portable 交付。候選包中的文件為建置時快照，最終證據及發布流程修正以本文件／main 為準，不只為文件再次封裝。
+
+下載：[Installer](https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/FileConverter_1.1.0-rc.3_x64-setup.exe) · [Portable](https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/FileConverter-1.1.0-rc.3-windows-x64-portable.zip) · [SHA-256](https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/SHA256SUMS.txt)。
+
+本輪不宣稱乾淨 Windows VM、Windows 10、其他 GPU／實體多螢幕 DPI 已驗收。程式仍未 Authenticode 簽署；外部元件完整相應來源的散布要求見 [DISTRIBUTION](DISTRIBUTION.md)。這些是既有外部驗收／散布範圍，與這次已完成的更新路徑測試分開記錄。

@@ -30,6 +30,8 @@ The official registries were queried before choosing versions. npm and Cargo loc
 
 ## Binary distributions
 
+Automatic updates (1.1.0-rc.3) use official tauri-plugin-updater / @tauri-apps/plugin-updater 2.14.1 and tauri-plugin-process / @tauri-apps/plugin-process 2.4.0, each MIT OR Apache-2.0. The locked Rust dependencies also supply HTTP/TLS, SemVer, Base64 and minisign verification. The existing notice collector preserves their actual npm/Rust license files in the package. Tauri update signatures do not constitute a Windows Authenticode certificate or change the licenses of bundled conversion engines.
+
 The build script copies npm license files, Python package license metadata, this notice, and the project license to `release/licenses/`. Keep those with Portable builds. Tauri's installer includes the notices and project license. Frozen Python dependency metadata is included in the sidecar. Generate a Cargo license inventory before public distribution and preserve the Rust dependency notices as well.
 
 The selected FFmpeg build enables GPL codecs including libx264 / libx265. Do not describe it as an LGPL-only distribution. Preserve its license, build configuration (`ffmpeg -buildconf`), exact release URL and archive hash (`vendor/ffmpeg/manifest.json`). Corresponding source, configuration and applicable scripts must be made available under the relevant GPL terms when distributing it. Build/source references: https://github.com/GyanD/codexffmpeg and https://ffmpeg.org/download.html . Before distributing to others, prepare a complete corresponding-source package for the exact binary; links alone are not a substitute for satisfying the license.

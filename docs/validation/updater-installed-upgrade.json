@@ -1,0 +1,10 @@
+{
+  "realSignedNSISUpdate": true,
+  "finalInstallerPayloadHash": "45521ddec910897e9d79119e67928657e92f90b065d3c469b1f71bb13f3d373c",
+  "nativeWindowRestarted": true,
+  "appLocalFrozenSidecar": true,
+  "autoInstallExercised": true,
+  "settingsPreservedAcrossUpdate": true,
+  "normalExitNoSidecar": true,
+  "qaPreferencesRestored": true
+}
