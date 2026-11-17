@@ -88,10 +88,10 @@ export function VideoEditor({
   } | null>(null);
   const importToken = useRef(imports);
   const duration = timelineLength(p);
-  useEffect(()=>{ const el=timelineViewport.current;if(!el || !fitAuto)return;const fit=()=>{if(el.clientWidth)setZoom(Math.max(.1,Math.min(160,(el.clientWidth-80)/Math.max(1,duration))))};const observer=new ResizeObserver(fit);observer.observe(el);fit();return()=>observer.disconnect(); },[duration,fitAuto,active]);
+  useEffect(()=>{ const el=timelineViewport.current;if(!el || !fitAuto)return;const fit=()=>{if(el.clientWidth)setZoom(Math.max(.00001,(el.clientWidth-80)/Math.max(.02,duration)))};const observer=new ResizeObserver(fit);observer.observe(el);fit();return()=>observer.disconnect(); },[duration,fitAuto,active]);
   const preview = useRenderedPreview(p, p.clips.length > 0);
   const c = p.clips.find((c) => c.id === selected);
-  const tick=[1,2,5,10,30,60,300,600,3600].find(v=>v*zoom>=60) || 3600;
+  const tick=[1,2,5,10,30,60,300,600,3600,7200,14400,43200,86400,172800,864000].find(v=>v*zoom>=60) || 3600;
   const tracks = Array.from(
     new Set(["V1", "A1", "A2", ...p.clips.map((c) => c.track)]),
   );
@@ -460,7 +460,7 @@ export function VideoEditor({
           <Trash2 size={17} />
           刪除片段
         </Button>
-        <Button onClick={()=>{setFitAuto(true);setZoom(Math.max(.1,Math.min(160,((timelineViewport.current?.clientWidth || 700)-80)/Math.max(1,duration))))}}>Fit Timeline</Button>
+        <Button onClick={()=>{setFitAuto(true);setZoom(Math.max(.00001,((timelineViewport.current?.clientWidth || 700)-80)/Math.max(.02,duration)))}}>Fit Timeline</Button>
         <Button disabled={!c?.pairId} onClick={()=>c && history.change({...p,clips:p.clips.map(x=>x.pairId===c.pairId?{...x,linked:!c.linked,...(!c.linked?{at:c.at,in:c.in,out:c.out,speed:c.speed}: {})}:x)})}>{c?.linked ? "解除連動" : "重新連動"}</Button>
         <Button disabled={!c} onClick={()=>c && history.change({...p,clips:[...p.clips,...p.clips.filter(x=>related(c,x)).map(x=>({...x,id:crypto.randomUUID(),pairId:x.pairId ? 'copy-'+p.clips.length+'-'+x.pairId:undefined,at:x.at+clipLength(c)}))]})}>複製片段</Button>
         <Button onClick={()=>{setTrack("A2");void addToMusic();}}>加入背景音樂</Button>
@@ -469,8 +469,9 @@ export function VideoEditor({
           <input
             type="range"
             aria-label="時間軸縮放"
-            min={0.1}
-            max={160}
+            min={0.00001}
+            step="any"
+            max={Math.max(160,zoom)}
             value={zoom}
             onChange={(e) => {setFitAuto(false);setZoom(Number(e.target.value));}}
           />

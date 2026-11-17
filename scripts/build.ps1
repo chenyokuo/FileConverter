@@ -32,6 +32,8 @@ $env:FILE_CONVERTER_TEST_ENGINES=Join-Path $ProjectRoot 'src-tauri/bundled-engin
 try {
     Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_image_editor.py' -v }
     Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_video_editor.py' -v }
+    Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_audio_links.py' -v }
+    Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_download_preview.py' -v }
     Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_p2.py' -k ocr -v }
     Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_p4.py' -k pdf_ocr -v }
 } finally { Remove-Item Env:FILE_CONVERTER_TEST_FROZEN,Env:FILE_CONVERTER_TEST_ENGINES -ErrorAction SilentlyContinue }

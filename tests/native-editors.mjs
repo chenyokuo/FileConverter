@@ -100,7 +100,7 @@ try {
     path.join(process.cwd(), ".tools/editor-ui/blue.mp4"),
   ]);
   await page.getByRole("button", { name: "匯入素材", exact: true }).click();
-  await expect(page.locator(".video-editor .editor-clip")).toHaveCount(2, {
+  await expect(page.locator(".video-editor .editor-clip")).toHaveCount(4, {
     timeout: 30000,
   });
   await expect(page.locator(".video-editor video")).toBeVisible({
@@ -121,7 +121,7 @@ try {
     )
     .toBeGreaterThan(0.1);
   await page.locator(".video-editor video").evaluate((v) => {v.pause();v.currentTime=1;v.dispatchEvent(new Event('timeupdate'))});
-  await page.getByRole('button',{name:'分割',exact:true}).click();await expect(page.locator('.video-editor .editor-clip')).toHaveCount(3);
+  await page.getByRole('button',{name:'分割',exact:true}).click();await expect(page.locator('.video-editor .editor-clip')).toHaveCount(6);
   await pick(outputDir);
   await page
     .getByRole("button", { name: "選擇輸出資料夾", exact: true })
@@ -189,7 +189,7 @@ try {
     )
     .toBe("completed");
   await page.getByRole("button", { name: "影片編輯器", exact: true }).click();
-  await expect(page.locator(".video-editor .editor-clip")).toHaveCount(3, {
+  await expect(page.locator(".video-editor .editor-clip")).toHaveCount(6, {
     timeout: 30000,
   });
   await expect(page.locator(".video-editor video")).toBeVisible();
@@ -211,7 +211,7 @@ try {
     actualAssetProtocol: true,
     actualMediaPlayback: true,
     windowMaximizeRestore: true,
-    splitClipCount: 3,
+    splitClipCount: 6,
     layoutChecks,
     pipelines: [
       "video import→preview→export",
