@@ -59,6 +59,22 @@ class VideoEditorTests(unittest.TestCase):
   streams=probe(out,self.e['ffprobe'])['streams'];self.assertTrue(any(s['codec_type']=='audio' for s in streams));pixel=self.pixel(out,1.75);self.assertGreater(pixel[0],20);self.assertGreater(pixel[2],20)
   preview=self.finish(self.enqueue(p,preview=True));self.assertEqual(probe(preview,self.e['ffprobe'])['streams'][0]['width'],640)
   audio=self.finish(self.enqueue(p,'wav'));self.assertEqual(probe(audio,self.e['ffprobe'])['streams'][0]['codec_type'],'audio')
+ def test_cancel_render_terminates_external_process_and_cleans_stage(self):
+  import time,psutil
+  clips=[self.clip('red',i*2) for i in range(25)];p=self.project(clips);p.update(width=1920,height=1080,fps=30)
+  job=self.enqueue(p);processes=[];deadline=time.monotonic()+15
+  while time.monotonic()<deadline:
+   state=self.client.call('preview_status',{'id':job['id']})
+   if state.get('stats',{}).get('phase')=='時間軸合成':
+    for child in psutil.Process(self.client.proc.pid).children(recursive=True):
+     try:
+      if child.name().lower().startswith('ffmpeg') and '-filter_complex' in child.cmdline():processes.append(child.pid)
+     except (psutil.NoSuchProcess,psutil.AccessDenied):pass
+    if processes:break
+   time.sleep(.05)
+  self.assertTrue(processes,'Expected a real compositor child before cancellation')
+  self.client.call('cancel',{'id':job['id']});state=self.client.wait([job['id']],timeout=20)[0];self.assertEqual(state['status'],'cancelled')
+  self.assertTrue(all(not psutil.pid_exists(pid) for pid in processes));self.assertFalse(list((self.root/'output').glob('.rai-*')))
  def test_image_insertion_validation_and_missing_media(self):
   image=self.clip('red');image.update(source=str(self.root/'still.png'),**{'out':1})
   out=self.finish(self.enqueue(self.project([image]),'webm'));self.assertGreater(self.pixel(out,.3)[0],210)

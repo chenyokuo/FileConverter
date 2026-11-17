@@ -45,6 +45,7 @@ const sizeLabel = (size: number) =>
       ? `${(size / 1024 ** 2).toFixed(1)} MB`
       : `${(size / 1024 ** 3).toFixed(2)} GB`;
 interface Props {
+  onEdit?: (path: string, category: string) => void;
   hardware: HardwareDevice[];
   registry: Registry;
   modeBar: ReactNode;
@@ -258,6 +259,16 @@ export function ConversionWorkspace(p: Props) {
                       ))}
                     </select>
                     <div className="draft-actions">
+                      {p.onEdit &&
+                        ["video", "audio", "image"].includes(file.category) && (
+                          <Button
+                            compact
+                            onClick={() => p.onEdit?.(file.path, file.category)}
+                          >
+                            送入{file.category === "image" ? "圖片" : "影片"}
+                            編輯器
+                          </Button>
+                        )}
                       <Button
                         compact
                         aria-label={`預覽 ${file.name}`}

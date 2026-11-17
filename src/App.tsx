@@ -1,5 +1,5 @@
-import {ImageEditor} from "./components/ImageEditor";
-import {VideoEditor} from "./components/VideoEditor";
+import { ImageEditor } from "./components/ImageEditor";
+import { VideoEditor } from "./components/VideoEditor";
 import { DownloadPage } from "./components/DownloadPage";
 import { AutomationPage } from "./components/AutomationPage";
 import { ConversionPresets } from "./components/ConversionPresets";
@@ -118,6 +118,19 @@ function rgb(hex: string) {
 
 export default function App() {
   const [page, setPage] = useState<Page>("converter");
+  const pageRef = useRef(page);
+  pageRef.current = page;
+  const [videoImports, setVideoImports] = useState<string[]>([]);
+  const [imageImports, setImageImports] = useState<string[]>([]);
+  const sendToEditor = useCallback((paths: string[], kind: string) => {
+    if (kind === "image") {
+      setImageImports([...paths]);
+      setPage("image-editor");
+    } else {
+      setVideoImports([...paths]);
+      setPage("video-editor");
+    }
+  }, []);
   const [registry, setRegistry] = useState<Registry>({
     version: 1,
     edges: [],
@@ -365,6 +378,21 @@ export default function App() {
     },
     [notify],
   );
+  const routePaths = useCallback(
+    (paths: string[]) => {
+      if (
+        pageRef.current === "video-editor" ||
+        pageRef.current === "image-editor"
+      ) {
+        sendToEditor(
+          paths,
+          pageRef.current === "image-editor" ? "image" : "video",
+        );
+        setDragging(false);
+      } else void importPaths(paths);
+    },
+    [importPaths, sendToEditor],
+  );
   useEffect(() => {
     if (!desktop || !ready) return;
     let disposed = false;
@@ -381,7 +409,7 @@ export default function App() {
             await importPaths(request.paths, {
               target: request.target,
             } as Tool);
-          else await importPaths(request.paths);
+          else routePaths(request.paths);
         }
       } catch (e) {
         notify(String(e), true);
@@ -396,7 +424,7 @@ export default function App() {
       disposed = true;
       off?.();
     };
-  }, [ready, importPaths, notify]);
+  }, [ready, importPaths, routePaths, notify]);
   useEffect(() => {
     if (!desktop) return;
     let disposed = false;
@@ -406,7 +434,7 @@ export default function App() {
         if (e.payload.type === "over" || e.payload.type === "enter")
           setDragging(true);
         else if (e.payload.type === "leave") setDragging(false);
-        else if (e.payload.type === "drop") void importPaths(e.payload.paths);
+        else if (e.payload.type === "drop") routePaths(e.payload.paths);
       })
       .then((fn) => {
         if (disposed) fn();
@@ -416,7 +444,7 @@ export default function App() {
       disposed = true;
       off?.();
     };
-  }, [importPaths]);
+  }, [routePaths]);
   const addFiles = async () => {
     try {
       await importPaths(await pickFiles());
@@ -682,6 +710,20 @@ export default function App() {
               <RotateCcw size={15} />
             </Button>
           )}
+          {job.status === "completed" &&
+            ["video", "audio", "image"].includes(job.category) && (
+              <Button
+                compact
+                onClick={() =>
+                  sendToEditor(
+                    job.outputs.filter((p) => !/\.(srt|vtt|ass)$/i.test(p)),
+                    job.category,
+                  )
+                }
+              >
+                送入{job.category === "image" ? "圖片" : "影片"}編輯器
+              </Button>
+            )}
           {job.status === "completed" && (
             <Button
               compact
@@ -861,29 +903,34 @@ export default function App() {
                       ? "File Converter"
                       : page === "video-editor"
                         ? "影片編輯器"
-                      : page === "image-editor" ? "圖片編輯器"
-                      : page === "history"
-                        ? "轉換紀錄"
-                        : page === "workflow"
-                          ? "自動化工作流程"
-                          : page === "download"
-                            ? "網址下載"
-                            : page === "toolbox"
-                              ? "工具箱"
-                              : "設定"}
+                        : page === "image-editor"
+                          ? "圖片編輯器"
+                          : page === "history"
+                            ? "轉換紀錄"
+                            : page === "workflow"
+                              ? "自動化工作流程"
+                              : page === "download"
+                                ? "網址下載"
+                                : page === "toolbox"
+                                  ? "工具箱"
+                                  : "設定"}
                   </h1>
                   <p>
                     {page === "converter"
                       ? "加入檔案，選擇輸出格式後開始轉換。"
-                      : page === "history"
-                        ? "搜尋已完成、失敗或取消的任務。"
-                        : page === "download"
-                          ? "解析實際畫質與字幕，選擇項目後下載。"
-                          : page === "workflow"
-                            ? "保存轉檔配置、串連處理步驟與監看指定資料夾。"
-                            : page === "toolbox"
-                              ? "選擇工具、匯入檔案，並檢查輸出設定。"
-                              : "調整外觀、轉檔偏好與引擎設定。"}
+                      : page === "video-editor"
+                        ? "匯入素材，在時間軸編輯後匯出。"
+                        : page === "image-editor"
+                          ? "匯入圖片，調整圖層後匯出。"
+                          : page === "history"
+                            ? "搜尋已完成、失敗或取消的任務。"
+                            : page === "download"
+                              ? "解析實際畫質與字幕，選擇項目後下載。"
+                              : page === "workflow"
+                                ? "保存轉檔配置、串連處理步驟與監看指定資料夾。"
+                                : page === "toolbox"
+                                  ? "選擇工具、匯入檔案，並檢查輸出設定。"
+                                  : "調整外觀、轉檔偏好與引擎設定。"}
                   </p>
                 </div>
                 {page === "converter" && (
@@ -914,8 +961,44 @@ export default function App() {
                   </Button>
                 </div>
               )}
-              <div hidden={page!=="image-editor"}><ImageEditor notify={notify}/></div>
-              <div hidden={page!=="video-editor"}><VideoEditor hardware={hardware} notify={notify}/></div>
+              <div hidden={page !== "download"}>
+                <DownloadPage
+                  disabled={
+                    !desktop || !ready || !!engineError || !engines.ytdlp
+                  }
+                  outputDir={settings.downloadDir}
+                  onDirectory={(path) =>
+                    setSettings((old) => ({ ...old, downloadDir: path }))
+                  }
+                  notify={notify}
+                  active={page === "download"}
+                  jobs={jobs.filter((j) => j.kind === "download")}
+                  onEdit={(paths) => sendToEditor(paths, "video")}
+                />
+              </div>
+              <div hidden={page !== "image-editor"}>
+                <ImageEditor
+                  notify={notify}
+                  imports={imageImports}
+                  onConvert={(path) => {
+                    setMode("auto");
+                    presetRef.current = {
+                      mode: "auto",
+                      source: "",
+                      target: "",
+                    };
+                    void importPaths([path]);
+                  }}
+                />
+              </div>
+              <div hidden={page !== "video-editor"}>
+                <VideoEditor
+                  hardware={hardware}
+                  notify={notify}
+                  imports={videoImports}
+                  active={page === "video-editor"}
+                />
+              </div>
               <AnimatePresence mode="wait">
                 <motion.div
                   className="page-transition"
@@ -928,6 +1011,9 @@ export default function App() {
                   {page === "converter" && (
                     <ConversionWorkspace
                       hardware={hardware}
+                      onEdit={(path, category) =>
+                        sendToEditor([path], category)
+                      }
                       modeBar={
                         <>
                           <ConversionPresets
@@ -1080,18 +1166,6 @@ export default function App() {
                           </section>
                         ) : null
                       }
-                    />
-                  )}
-                  {page === "download" && (
-                    <DownloadPage
-                      disabled={
-                        !desktop || !ready || !!engineError || !engines.ytdlp
-                      }
-                      outputDir={settings.downloadDir}
-                      onDirectory={(path) =>
-                        setSettings((old) => ({ ...old, downloadDir: path }))
-                      }
-                      notify={notify}
                     />
                   )}
                   {page === "workflow" && (

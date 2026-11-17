@@ -21,7 +21,12 @@ import {
   type ImageLayer,
   type ImageProject,
 } from "../image-model";
-import { useUndo, useRenderedPreview, projectDialog } from "./editor-hooks";
+import {
+  useUndo,
+  useRenderedPreview,
+  projectDialog,
+  editorStatus,
+} from "./editor-hooks";
 export function ImageEditor({
   notify,
   onConvert,
@@ -84,12 +89,17 @@ export function ImageEditor({
         );
       }
       if (added.length) {
+        const snapshot = history.read();
+        if (snapshot.layers.length) {
+          width = snapshot.width;
+          height = snapshot.height;
+        }
         history.change({
-          ...p,
+          ...snapshot,
           width,
           height,
-          crop: p.layers.length ? p.crop : [0, 0, width, height],
-          layers: [...p.layers, ...added],
+          crop: snapshot.layers.length ? snapshot.crop : [0, 0, width, height],
+          layers: [...snapshot.layers, ...added],
         });
         setSelected(added[added.length - 1].id);
       }
@@ -584,7 +594,8 @@ export function ImageEditor({
                 <>
                   <label className="field">
                     文字內容
-                    <textarea aria-label="文字內容"
+                    <textarea
+                      aria-label="文字內容"
                       value={layer.text}
                       onChange={(e) => change({ text: e.target.value })}
                     />
@@ -786,7 +797,7 @@ export function ImageEditor({
       {job && (
         <div className="row">
           <span>
-            {job.status} · {Math.floor(job.progress)}% {job.error}
+            {editorStatus[job.status]} · {Math.floor(job.progress)}% {job.error}
           </span>
           {["queued", "running"].includes(job.status) && (
             <Button onClick={() => call("cancel", { id: job.id })}>

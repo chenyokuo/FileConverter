@@ -25,7 +25,12 @@ import {
   type Clip,
   type Asset,
 } from "../editor-model";
-import { useUndo, useRenderedPreview, projectDialog } from "./editor-hooks";
+import {
+  useUndo,
+  useRenderedPreview,
+  projectDialog,
+  editorStatus,
+} from "./editor-hooks";
 import { OptionsEditor } from "./OptionsEditor";
 import { timecode } from "./TimeRange";
 const blank = (): VideoProject => ({
@@ -40,10 +45,12 @@ const blank = (): VideoProject => ({
   export: { ...defaultOptions },
 });
 export function VideoEditor({
+  active = true,
   hardware,
   notify,
   imports = [],
 }: {
+  active?: boolean;
   hardware: HardwareDevice[];
   notify: (s: string, error?: boolean) => void;
   imports?: string[];
@@ -62,7 +69,12 @@ export function VideoEditor({
   const [format, setFormat] = useState("mp4");
   const [job, setJob] = useState<Job | null>(null);
   const [title, setTitle] = useState("");
+  const assetPointer = useRef<{ x: number; y: number } | null>(null);
+  const assetDragged = useRef(false);
   const player = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    if (!active) player.current?.pause();
+  }, [active]);
   const drag = useRef<{
     clip: Clip;
     mode: string;
@@ -99,12 +111,13 @@ export function VideoEditor({
     setError("");
     try {
       const list = await loadAssets(paths || (await pickFiles()));
+      const snapshot = history.read();
       let at =
         mode === "insert"
           ? current
           : Math.max(
               0,
-              ...p.clips
+              ...snapshot.clips
                 .filter((c) => c.track === track)
                 .map((c) => c.at + clipLength(c)),
             );
@@ -118,9 +131,9 @@ export function VideoEditor({
       }
       const inserted = at - current;
       history.change({
-        ...p,
+        ...snapshot,
         clips: [
-          ...p.clips.map((c) =>
+          ...snapshot.clips.map((c) =>
             mode === "insert" && c.track === track && c.at >= current
               ? { ...c, at: c.at + inserted }
               : c,
@@ -461,11 +474,45 @@ export function VideoEditor({
         {Object.values(assets).map((a) => (
           <button
             key={a.path}
-            draggable
-            onDragStart={(e) =>
-              e.dataTransfer.setData("application/x-fc-asset", a.path)
-            }
+            draggable={false}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              assetPointer.current = { x: e.clientX, y: e.clientY };
+              assetDragged.current = false;
+              e.currentTarget.setPointerCapture(e.pointerId);
+            }}
+            onPointerUp={(e) => {
+              const origin = assetPointer.current;
+              assetPointer.current = null;
+              if (
+                !origin ||
+                Math.hypot(e.clientX - origin.x, e.clientY - origin.y) < 5
+              )
+                return;
+              assetDragged.current = true;
+              const row = document
+                .elementFromPoint(e.clientX, e.clientY)
+                ?.closest<HTMLElement>(".editor-track");
+              if (!row) return;
+              const destination = row.dataset.track!;
+              if (a.kind === "audio" && destination.startsWith("V")) {
+                setError("音訊請拖入 A1／A2 軌道");
+                return;
+              }
+              const box = row.getBoundingClientRect();
+              const clip = newClip(
+                a,
+                destination,
+                Math.max(0, (e.clientX - box.left - 60) / zoom),
+              );
+              history.change({ ...p, clips: [...p.clips, clip] });
+              setSelected(clip.id);
+            }}
             onClick={() => {
+              if (assetDragged.current) {
+                assetDragged.current = false;
+                return;
+              }
               const clip = newClip(
                 a,
                 a.kind === "audio" ? "A2" : track,
@@ -502,6 +549,7 @@ export function VideoEditor({
           {tracks.map((t) => (
             <div
               className={`editor-track track-${t[0]}`}
+              data-track={t}
               key={t}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
@@ -899,7 +947,7 @@ export function VideoEditor({
       {job && (
         <div className="row">
           <span>
-            {job.status} · {Math.floor(job.progress)}% {job.error}
+            {editorStatus[job.status]} · {Math.floor(job.progress)}% {job.error}
           </span>
           {["queued", "running"].includes(job.status) && (
             <Button onClick={() => call("cancel", { id: job.id })}>

@@ -3,7 +3,7 @@ import {
   defaultRanges,
   type RangeOptions,
 } from "./DownloadRange";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Download, FolderOpen, LoaderCircle, Search } from "lucide-react";
 import { call, pickFolder } from "../api";
 import type { Job } from "../types";
@@ -46,16 +46,27 @@ const duration = (value?: number) =>
     ? `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, "0")}`
     : "長度未知";
 export function DownloadPage({
+  active = true,
+  jobs = [],
+  onEdit,
   disabled,
   outputDir,
   onDirectory,
   notify,
 }: {
+  active?: boolean;
+  jobs?: Job[];
+  onEdit?: (paths: string[]) => void;
   disabled: boolean;
   outputDir: string;
   onDirectory: (path: string) => void;
   notify: (text: string, error?: boolean) => void;
 }) {
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!active)
+      root.current?.querySelectorAll("video").forEach((v) => v.pause());
+  }, [active]);
   const [url, setUrl] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [busy, setBusy] = useState(false);
@@ -142,7 +153,7 @@ export function DownloadPage({
     }
   };
   return (
-    <div className="download-page">
+    <div className="download-page" ref={root}>
       <form
         className="download-source glass"
         data-material="card"
@@ -414,6 +425,46 @@ export function DownloadPage({
             </Button>
           </div>
         </>
+      )}
+      {!!jobs.length && (
+        <section
+          className="glass editor-download-results"
+          data-material="card"
+          aria-label="下載任務與成果"
+        >
+          <h3>下載任務與成果</h3>
+          {[...jobs]
+            .sort((a, b) => b.created - a.created)
+            .slice(0, 20)
+            .map((job) => (
+              <div key={job.id} className="row">
+                <strong>{job.name}</strong>
+                <span>
+                  {job.status} · {Math.floor(job.progress)}%
+                </span>
+                {job.error && <span className="error-text">{job.error}</span>}
+                {["queued", "running"].includes(job.status) && (
+                  <Button
+                    compact
+                    onClick={() => call("cancel", { id: job.id })}
+                  >
+                    取消下載
+                  </Button>
+                )}
+                {job.status === "completed" && onEdit && (
+                  <Button
+                    onClick={() =>
+                      onEdit(
+                        job.outputs.filter((p) => !/\.(srt|vtt|ass)$/i.test(p)),
+                      )
+                    }
+                  >
+                    送入影片編輯器
+                  </Button>
+                )}
+              </div>
+            ))}
+        </section>
       )}
     </div>
   );
