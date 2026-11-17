@@ -13,3 +13,5 @@ assert.equal(patchClip(unlinked,unlinked[0],{at:3})[1].at,unlinked[1].at);
 assert.equal(importedClips({...asset,hasAudio:false},'V1',0).length,1);
 assert.equal(importedClips({...asset,kind:'audio'},'A2',0).length,1);
 console.log('PASS linked import, move/trim, split, unlink, silent video and audio-only source');
+
+assert.equal(importedClips(asset,'V2',0,importedClips(asset,'V1',0))[1].track,'A2');

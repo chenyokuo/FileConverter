@@ -1,5 +1,5 @@
 import {chromium,expect} from '@playwright/test';
-import fs from 'node:fs/promises';import path from 'node:path';
+import fs from 'node:fs/promises';import {execFileSync} from 'node:child_process';import path from 'node:path';
 import {bridge,installBridge} from './editor-bridge.mjs';
 const bridgeApi=await bridge();const browser=await chromium.launch({channel:'msedge',headless:true});
 try {
@@ -25,6 +25,12 @@ try {
  await page.getByRole('button',{name:'儲存',exact:true}).click();
  await expect.poll(async()=>JSON.parse(await fs.readFile(project,'utf8').catch(()=>'{"clips":[]}')).clips.length).toBe(6);
  const saved=JSON.parse(await fs.readFile(project,'utf8'));expect(saved.clips.filter(c=>c.videoOnly)).toHaveLength(3);
+ await page.getByRole('button',{name:'輸出所選片段',exact:true}).click();let selectedOutput;await expect.poll(async()=>{const state=await bridgeApi.rpc('snapshot');const job=state.jobs.find(j=>j.kind==='fcvideo');if(job?.status==='failed')throw Error(job.error);selectedOutput=job?.outputs?.[0];return job?.status},{timeout:30000}).toBe('completed');
+ execFileSync('.venv/Scripts/python.exe',['-X','utf8','-c',`import sys,json,subprocess,array,math
++from pathlib import Path
++sys.path.insert(0,'engine')
++from runtime import locate
++e=locate(Path('vendor'));info=json.loads(subprocess.check_output([e['ffprobe'],'-v','error','-show_streams','-show_format','-of','json',sys.argv[1]]));assert abs(float(info['format']['duration'])-1)<.1;assert any(s['codec_type']=='audio' for s in info['streams']);a=array.array('f');a.frombytes(subprocess.check_output([e['ffmpeg'],'-v','error','-i',sys.argv[1],'-f','f32le','-ac','1','-']));assert math.sqrt(sum(x*x for x in a)/len(a))>.02`.replaceAll('\n+','\n'),selectedOutput]);
  for(const [width,height] of [[1920,1080],[1366,768],[1280,720],[960,640]]){
   await page.setViewportSize({width,height});await page.waitForTimeout(150);
   expect(await page.locator('.video-editor').evaluate(e=>e.scrollWidth<=e.clientWidth+1)).toBe(true);

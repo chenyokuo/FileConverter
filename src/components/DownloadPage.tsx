@@ -241,7 +241,7 @@ export function DownloadPage({
       )}
       {analysis && (
         <>
-          <div className="download-summary glass" data-material="card">
+          {analysis.playlist && <div className="download-summary glass" data-material="card">
             <div>
               <h2>{analysis.title}</h2>
               <p>
@@ -249,8 +249,8 @@ export function DownloadPage({
                 {analysis.playlist ? "播放清單項目" : "來源"}
               </p>
             </div>
-          </div>
-          <div className="row between">
+          </div>}
+          {analysis.playlist && <div className="row between">
             <span>
               已選 {selected.size} / {analysis.entries.length}
             </span>
@@ -267,7 +267,7 @@ export function DownloadPage({
                 清除選取
               </Button>
             </div>
-          </div>
+          </div>}
           <div className="download-entries glass" data-material="card">
             {analysis.entries.map((entry) => (
               <section className="download-entry" key={entry.key}>

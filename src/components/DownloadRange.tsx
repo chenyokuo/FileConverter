@@ -43,7 +43,7 @@ export function DownloadRange({
   const mounted=useRef(true);
   const jobRef=useRef<Job|null>(null);
   useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;if(jobRef.current)void release(jobRef.current)}},[]);
-  useEffect(()=>{if(!previewJob || !["running","queued","cancelling"].includes(previewJob.status))return;const timer=setInterval(()=>void call<Job>("preview_status",{id:previewJob.id}).then(job=>{setPreviewJob(job);jobRef.current=job;if(job.status==="completed"){setLocal(convertFileSrc(job.outputs[0]));setFailed(false);setBuffering(true)}if(job.status==="failed")setFailure(job.error || "本機預覽建立失敗")}).catch(e=>setFailure(String(e))),500);return()=>clearInterval(timer)},[previewJob?.id,previewJob?.status]);
+  useEffect(()=>{if(!previewJob || !["running","queued","cancelling"].includes(previewJob.status))return;const timer=setInterval(()=>void call<Job>("preview_status",{id:previewJob.id}).then(job=>{setPreviewJob(job);jobRef.current=job;if(job.status==="completed"){setLocal(convertFileSrc(job.outputs[0]));setFailure("");setFailed(false);setBuffering(true)}if(job.status==="failed"){setBuffering(false);setFailure(job.error || "本機預覽建立失敗")}}).catch(e=>setFailure(String(e))),500);return()=>clearInterval(timer)},[previewJob?.id,previewJob?.status]);
   const preparing=!!previewJob && ["running","queued","cancelling"].includes(previewJob.status);
   useEffect(()=>{if(!buffering || !previewUrl && !local)return;const timer=setTimeout(()=>{setFailure("播放器載入逾時；可重試或建立本機預覽，下載控制仍可使用。");setFailed(true)},20000);return()=>clearTimeout(timer)},[buffering,previewUrl,local]);
 
@@ -73,7 +73,7 @@ export function DownloadRange({
             onTimeUpdate={(e) => setCurrent(e.currentTarget.currentTime)}
             onWaiting={() => setBuffering(true)}
             onCanPlay={() => setBuffering(false)}
-            onError={(e) => {const error=e.currentTarget.error;setFailure(`HTML MediaError ${error?.code ?? 0}：${error?.message || "來源串流無法直接播放（可能是 URL、解碼或來源網路限制）"}`);setFailed(true)}}
+            onError={(e) => {const error=e.currentTarget.error;setFailure(`HTML MediaError ${error?.code ?? 0}：${error?.message || "來源串流無法直接播放（可能是 URL、解碼或來源網路限制）"}`);setFailed(true);setBuffering(false)}}
           />
         ) : (
           <div className="range-player-empty">
@@ -100,6 +100,7 @@ export function DownloadRange({
       {analysisId && entryKey && <div className="range-preview-actions row">
         <Button disabled={preparing || loading} onClick={async()=>{try{if(jobRef.current)await release(jobRef.current);setFailure("");const job=await call<Job>("download_preview",{analysisId,key:entryKey});if(!mounted.current){void release(job);return}jobRef.current=job;setPreviewJob(job)}catch(e){setFailure(String(e))}}}>建立本機預覽（下載低畫質完整影片）</Button>
         {preparing && <><span>建立中 {Math.floor(previewJob!.progress)}%</span><Button onClick={()=>call("cancel",{id:previewJob!.id})}>取消預覽</Button></>}
+        {previewJob && <Button onClick={async()=>{if(video.current){video.current.pause();video.current.removeAttribute("src");video.current.load();}setLocal("");if(jobRef.current)await release(jobRef.current);jobRef.current=null;setPreviewJob(null);setLocal("");setBuffering(false);}}>清除本機預覽</Button>}
         {sourceUrl && <Button onClick={()=>call("open_source",{url:sourceUrl}).catch(e=>setFailure(String(e)))}>開啟原始影片</Button>}
         <Button onClick={()=>{setFailed(false);setFailure("");setBuffering(true);video.current?.load()}}>重試播放器</Button>
       </div>}
@@ -195,6 +196,7 @@ export function DownloadRange({
           <label className="field">
             <span>裁切方式</span>
             <select
+              aria-label="裁切方式"
               value={value.precise ? "precise" : "fast"}
               onChange={(e) =>
                 onChange({ ...value, precise: e.target.value === "precise" })
@@ -207,6 +209,7 @@ export function DownloadRange({
           <label className="field">
             <span>多片段輸出</span>
             <select
+              aria-label="多片段輸出"
               value={value.merge ? "merge" : "separate"}
               onChange={(e) =>
                 onChange({ ...value, merge: e.target.value === "merge" })

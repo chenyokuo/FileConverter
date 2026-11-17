@@ -135,7 +135,7 @@ export function VideoEditor({
         const target =
           a.kind === "audio" ? (track.startsWith("A") ? track : "A2") : track;
         const clip = newClip(a, target, at);
-        added.push(...importedClips(a,target,at));
+        added.push(...importedClips(a,target,at,[...snapshot.clips,...added]));
         at += clipLength(clip);
       }
       const inserted = at - current;
@@ -437,6 +437,16 @@ export function VideoEditor({
           <Scissors size={17} />
           分割
         </Button>
+            <Button disabled={!c} onClick={() => c && update({ mute: !(c?.videoOnly && audioClip ? audioClip.mute : c?.mute) })}>
+              <VolumeX size={16} />
+              {(c?.videoOnly && audioClip ? audioClip.mute : c?.mute) ? "取消靜音" : "靜音"}
+            </Button>
+            <Button disabled={!c || !assets[c.source]?.hasAudio || c.videoOnly || !c.track.startsWith("V")} title={c?.videoOnly ? "已自動分離音軌" : "需選取包含音訊的影片"} onClick={separate}>
+              <Layers size={16} />
+              分離音軌
+            </Button>
+
+        <Button disabled={!c} onClick={()=>{setShowProperties(true);setTimeout(()=>{const label=Array.from(document.querySelectorAll(".editor-properties label")).find(e=>e.textContent?.includes("來源起點"));label?.querySelector("input")?.focus();},0)}}>裁切設定</Button>
         <Button disabled={!history.canUndo} onClick={history.undo}>
           <Undo2 size={17} />
           復原
@@ -512,7 +522,7 @@ export function VideoEditor({
                 destination,
                 Math.max(0, (e.clientX - box.left - 60) / zoom),
               );
-              history.change({ ...p, clips: [...p.clips, ...importedClips(a,clip.track,clip.at)] });
+              history.change({ ...p, clips: [...p.clips, ...importedClips(a,clip.track,clip.at,p.clips)] });
               setSelected(clip.id);
             }}
             onClick={() => {
@@ -525,7 +535,7 @@ export function VideoEditor({
                 a.kind === "audio" ? "A2" : track,
                 current,
               );
-              history.change({ ...p, clips: [...p.clips, ...importedClips(a,clip.track,clip.at)] });
+              history.change({ ...p, clips: [...p.clips, ...importedClips(a,clip.track,clip.at,p.clips)] });
               setSelected(clip.id);
             }}
             title="拖入軌道或點擊插入播放位置"
@@ -570,7 +580,7 @@ export function VideoEditor({
                     t,
                     Math.max(0, (e.clientX - rect.left - 60) / zoom),
                   );
-                  history.change({ ...p, clips: [...p.clips, ...importedClips(asset,clip.track,clip.at)] });
+                  history.change({ ...p, clips: [...p.clips, ...importedClips(asset,clip.track,clip.at,p.clips)] });
                   setSelected(clip.id);
                 }
               }}
@@ -733,14 +743,6 @@ export function VideoEditor({
               ))}
           </div>
           <div className="row">
-            <Button onClick={() => update({ mute: !(c.videoOnly && audioClip ? audioClip.mute : c.mute) })}>
-              <VolumeX size={16} />
-              {(c.videoOnly && audioClip ? audioClip.mute : c.mute) ? "取消靜音" : "靜音"}
-            </Button>
-            <Button disabled={!assets[c.source]?.hasAudio || c.videoOnly || !c.track.startsWith("V")} title={c.videoOnly ? "已自動分離音軌" : "需選取包含音訊的影片"} onClick={separate}>
-              <Layers size={16} />
-              分離音軌
-            </Button>
             <Button onClick={dissolve}>與前一段交叉溶解</Button>
             <Button
               onClick={async () => {
@@ -927,7 +929,7 @@ export function VideoEditor({
                     type: "fcvideo",
                     project: {
                       ...p,
-                      clips: [{ ...c, at: 0, transition: 0 }],
+                      clips: p.clips.filter(x=>related(c,x)).map(x=>({...x,at:Math.max(0,x.at-c.at),transition:0})),
                       titles: [],
                       subtitles: "",
                     },

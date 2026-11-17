@@ -79,12 +79,14 @@ export const newClip = (asset: Asset, track: string, at: number): Clip => ({
 });
 
 // Stable pair identity survives unlink/relink and project IO. Old clips remain combined.
-export function importedClips(asset: Asset, track: string, at: number): Clip[] {
+export function importedClips(asset: Asset, track: string, at: number, existing:Clip[]=[]): Clip[] {
   const v = newClip(asset, track, at);
   if (asset.kind !== "video" || !asset.hasAudio || !track.startsWith("V")) return [v];
   const pairId = crypto.randomUUID();
+  let audioTrack=1;
+  if(track!=="V1")while(existing.some(c=>c.track===`A${audioTrack}` && c.at<at+asset.duration && c.at+clipLength(c)>at))audioTrack++;
   return [{...v, pairId, linked:true, videoOnly:true, mute:true},
-    {...v, id:crypto.randomUUID(), pairId, linked:true, track:"A1", mute:false}];
+    {...v, id:crypto.randomUUID(), pairId, linked:true, track:`A${audioTrack}`, mute:false}];
 }
 export const related = (a: Clip,b: Clip) => a.id===b.id || Boolean(a.pairId && a.linked && b.linked && a.pairId===b.pairId);
 export function patchClip(clips: Clip[], selected: Clip, patch: Partial<Clip>): Clip[] {

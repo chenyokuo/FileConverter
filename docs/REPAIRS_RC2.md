@@ -33,3 +33,15 @@
 ## R4
 
 實際 App／Python service 的跨頁整合測試通過：轉檔→影片自動 V1/A1、圖片成果→原佇列、原生 drop 事件路由、真正自有 HTTP 下載完成→編輯器再建立配對、切頁保留所有片段／下載文字並暫停背景播放。背景音樂拒收無音訊素材，V1 靜音操作正確交給原配 A1。沒有新增主題色、字型或宣傳內容。Rust 增量 check 通過；最終 Windows 正常退出及 Sidecar 清理會在 R5 用實際候選再驗證。
+
+## R5 進度（產物驗證後追加）
+
+本輪完整來源回歸 70 項、69 通過、1 個 PE 項等待實際包；新目錄的 305/305 格式方向通過，不沿用前輪矩陣結果。新增音訊測試以真正 PCM 取樣檢查延遲、靜音、半音量與舊專案；新本機預覽測試實際下載自有 HLS、轉 H264、檢查快取清除及正常區間下載。
+
+由 488c9b2 的 Git export 建立獨立來源目錄，實際執行 setup-dependencies.ps1 -Offline，重新建立 venv／node_modules／vendor，使用已校驗的 Runtime archive、40 個 hash-locked wheels、npm／Cargo 快取和現有 SDK，全部還原／雜湊／無可選 AI 模組檢查通過。之後受控更新相同依賴鎖的 GUI／驗收修正；正式建置來源會記錄於最終報告。沒有進行完全無快取的網路重建，不將這項離線快取驗證冒充無快取驗證。Cargo 編譯產物另重用明確的 target 接合，並未複製原 venv 或 vendor。
+
+真正 Tauri／Fixed WebView2 157 開發版驗證了 V1/A1／波形、完整 1255×893 圖片、指定影片的本機播放／Seek／精確區間輸出。重複網站驗證中曾遇 HTTP 403 Forbidden；前後同來源均曾成功。保留受限及成功紀錄，不加入 Cookie／登入繞過。最終包若網站受限，另外使用自有 HTTP/HLS 驗證同一原生播放／下載路徑，並分開記錄網站結果，不能宣稱受限網站已通過。
+
+IFrame 101／150 是嵌入限制，153 是 HTTP Referer／client identity 缺失；參考 [YouTube 官方 IFrame API](https://developers.google.com/youtube/iframe_api_reference)。本程式既有路徑為 HTML media／本機轉碼，沒有 IFrame，這些碼不適用於實測的 302 逾時或 yt-dlp 403。沒有為此放寬 script/frame CSP 或在有本機 IPC 權限的頁面載入外部 SDK。
+
+原生畫面檢查後再減少工具頁大型標頭與單一來源重複標題，讓播放器與右側設定更接近頂端；圖片 Fit／100% 移至畫布上方。選取片段匯出保留關聯 A1，PIP 新素材會選用不重疊的音訊軌。這些相關模型／元件測試亦通過；沒有因此重跑完整後端矩陣。

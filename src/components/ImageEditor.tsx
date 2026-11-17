@@ -422,6 +422,12 @@ export function ImageEditor({
             />
           </label>
         </aside>
+        <div className="image-canvas-wrap"><div className="row image-zoom-controls">        <Button onClick={()=>{setAutoFit(true);fit();}}>Fit to Canvas</Button>
+        <Button onClick={()=>manualZoom(1)}>100%</Button>
+        <Button aria-label="放大畫布" onClick={()=>manualZoom(zoom*1.25)}>＋</Button>
+        <Button aria-label="縮小畫布" onClick={()=>manualZoom(zoom/1.25)}>－</Button>
+        <span>{autoFit ? "自動適應" : "手動縮放"}</span>
+</div>
         <div className="image-viewport" ref={viewport}>
           <div
             className="image-stage"
@@ -497,6 +503,7 @@ export function ImageEditor({
           {preview.dirty && (
             <p role="status">更新圖層預覽 {Math.floor(preview.progress)}%</p>
           )}
+        </div>
         </div>
         <aside className="image-inspector glass" data-material="settings">
           <h3>圖層</h3>
@@ -706,11 +713,6 @@ export function ImageEditor({
         </aside>
       </div>
       <div className="row image-footer">
-        <Button onClick={()=>{setAutoFit(true);fit();}}>Fit to Canvas</Button>
-        <Button onClick={()=>manualZoom(1)}>100%</Button>
-        <Button aria-label="放大畫布" onClick={()=>manualZoom(zoom*1.25)}>＋</Button>
-        <Button aria-label="縮小畫布" onClick={()=>manualZoom(zoom/1.25)}>－</Button>
-        <span>{autoFit ? "自動適應" : "手動縮放"}</span>
         <label>
           畫布縮放 {Math.round(zoom * 100)}%{" "}
           <input

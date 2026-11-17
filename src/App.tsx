@@ -895,7 +895,7 @@ export default function App() {
           <main className="main-panel" data-material="main">
             <div
               ref={pageScroll}
-              className={`page-scroll ${page === "converter" ? "converter-page" : ""}`}
+              className={`page-scroll ${page === "converter" ? "converter-page" : ""} ${["download","video-editor","image-editor"].includes(page) ? "editing-page" : ""}`}
             >
               <div className="page-heading">
                 <div>
