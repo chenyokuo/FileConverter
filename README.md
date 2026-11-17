@@ -19,7 +19,7 @@
 </p>
 
 > **目前版本：1.1.0-rc.2（測試候選版）**  
-> 最新功能位於 `feature/multimedia-editor` 分支，`main` 尚保留舊版。此版本尚未建立正式 GitHub Release。
+> 目前已整合至 `main` 分支；此版本尚未建立正式 GitHub Release。
 
 ## 為什麼做 File Converter？
 
