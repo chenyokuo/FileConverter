@@ -1,0 +1,45 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "package": "rc2-installed-native",
+      "videoDuration": 4,
+      "videoColors": true,
+      "audioRMSRatio": 1.0518,
+      "selectedClipDuration": 2,
+      "selectedClipAudio": true,
+      "imageSize": [
+        1255,
+        893
+      ],
+      "imageCornerPixelsAndAlpha": true,
+      "exifSizeAndCornerPixels": [
+        893,
+        1255
+      ],
+      "sectionDuration": 2.0,
+      "publicSourceSucceeded": true,
+      "ownedHLSVerified": false
+    },
+    {
+      "package": "rc2-portable-native",
+      "videoDuration": 4,
+      "videoColors": true,
+      "audioRMSRatio": 1.0518,
+      "selectedClipDuration": 2,
+      "selectedClipAudio": true,
+      "imageSize": [
+        1255,
+        893
+      ],
+      "imageCornerPixelsAndAlpha": true,
+      "exifSizeAndCornerPixels": [
+        893,
+        1255
+      ],
+      "sectionDuration": 2.0,
+      "publicSourceSucceeded": true,
+      "ownedHLSVerified": false
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "width": 1255,
+    "height": 893,
+    "fitEdges": true,
+    "manualPreservedOnResize": true,
+    "formats": [
+      "png",
+      "jpg",
+      "webp"
+    ],
+    "pixelsAlpha": true
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "fitEdges": true,
+    "manualPreservedOnResize": true,
+    "formats": [
+      "png",
+      "jpg",
+      "webp"
+    ],
+    "pixelsAlpha": true
+  },
+  {
+    "width": 1080,
+    "height": 1920,
+    "fitEdges": true,
+    "manualPreservedOnResize": true,
+    "formats": [
+      "png",
+      "jpg",
+      "webp"
+    ],
+    "pixelsAlpha": true
+  },
+  {
+    "width": 4000,
+    "height": 3000,
+    "fitEdges": true,
+    "manualPreservedOnResize": true,
+    "formats": [
+      "png",
+      "jpg",
+      "webp"
+    ],
+    "pixelsAlpha": true
+  },
+  {
+    "width": 1000,
+    "height": 1000,
+    "fitEdges": true,
+    "manualPreservedOnResize": true,
+    "formats": [
+      "png",
+      "jpg",
+      "webp"
+    ],
+    "pixelsAlpha": true
+  }
+]

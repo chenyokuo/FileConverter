@@ -1,0 +1,9 @@
+{
+  "version": "1.1.0-rc.2",
+  "nativeWindow": true,
+  "CDP": false,
+  "systemOnlyPATH": true,
+  "appLocalRuntime": true,
+  "normalExit": true,
+  "noSidecarSurvivors": true
+}

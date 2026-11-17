@@ -1,0 +1,28 @@
+{
+  "label": "rc2-portable-native",
+  "browser": "157.0.4341.60",
+  "actualNativeIPC": true,
+  "outputs": [
+    "E:\\handmade_App\\FileConverter\\.tools\\rc2-portable-native-output\\timeline-master (2).mp4",
+    "E:\\handmade_App\\FileConverter\\.tools\\rc2-portable-native-output\\edited (1).png",
+    "E:\\handmade_App\\FileConverter\\.tools\\rc2-portable-native-output\\[Creditless] Fate⧸stay night UBW OP [Brave Shine] [4K HDR] [60FPS] [Dolby 5.1] [4qXzCm9sRxE]-section-001 (1).mp4"
+  ],
+  "autoV1A1": true,
+  "realWaveforms": true,
+  "linkedProjectSaved": true,
+  "selectedVideo": "E:\\handmade_App\\FileConverter\\.tools\\rc2-portable-native-output\\timeline-master (3).mp4",
+  "full1255x893": true,
+  "exifOutput": "E:\\handmade_App\\FileConverter\\.tools\\rc2-portable-native-output\\edited (2).png",
+  "exifDisplaySize": [
+    893,
+    1255
+  ],
+  "directPlayable": false,
+  "directFailure": "影片預覽區\n來源串流無法直接播放；這不代表禁止嵌入。可建立本機預覽，仍可選段下載。\n\nHTML MediaError 4：來源串流無法直接播放（可能是 URL、解碼或來源網路限制）\n\n建立本機預覽（下載低畫質完整影片）\n開啟原始影片\n重試播放器\n選取下載區間\n總長度 00:01:52\n00:00:00\n00:00:14\n00:00:28\n00:00:42\n00:00:56\n00:01:10\n00:01:24\n00:01:38\n00:01:52\n起始時間\n結束時間\n選取時長：00:01:52\n只輸出所選片段\n重設區間\n新增區間\n片段 1 · 00:01:52",
+  "localFallback": true,
+  "previewDuration": 112.151995,
+  "mediaNetwork": [],
+  "realSectionDownloaded": true,
+  "sectionExpectedDuration": 2,
+  "publicSourceSucceeded": true
+}

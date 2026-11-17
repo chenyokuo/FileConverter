@@ -34,7 +34,7 @@
 
 實際 App／Python service 的跨頁整合測試通過：轉檔→影片自動 V1/A1、圖片成果→原佇列、原生 drop 事件路由、真正自有 HTTP 下載完成→編輯器再建立配對、切頁保留所有片段／下載文字並暫停背景播放。背景音樂拒收無音訊素材，V1 靜音操作正確交給原配 A1。沒有新增主題色、字型或宣傳內容。Rust 增量 check 通過；最終 Windows 正常退出及 Sidecar 清理會在 R5 用實際候選再驗證。
 
-## R5 進度（產物驗證後追加）
+## R5 執行與修正紀錄
 
 本輪完整來源回歸 70 項、69 通過、1 個 PE 項等待實際包；新目錄的 305/305 格式方向通過，不沿用前輪矩陣結果。新增音訊測試以真正 PCM 取樣檢查延遲、靜音、半音量與舊專案；新本機預覽測試實際下載自有 HLS、轉 H264、檢查快取清除及正常區間下載。
 
@@ -45,3 +45,62 @@
 IFrame 101／150 是嵌入限制，153 是 HTTP Referer／client identity 缺失；參考 [YouTube 官方 IFrame API](https://developers.google.com/youtube/iframe_api_reference)。本程式既有路徑為 HTML media／本機轉碼，沒有 IFrame，這些碼不適用於實測的 302 逾時或 yt-dlp 403。沒有為此放寬 script/frame CSP 或在有本機 IPC 權限的頁面載入外部 SDK。
 
 原生畫面檢查後再減少工具頁大型標頭與單一來源重複標題，讓播放器與右側設定更接近頂端；圖片 Fit／100% 移至畫布上方。選取片段匯出保留關聯 A1，PIP 新素材會選用不重疊的音訊軌。這些相關模型／元件測試亦通過；沒有因此重跑完整後端矩陣。
+
+初次集中封裝完成後，實際 Installer 及解壓的 Portable 都通過三組修復、內容取樣與原有功能測試。Installer 上實測的直接串流錯誤為 **HTML MediaError 4**，本機備援可播放 112.151995 秒並成功輸出指定 2 秒。先前驗證中的 302 逾時與 403 也保留，不把所有失敗歸成來源禁止嵌入。聲音 RMS 與來源比值約 1.05，排除雙重原音；選取片段匯出也包含音訊。
+
+最後另外發現帶 EXIF 旋轉的 JPEG，inspect 回報 1255×893 而顯示應為 893×1255。已先以真實 JPEG 重現，再讓匯入尺寸及縮圖都使用 ImageOps.exif_transpose；實際 PNG/JPG/WebP 匯出檢查方向與兩個角落，來源 SHA 不變。舊專案既有畫布／圖層尺寸仍照原值讀寫，不強制遷移。此修正只重做 Sidecar 與必要的 Installer／ZIP，沒有重新下載依賴或重跑 305 矩陣；最終包仍需重測 EXIF 案例。首次建置 13 組凍結測試通過；局部修正後另測方向 1 組與圖片 4 組。
+
+安裝／移除測試以資料表語意雜湊檢查 settings／jobs／automation，並保存自己的捷徑。右鍵驗收先保存 92 個本程式專屬 verb/command keys，啟停與第二實例轉送後逐欄復原；不修改其他應用程式、預設開啟關聯或全系統檔案圖示。第一次右鍵腳本早於頁面建立，已加入就緒等待後通過，未改動產品來避過測試。
+
+## 最終候選驗收 — 2026-11-17
+
+最終產品來源 **765e6e45c9912813f519a7c8d75172a4e2647c06**，前端來源 783e826；之後的驗收文件／測試工具提交不代表再次編譯產品。完整來源回歸、305 矩陣、原有 GUI／核心轉換各在本輪 R5 執行一次；觀察到 EXIF 錯誤後，僅重做受影響 Sidecar／包及相關圖片、圖示、封裝、兩種實際原生修復驗證。沒有重複整套矩陣、依賴下載或每階段封裝。
+
+| 驗證 | 本輪結果與範圍 |
+|---|---|
+| 完整來源回歸 | 70 項：69 通過、建置前 1 個 PE 項跳過；正式 main EXE／Sidecar／Installer 圖示另以 4 項實際資源測試通過 |
+| 合法格式矩陣 | 新目錄 305/305，實際內容驗證 |
+| 凍結版 | 首次 13 組編輯器／OCR／預覽測試通過；EXIF 修正後方向 1 組及圖片 4 組通過 |
+| 原有 GUI | 原生 23/23，外觀持久化、佇列、轉換、歷史及視窗；沒有非預期外部請求 |
+| 原有引擎 | 只含 Windows 的子程序 PATH 下 9 組實際轉換／修補；安裝／免安裝均另測圖片、Office PDF、繁中 OCR |
+| 最終 Installer | 真正安裝後的 V1/A1／真波形、預覽、完整作品與帶聲音選取片段、1255×893、EXIF 893×1255、實際網站本機預覽及精確 2 秒下載均通過 |
+| 最終 Portable | 從最終 ZIP 解壓後，重測相同三組修復及 EXIF，全部通過；一般無 CDP 啟動／原生視窗／正常退出、無殘留 Sidecar 通過 |
+| 真正內容 | 兩種包均解碼 4 秒成片：0.5 秒紅、2.5 秒藍；聲音 RMS／來源 1.0518，排除雙重原音；所選 2 秒片段含聲音；圖片角落像素／Alpha／EXIF 方向正確；網站片段 FFprobe 2.000 秒 |
+| GPU／CPU | 最終凍結引擎 CPU libx264、AMD h264_amf 實際輸出；此主機 NVIDIA／Intel 不可用，兩者明確回報並以 libx264 備援成功，非這兩種硬體的實機認證 |
+| Windows／資料 | 右鍵啟停與第二實例轉送通過；原有 92 個專屬 keys 逐值恢復並再次唯讀比較；正常移除後 settings／jobs／automation 語意雜湊皆相同 |
+| 封裝 | ZIP CRC、22,183 個 Runtime manifest 項目、必要引擎／模型／字型、Fixed WebView2、無 AI 模組檢查通過；Installer EXE 與 standalone 只差 Tauri 官方 bundle-type marker |
+| 舊版 | 既有 1.1.0-rc.1 Installer、ZIP、EXE SHA-256 均未改變；先前已依使用者要求刪除的 1.0.0-rc.1 沒有虛報保留 |
+
+兩種最終包對使用者影片的直連均得到 **HTML MediaError 4**；可取消的低畫質本機備援均實際播放 112.151995 秒、暫停／Seek 並輸出 1→3 秒片段成功。測試期間也曾見 HTTP 403，網站限制不屬於保證永久可用的功能；未繞過登入、Cookie 或權限。直接媒體 URL 與 HTML 播放路徑不能用 IFrame 101／150／153 解釋。
+
+依賴還原使用乾淨 Git 來源目錄、新建 venv／node_modules／vendor，校驗官方來源鎖定版本、archive／wheel SHA，實際建置成功。使用已驗證快取、既有 Windows SDK 與編譯快取；**未進行完全無快取網路重建，也不是乾淨 Windows 作業系統驗收**。FFmpeg／FFprobe、yt-dlp／EJS、LibreOffice、Calibre、Pandoc、7-Zip、Ghostscript、Tesseract API＋eng／chi_tra、WebView2、Python 與字型都包含在包內；Git 僅保留來源／鎖檔／還原腳本。40 個 Python 明確釘選依賴及無 AI 模組檢查通過。授權文件與 build configuration 已納入包，但外部二進位完整 corresponding-source 散布閘門仍未關閉，見 [DISTRIBUTION](DISTRIBUTION.md)。
+
+### 交付檔案與 SHA-256
+
+根目錄 `release/`：
+
+- `File Converter_1.1.0-rc.2_x64-setup.exe`（Installer）
+- `FileConverter-1.1.0-rc.2-windows-x64-portable.zip`
+- `FileConverter-1.1.0-rc.2-Portable/FileConverter.exe`（必須保留整個目錄）
+- `SHA256SUMS-1.1.0-rc.2.json`、`DELIVERY-1.1.0-rc.2.json`
+- `VALIDATION-1.1.0-rc.2.md`、`validation-1.1.0-rc.2/`
+
+```text
+Installer a175810d0b42abe35bc6239c5b1fe3ce441793a9e4f5b91768eab784abdc518f
+ZIP       29a21df8a4e54edb5894f80ac4d129f08a896bcd960571f309b33866ed314b3f
+EXE       92f32b8ef618f4d24a2854d770cbcfc20b7b01dda17287f6e838fe02a7b423d6
+```
+
+實際 Windows 原生 Tauri／Fixed WebView2 截圖（檔案挑選由測試提供路徑，IPC／佇列／引擎／播放／輸出皆真實執行）：
+
+![影片編輯器 V1/A1 與真實波形](validation/rc2-native-tracks.png)
+![完整 1255×893 圖片](validation/rc2-native-image.png)
+![精簡 YouTube 下載頁與成功本機預覽](validation/rc2-native-download.png)
+
+原始報告見 `docs/validation/rc2-summary.json` 及同目錄 `rc2-*`。包內文件是建置時快照，最終驗收文件另隨 release 交付並存入 Git，避免只因文件更新再封裝。
+
+### 尚待外部驗收
+
+沒有乾淨 Windows VM／第二台電腦，因此不宣稱已通過未裝開發工具的全新 OS；本機 app-local Runtime 與 system-only PATH 測試已完成。Windows 10、實體多螢幕 125/150/200% DPI、其他 NVIDIA／Intel 裝置仍需外部實機。候選未簽章，公開／客戶散布前仍需完成外部二進位完整相應來源交付及適用授權要求。這些限制不以成功編譯或模擬 DPI 冒充通過。
+
+Git 只提交目前 `feature/multimedia-editor`；不合併 main、不建立 Tag／GitHub Release、不 Force Push。驗收提交 Hash 由最終交付紀錄與 Git HEAD 記錄，與上述產品建置來源明確區分。

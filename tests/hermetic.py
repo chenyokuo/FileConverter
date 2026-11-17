@@ -8,10 +8,10 @@ from test_engine import Client
 from PIL import Image
 from worker import probe
 from runtime import locate
-root=ROOT/'.tools/p5-hermetic';root.mkdir(exist_ok=True);fixtures=ROOT/'.tools/p5-matrix'
+root=ROOT/'.tools'/os.environ.get('FILE_CONVERTER_HERMETIC_LABEL','p5-hermetic');assert root.resolve().is_relative_to(ROOT/'.tools');root.mkdir(exist_ok=True);fixtures=ROOT/'.tools/p5-matrix'
 os.environ['PATH']=str(Path(os.environ['SystemRoot'])/'System32')+';'+os.environ['SystemRoot']
 for key in ['PYTHONPATH','PYTHONHOME','VIRTUAL_ENV','CALIBRE_CONFIG_DIRECTORY','CALIBRE_CACHE_DIRECTORY']:os.environ.pop(key,None)
-os.environ['FILE_CONVERTER_TEST_FROZEN']=str(ROOT/'src-tauri/binaries/FileConverterEngine/FileConverterEngine.exe');os.environ['FILE_CONVERTER_TEST_ENGINES']=str(ROOT/'src-tauri/bundled-engines')
+os.environ.setdefault('FILE_CONVERTER_TEST_FROZEN',str(ROOT/'src-tauri/binaries/FileConverterEngine/FileConverterEngine.exe'));os.environ.setdefault('FILE_CONVERTER_TEST_ENGINES',str(ROOT/'src-tauri/bundled-engines'))
 client=Client(root/'data');checks=[]
 try:
  for source,target in [('png','heic'),('pdf','docx'),('docx','pdf'),('md','html'),('epub','mobi'),('eps','png'),('mp4','mp3'),('zip','7z')]:

@@ -1,0 +1,116 @@
+{
+  "version": "157.0.4341.60",
+  "engines": {
+    "calibre": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\calibre\\PFiles64\\Calibre2\\ebook-convert.exe",
+    "deno": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\deno\\deno.exe",
+    "ffmpeg": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\ffmpeg\\ffmpeg.exe",
+    "ffprobe": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\ffmpeg\\ffprobe.exe",
+    "font": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\fonts\\NotoSansCJKtc-Regular.otf",
+    "ghostscript": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\ghostscript\\bin\\gswin64c.exe",
+    "heif": "pillow_heif",
+    "opencv": "cv2",
+    "pandoc": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\pandoc\\pandoc-3.14\\pandoc.exe",
+    "pdf2docx": "pdf2docx",
+    "pypdf": "pypdf",
+    "sevenzip": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\7zip\\7z.exe",
+    "soffice": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\libreoffice\\program\\soffice.com",
+    "tessdata": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\tessdata",
+    "ytdlp": "yt_dlp"
+  },
+  "jobs": [
+    {
+      "category": "image",
+      "created": 1794922049.9681275,
+      "error": null,
+      "finished": 1794922050.438425,
+      "format": "jpg",
+      "id": "1b5642d8d02947d29111d85e11975000",
+      "name": "中文 alpha & 測試.png",
+      "options": {
+        "hardware": "cpu"
+      },
+      "outputDir": "E:\\handmade_App\\FileConverter\\.tools\\p5-installed-output",
+      "outputs": [
+        "E:\\handmade_App\\FileConverter\\.tools\\p5-installed-output\\中文 alpha & 測試 (6).jpg"
+      ],
+      "progress": 100,
+      "sourceFormat": "png",
+      "sources": [
+        "E:\\handmade_App\\FileConverter\\.tools\\ui-fixtures\\中文 alpha & 測試.png"
+      ],
+      "started": 1794922050.19111,
+      "status": "completed"
+    },
+    {
+      "category": "office",
+      "created": 1794922050.0122595,
+      "error": null,
+      "finished": 1794922065.7274363,
+      "format": "pdf",
+      "id": "0bb9bbd02b654cea8525b8f126a978db",
+      "name": "來源 中文 & docx.docx",
+      "options": {
+        "hardware": "cpu"
+      },
+      "outputDir": "E:\\handmade_App\\FileConverter\\.tools\\p5-installed-output",
+      "outputs": [
+        "E:\\handmade_App\\FileConverter\\.tools\\p5-installed-output\\來源 中文 & docx (6).pdf"
+      ],
+      "progress": 100,
+      "sourceFormat": "docx",
+      "sources": [
+        "E:\\handmade_App\\FileConverter\\.tools\\p5-matrix\\來源 中文 & docx.docx"
+      ],
+      "started": 1794922050.194075,
+      "status": "completed"
+    },
+    {
+      "category": "pdf",
+      "created": 1794922050.1891992,
+      "error": null,
+      "finished": 1794922050.8687074,
+      "format": "pdf",
+      "id": "25c75d11a77240178073d05fd8033368",
+      "name": "繁中掃描.pdf · PDF OCR／可搜尋 PDF",
+      "operation": "pdf.ocr",
+      "options": {
+        "audioBitrate": 192,
+        "channels": 0,
+        "crf": 23,
+        "fps": 0,
+        "hardware": "auto",
+        "hardwareDecode": true,
+        "height": 0,
+        "matte": "#ffffff",
+        "pages": "",
+        "pdfDpi": 144,
+        "quality": 90,
+        "qualityPreset": "balanced",
+        "rotation": 0,
+        "sampleRate": 0,
+        "split": false,
+        "videoBitrate": 0,
+        "videoCodec": "h264",
+        "videoHeight": 0,
+        "width": 0
+      },
+      "outputDir": "E:\\handmade_App\\FileConverter\\.tools\\p5-installed-output",
+      "outputs": [
+        "E:\\handmade_App\\FileConverter\\.tools\\p5-installed-output\\繁中掃描-processed (5).pdf"
+      ],
+      "params": {
+        "dpi": 200,
+        "language": "chi_tra+eng",
+        "onlyScans": true
+      },
+      "previewOnly": false,
+      "progress": 100,
+      "requiresSecret": false,
+      "sources": [
+        "E:\\handmade_App\\FileConverter\\.tools\\p5-installed-fixtures\\繁中掃描.pdf"
+      ],
+      "started": 1794922050.4487746,
+      "status": "completed"
+    }
+  ]
+}

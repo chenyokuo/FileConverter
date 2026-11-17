@@ -23,5 +23,5 @@ for label in sys.argv[2:]:
   with Image.open(report['exifOutput']) as oriented:
    oriented.load();assert oriented.size==(893,1255);assert oriented.getpixel((843,50))[0]>200;assert oriented.getpixel((50,1205))[2]>200
  duration=float(metadata(section)['format']['duration']);assert abs(duration-report['sectionExpectedDuration'])<.2
- checks.append({'package':label,'videoDuration':4,'videoColors':True,'audioRMSRatio':round(level/reference,4),'selectedClipDuration':2,'selectedClipAudio':True,'imageSize':[1255,893],'imageCornerPixelsAndAlpha':True,'sectionDuration':duration,'publicSourceSucceeded':report.get('publicSourceSucceeded'),'ownedHLSVerified':report.get('ownedHLSVerified',False)})
+ checks.append({'package':label,'videoDuration':4,'videoColors':True,'audioRMSRatio':round(level/reference,4),'selectedClipDuration':2,'selectedClipAudio':True,'imageSize':[1255,893],'imageCornerPixelsAndAlpha':True,'exifSizeAndCornerPixels':[893,1255] if report.get('exifOutput') else None,'sectionDuration':duration,'publicSourceSucceeded':report.get('publicSourceSucceeded'),'ownedHLSVerified':report.get('ownedHLSVerified',False)})
 result={'passed':True,'checks':checks};(ROOT/'test-results/rc2-native-content.json').write_text(json.dumps(result,indent=2));print(json.dumps(result))

@@ -1,4 +1,4 @@
-最新版 1.1.0-rc.1 的功能、實際封裝驗證及未完成閘門，請見 [Multimedia P5](MULTIMEDIA_P5.md)。以下保留 1.0.0-rc.1 歷史紀錄。
+最新版 1.1.0-rc.2 修復與實際封裝驗證請見 [RC2 修復驗收](REPAIRS_RC2.md)；前版記錄見 [Multimedia P5](MULTIMEDIA_P5.md)。以下保留 1.0.0-rc.1 歷史紀錄。
 
 # P5 驗收紀錄 — 1.0.0-rc.1
 

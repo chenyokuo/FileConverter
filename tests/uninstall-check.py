@@ -11,7 +11,8 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 target = Path(sys.argv[1]).resolve()
 assert target.parent == ROOT / ".tools" and target.name.startswith("multimedia-installed-"), target
-state = json.loads((ROOT / ".tools/multimedia-install-state.json").read_text())
+state_path=Path(sys.argv[sys.argv.index('--state')+1]) if '--state' in sys.argv else ROOT/'.tools/multimedia-install-state.json'
+state = json.loads(state_path.read_text())
 uninstaller = target / "uninstall.exe"
 if "--verify-only" not in sys.argv:
     assert uninstaller.is_file()
