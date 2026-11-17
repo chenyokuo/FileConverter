@@ -2,6 +2,7 @@ param([string]$PythonExe='python',[string]$DownloadCache='',[string]$WheelCache=
 $ErrorActionPreference='Stop'
 $ProjectRoot=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Set-Location $ProjectRoot
+New-Item -ItemType Directory -Force -Path '.tools','test-results' | Out-Null
 $env:PYTHONUTF8='1'
 if($Offline){$env:FILE_CONVERTER_OFFLINE='1'}
 if($DownloadCache){$env:FILE_CONVERTER_DOWNLOAD_CACHE=[IO.Path]::GetFullPath($DownloadCache)}

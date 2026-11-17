@@ -1,10 +1,15 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[cfg(windows)]
+mod engine_job;
+
 use serde_json::{json, Value};
 use std::{collections::HashMap, io::{BufRead, BufReader, Write}, process::{Child, ChildStdin, Command, Stdio}, sync::{atomic::{AtomicU64, Ordering}, mpsc, Arc, Mutex}, time::Duration};
 use tauri::{Emitter, Manager};
 
 struct Bridge {
+    #[cfg(windows)]
+    engine_job: engine_job::EngineJob,
     child: Mutex<Child>,
     input: Mutex<ChildStdin>,
     pending: Arc<Mutex<HashMap<u64, mpsc::Sender<Result<Value, String>>>>>,
@@ -115,9 +120,11 @@ fn start_engine(app: &tauri::App) -> Result<Arc<Bridge>, Box<dyn std::error::Err
     command.arg("--data").arg(data).arg("--app-exe").arg(std::env::current_exe()?).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
     #[cfg(windows)] {
         use std::os::windows::process::CommandExt;
-        command.creation_flags(0x08000000);
+        command.creation_flags(0x08000000 | 0x00000004);
     }
     let mut child = command.spawn()?;
+    #[cfg(windows)]
+    let engine_job=engine_job::EngineJob::attach(&mut child)?;
     let input = child.stdin.take().ok_or("No stdin")?;
     let output = child.stdout.take().ok_or("No stdout")?;
     let stderr = child.stderr.take().ok_or("No stderr")?;
@@ -139,7 +146,7 @@ fn start_engine(app: &tauri::App) -> Result<Arc<Bridge>, Box<dyn std::error::Err
         if let Ok(mut map)=waiting.lock() { for (_,tx) in map.drain() { let _=tx.send(Err("Conversion engine stopped".into())); } }
         let _=handle.emit("engine-stopped", "本機轉檔引擎已停止，請重新啟動程式。");
     });
-    Ok(Arc::new(Bridge {child:Mutex::new(child),input:Mutex::new(input),pending,serial:AtomicU64::new(1)}))
+    Ok(Arc::new(Bridge {#[cfg(windows)] engine_job,child:Mutex::new(child),input:Mutex::new(input),pending,serial:AtomicU64::new(1)}))
 }
 
 fn main() {
@@ -160,6 +167,7 @@ fn main() {
         .run(|app,event| {
             if let tauri::RunEvent::Exit = event {
                 if let Some(bridge)=app.try_state::<Arc<Bridge>>() {
+                    #[cfg(windows)] bridge.engine_job.terminate();
                     if let Ok(mut child)=bridge.child.lock() { let _=child.kill(); let _=child.wait(); }
                 }
             }

@@ -29,7 +29,7 @@
       "assetProtocol": {
         "enable": true,
         "scope": [
-          "$APPDATA/studio.rai.converter/previews/**"
+          "$APPDATA/previews/**"
         ]
       }
     }

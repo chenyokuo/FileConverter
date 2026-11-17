@@ -427,7 +427,14 @@ export function ImageEditor({
             style={{ width: p.width * zoom, height: p.height * zoom }}
           >
             {preview.uri && (
-              <img src={preview.uri} alt="圖片合成預覽" draggable={false} />
+              <img
+                src={preview.uri}
+                alt="圖片合成預覽"
+                onError={() =>
+                  setError("無法載入圖層預覽，請檢查預覽檔案與權限")
+                }
+                draggable={false}
+              />
             )}
             <svg
               aria-label="圖片編輯畫布"

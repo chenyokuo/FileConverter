@@ -10,6 +10,7 @@ DEST=ROOT/'src-tauri/bundled-engines'
 ENGINES=['ffmpeg','libreoffice','calibre','pandoc','ghostscript','7zip','deno','tessdata','fonts']
 EXCLUDED={'$PLUGINSDIR','.ready','.fc-runtime-integrity.json','uninstgs.exe.nsis'}
 def ignore(directory,names):
+    if Path(directory).resolve()==(ROOT/'vendor/7zip').resolve():return [n for n in names if n not in {'7z.exe','7z.dll','License.txt','readme.txt','History.txt'}]
     return [name for name in names if name in EXCLUDED or name.lower().endswith(('.msi','.log','.partial','.tmp')) or name.startswith(('__pycache__','.~lock.'))]
 def main():
     import sys

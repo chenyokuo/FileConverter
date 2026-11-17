@@ -392,6 +392,9 @@ export function VideoEditor({
             ref={player}
             src={preview.uri}
             controls
+            onError={() =>
+              setError("預覽播放器無法讀取媒體，請檢查檔案與預覽權限後重試")
+            }
             onLoadedMetadata={(e) => {
               e.currentTarget.currentTime = Math.min(
                 current,
