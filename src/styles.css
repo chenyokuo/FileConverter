@@ -1,4 +1,5 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+@source "./";
 .app-icon {
   object-fit: contain;
   flex-shrink: 0;
