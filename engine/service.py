@@ -218,6 +218,9 @@ class Service:
         return created
 
     def call(self,method,args):
+        if method=='editor':
+            from editors import dispatch
+            return dispatch(self,args)
         if method=='analyze_url':
             from downloads import analyze
             return analyze(args['url'],self.engines,args.get('page',1))
@@ -306,6 +309,9 @@ class Service:
             if method=='retry':
                 job=self.jobs[args['id']]
                 if job['status'] not in {'failed','cancelled','completed'}:raise ValueError('任務仍在執行')
+                if job.get('kind') in {'fcvideo','fcimage'}:
+                    from editors import enqueue
+                    return [enqueue(self,{'type':job['kind'],'project':job['project'],'format':job['format'],'outputDir':job['outputDir']})]
                 if job.get('kind')=='download':return self.create_download({'outputDir':job['outputDir']},resume=job)
                 if job.get('kind')=='workflow':return self.automation.enqueue(job['workflow'],job['sources'],job['outputDir'])
                 if job.get('operation'):
@@ -357,7 +363,7 @@ def main():
                     try:service.send({'id':req['id'],'result':service.call(req['method'],req.get('args',{}))})
                     except Exception as error:service.send({'id':req['id'],'error':str(error)})
                 if request['method'] in {'analyze_url','resolve_download'}:network_pool.submit(handle,dict(request))
-                elif request['method']=='preview':preview_pool.submit(handle,dict(request))
+                elif request['method'] in {'preview','editor'}:preview_pool.submit(handle,dict(request))
                 else:handle(request)
             except Exception as error:service.send({'id':request.get('id'),'error':str(error)})
     finally:service.close();preview_pool.shutdown(wait=False,cancel_futures=True);network_pool.shutdown(wait=False,cancel_futures=True)

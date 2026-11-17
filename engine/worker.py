@@ -85,6 +85,12 @@ def media(job,sources,stage,engines):
     return convert_media(job,sources,stage,engines)
 
 def convert(job, stage, engines):
+    if job.get('kind')=='fcvideo':
+        from video_editor import render
+        return render(job,stage,engines)
+    if job.get('kind')=='fcimage':
+        from image_editor import render
+        return render(job,stage,engines)
     if job.get('kind')=='workflow':
         from workflows import execute
         return execute(job,stage,engines)

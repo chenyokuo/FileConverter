@@ -1,4 +1,4 @@
-export type Page = "converter" | "toolbox" | "download" | "workflow" | "history" | "settings";
+export type Page = "video-editor" | "image-editor" | "converter" | "toolbox" | "download" | "workflow" | "history" | "settings";
 export type ConversionMode = "auto" | "preset";
 export interface Capability {
   id: string;

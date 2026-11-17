@@ -2,7 +2,9 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
   "description": "Only local dialogs and explicit window controls. No shell or filesystem plugin.",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-minimize",
@@ -10,6 +12,7 @@
     "core:window:allow-close",
     "core:window:allow-destroy",
     "core:window:allow-start-dragging",
-    "dialog:allow-open"
+    "dialog:allow-open",
+    "dialog:allow-save"
   ]
 }

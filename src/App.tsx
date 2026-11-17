@@ -1,3 +1,4 @@
+import {VideoEditor} from "./components/VideoEditor";
 import { DownloadPage } from "./components/DownloadPage";
 import { AutomationPage } from "./components/AutomationPage";
 import { ConversionPresets } from "./components/ConversionPresets";
@@ -72,6 +73,7 @@ const navigation: {
   phase?: string;
 }[] = [
   { id: "converter", label: "轉換檔案", icon: ArrowLeftRight },
+  { id: "video-editor", label: "影片編輯器", icon: Film },
   { id: "download", label: "網址下載", icon: Download },
   { id: "toolbox", label: "工具箱", icon: Wrench },
   { id: "workflow", label: "自動化工作流程", icon: Workflow },
@@ -855,6 +857,8 @@ export default function App() {
                   <h1>
                     {page === "converter"
                       ? "File Converter"
+                      : page === "video-editor"
+                        ? "影片編輯器"
                       : page === "history"
                         ? "轉換紀錄"
                         : page === "workflow"
@@ -907,6 +911,7 @@ export default function App() {
                   </Button>
                 </div>
               )}
+              <div hidden={page!=="video-editor"}><VideoEditor hardware={hardware} notify={notify}/></div>
               <AnimatePresence mode="wait">
                 <motion.div
                   className="page-transition"
