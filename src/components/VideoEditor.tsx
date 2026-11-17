@@ -892,13 +892,15 @@ export function VideoEditor({
       </details>
       <div className="conversion-toolbar glass" data-material="toolbar">
         <Button
+          className="editor-output-folder"
+          title={out || "選擇輸出資料夾"}
           onClick={async () => {
             const folder = await pickFolder();
             if (folder) setOut(folder);
           }}
         >
           <FolderOpen size={17} />
-          {out || "選擇輸出資料夾"}
+          <span>{out || "選擇輸出資料夾"}</span>
         </Button>
         <select
           aria-label="編輯器輸出格式"

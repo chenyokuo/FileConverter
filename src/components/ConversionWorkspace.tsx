@@ -19,6 +19,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
   Play,
+  Pencil,
   Settings2,
   Trash2,
   X,
@@ -263,10 +264,11 @@ export function ConversionWorkspace(p: Props) {
                         ["video", "audio", "image"].includes(file.category) && (
                           <Button
                             compact
+                            aria-label={`送入${file.category === "image" ? "圖片" : "影片"}編輯器`}
+                            title={`送入${file.category === "image" ? "圖片" : "影片"}編輯器`}
                             onClick={() => p.onEdit?.(file.path, file.category)}
                           >
-                            送入{file.category === "image" ? "圖片" : "影片"}
-                            編輯器
+                            <Pencil size={16} />
                           </Button>
                         )}
                       <Button

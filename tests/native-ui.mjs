@@ -41,7 +41,7 @@ page.on("request", (r) => {
     !r.url().startsWith("http://ipc.localhost") &&
     !r.url().startsWith("data:") &&
     !r.url().startsWith("blob:") &&
-    !r.url().startsWith("ipc:")
+    !r.url().startsWith("ipc:") && !r.url().startsWith("asset:") && new URL(r.url()).hostname!=="asset.localhost"
   )
     network.push(r.url());
 });
@@ -124,7 +124,7 @@ try {
       await expect(
         page.locator(".hero,.category-grid,.privacy-card"),
       ).toHaveCount(0);
-      await expect(page.locator(".sidebar nav button")).toHaveCount(6);
+      await expect(page.locator(".sidebar nav button")).toHaveCount(8);
       const metrics = await page.evaluate(() => ({
         body: parseFloat(
           getComputedStyle(document.querySelector(".app")).fontSize,
@@ -425,7 +425,7 @@ try {
         for (const selector of [
           ".dropzone",
           ".draft-panel",
-          ".conversion-toolbar",
+          ".conversion-toolbar:visible",
           ".start-conversion",
         ]) {
           const bounds = await page.locator(selector).boundingBox();
@@ -509,7 +509,7 @@ try {
       await expect(
         page.getByRole("button", { name: "轉換檔案", exact: true }),
       ).toBeVisible();
-      const controls = await page.locator(".conversion-toolbar").boundingBox();
+      const controls = await page.locator(".conversion-toolbar:visible").boundingBox();
       expect(controls.y + controls.height).toBeLessThanOrEqual(height + 1);
       await page.screenshot({ path: `test-results/layout-${scale * 100}.png` });
     }
@@ -747,7 +747,7 @@ try {
             .locator(".draft-list")
             .evaluate((e) => e.scrollWidth <= e.clientWidth + 1),
         ).toBe(true);
-        const toolbar = await page.locator(".conversion-toolbar").boundingBox();
+        const toolbar = await page.locator(".conversion-toolbar:visible").boundingBox();
         expect(toolbar.y + toolbar.height).toBeLessThanOrEqual(height + 1);
         if (scale === 1) {
           await page
@@ -880,5 +880,6 @@ try {
     await fs.writeFile(backgroundPath, originalBackground);
   else await fs.unlink(backgroundPath).catch(() => {});
   await page.reload();
+  if(process.env.FILE_CONVERTER_SHUTDOWN_AFTER_TEST==='1')await page.evaluate(()=>window.__TAURI_INTERNALS__.invoke('shutdown_app'));
   await browser.close();
 }

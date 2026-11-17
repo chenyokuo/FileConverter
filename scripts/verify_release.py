@@ -45,7 +45,8 @@ with zipfile.ZipFile(archive) as z:
         or n.endswith('/.env') or n.endswith('.sqlite3') for n in names)
     assert digest(z.read(prefix+'FileConverter.exe'))==expected, 'Portable EXE differs from release build'
 
-seven=shutil.which('7z') or str(Path('C:/Program Files/7-Zip/7z.exe'))
+seven=str(ROOT/'vendor/7zip/7z.exe')
+assert Path(seven).is_file(), 'Run pinned dependency restore; system 7-Zip is not required'
 result=subprocess.run([seven,'x',str(installer),'FileConverter.exe','-so'],capture_output=True,check=True)
 installed=result.stdout
 # Tauri temporarily patches its documented bundle-type marker for NSIS, then

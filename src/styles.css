@@ -2723,6 +2723,10 @@ input[type="range"]::-webkit-slider-thumb {
 .range-player{position:relative}.range-buffering{position:absolute;top:12px;left:12px;padding:6px 12px;background:var(--control);border-radius:6px;}
 
 .video-editor {display:grid;gap:16px;min-width:0;}
+.video-editor>.conversion-toolbar,.image-editor>.conversion-toolbar{flex-wrap:wrap;gap:10px;min-width:0;max-width:100%;}
+.editor-output-folder{min-width:0;max-width:100%;flex:1 1 240px;justify-content:flex-start;}
+.editor-output-folder>svg{flex-shrink:0;}
+.editor-output-folder>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .editor-filebar,.editor-controls,.editor-properties .row,.editor-titles .row {flex-wrap:wrap;}
 .editor-filebar {gap:8px;}
 .editor-preview {width:min(100%,800px);aspect-ratio:16/9;margin-inline:auto;border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;background:var(--control);}

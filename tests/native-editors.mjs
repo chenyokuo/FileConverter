@@ -106,7 +106,8 @@ try {
       page.locator(".video-editor video").evaluate((v) => v.currentTime),
     )
     .toBeGreaterThan(0.1);
-  await page.locator(".video-editor video").evaluate((v) => v.pause());
+  await page.locator(".video-editor video").evaluate((v) => {v.pause();v.currentTime=1;v.dispatchEvent(new Event('timeupdate'))});
+  await page.getByRole('button',{name:'分割',exact:true}).click();await expect(page.locator('.video-editor .editor-clip')).toHaveCount(3);
   await pick(outputDir);
   await page
     .getByRole("button", { name: "選擇輸出資料夾", exact: true })
@@ -171,7 +172,7 @@ try {
     )
     .toBe("completed");
   await page.getByRole("button", { name: "影片編輯器", exact: true }).click();
-  await expect(page.locator(".video-editor .editor-clip")).toHaveCount(2, {
+  await expect(page.locator(".video-editor .editor-clip")).toHaveCount(3, {
     timeout: 30000,
   });
   await expect(page.locator(".video-editor video")).toBeVisible();
