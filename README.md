@@ -80,7 +80,7 @@
 
 | 版本 | 使用方式 |
 | --- | --- |
-| **Installer** | 執行 `File Converter_1.1.0-rc.3_x64-setup.exe`，依畫面完成安裝 |
+| **Installer** | 執行 `FileConverter_1.1.0-rc.3_x64-setup.exe`，依畫面完成安裝 |
 | **Portable** | 將 `FileConverter-1.1.0-rc.3-windows-x64-portable.zip` 完整解壓，開啟其中的 `FileConverter.exe` |
 
 **Portable 必須保留整個解壓資料夾**，不能只複製 `FileConverter.exe`；它需要同目錄的引擎、Sidecar、WebView2 與其他資源。

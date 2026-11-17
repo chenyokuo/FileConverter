@@ -29,7 +29,7 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
  }else if(action==='manifest'){
   const version=validateVersion(argument);if(versions().some(v=>v!==version))throw Error('Version mismatch');
   const dir=path.join(root,'release',version);fs.mkdirSync(dir,{recursive:true});
-  const installer=`File Converter_${version}_x64-setup.exe`,portable=`FileConverter-${version}-windows-x64-portable.zip`;
+  const installer=`FileConverter_${version}_x64-setup.exe`,portable=`FileConverter-${version}-windows-x64-portable.zip`;
   for(const name of [installer,installer+'.sig',portable,portable+'.sig'])if(!fs.statSync(path.join(dir,name)).size)throw Error('Empty artifact: '+name);
   const notes=fs.readFileSync(notesFile,'utf8').replace(/^\uFEFF/,'');
   write(`release/${version}/latest.json`,manifest({version,installer,portable,notes,installerSignature:fs.readFileSync(path.join(dir,installer+'.sig'),'utf8'),portableSignature:fs.readFileSync(path.join(dir,portable+'.sig'),'utf8')}));

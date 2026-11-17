@@ -11,6 +11,7 @@ $gh=if(Get-Command gh -ErrorAction SilentlyContinue){(Get-Command gh).Source}els
 if (!(Test-Path -LiteralPath $gh)) { throw 'GitHub CLI is required. Install gh and run gh auth login; never put a token in this repository.' }
 Checked { & $gh auth status }
 $current=(Get-Content package.json -Raw|ConvertFrom-Json).version
+$beforeVersionCommit=(git rev-parse HEAD).Trim()
 if(!$Version){$Version=$current}
 if($Version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$'){throw 'Invalid SemVer'}
 if(!$NotesFile){$NotesFile=Join-Path $root "docs/releases/$Version.md"}
@@ -28,7 +29,10 @@ if(!$PrepareOnly){
     $repo=(& $gh repo view chenyokuo/FileConverter --json isPrivate|ConvertFrom-Json)
     if($repo.isPrivate){throw 'The update repository is private. Make chenyokuo/FileConverter public before publishing anonymous updater endpoints.'}
     if((git branch --show-current).Trim() -ne 'main'){throw 'Publish from validated main; do not silently merge feature branches.'}
-    if((git rev-parse origin/main).Trim() -ne $source){throw 'Push validated main before publishing.'}
+    if((git rev-parse origin/main).Trim() -ne $source){
+        if($Version -ne $current -and (git rev-parse origin/main).Trim() -eq $beforeVersionCommit){Checked {git push origin main}}
+        else{throw 'Push validated main before publishing.'}
+    }
     $published=& $gh release view "v$Version" --repo chenyokuo/FileConverter --json isDraft 2>$null
     if($LASTEXITCODE -eq 0 -and !($published|ConvertFrom-Json).isDraft){throw 'This version is already public. Choose a new version; do not rebuild or replace it.'}
 }
@@ -53,14 +57,17 @@ try {
     $exe=Join-Path $root 'src-tauri/target/release/FileConverter.exe'
     $binaryVersion=[Diagnostics.FileVersionInfo]::GetVersionInfo($exe).ProductVersion
     if($binaryVersion -notlike "$Version*"){throw "Built EXE version is $binaryVersion, expected $Version"}
-    $installer="File Converter_${Version}_x64-setup.exe";$portable="FileConverter-${Version}-windows-x64-portable.zip"
+    # GitHub normalizes spaces to dots in asset names. Canonical public names
+    # deliberately contain no spaces, unlike the existing local NSIS filename.
+    $installer="FileConverter_${Version}_x64-setup.exe";$portable="FileConverter-${Version}-windows-x64-portable.zip"
     foreach($name in @($installer,$portable)){
-        $artifact=Join-Path $root "release/$name"
-        if(!(Test-Path -LiteralPath $artifact)){throw "Missing artifact: $artifact"}
-        Copy-Item -LiteralPath $artifact -Destination (Join-Path $directory $name) -Force
+        $localName=if($name -eq $installer){"File Converter_${Version}_x64-setup.exe"}else{$name}
+        $localArtifact=Join-Path $root "release/$localName"
+        if(!(Test-Path -LiteralPath $localArtifact)){throw "Missing artifact: $localArtifact"}
+        $artifact=Join-Path $directory $name
+        Copy-Item -LiteralPath $localArtifact -Destination $artifact -Force
         # Both NSIS and Portable carry signatures bound to their actual version.
         Checked { node node_modules/@tauri-apps/cli/tauri.js signer sign --app-version $Version $artifact }
-        Copy-Item -LiteralPath ($artifact+'.sig') -Destination (Join-Path $directory ($name+'.sig')) -Force
         $verification=Start-Process -FilePath $exe -ArgumentList @('--verify-release-signature',('"'+$artifact+'"'),('"'+$artifact+'.sig"'),$Version) -WindowStyle Hidden -Wait -PassThru
         if($verification.ExitCode){throw "Signature/public-key/version verification failed: $name"}
     }
@@ -70,7 +77,16 @@ try {
     if($PrepareOnly){Write-Host "Signed artifacts prepared: $directory";return}
     $tag="v$Version"
     $existingTag=git rev-parse --verify "refs/tags/$tag" 2>$null
-    if($LASTEXITCODE -eq 0){if((git rev-list -n 1 $tag).Trim() -ne $source){throw 'Existing tag points to another commit; never overwrite release tags.'}}
+    if($LASTEXITCODE -eq 0){
+        $tagCommit=(git rev-list -n 1 $tag).Trim()
+        if($tagCommit -ne $source){
+            $draft=& $gh release view $tag --repo chenyokuo/FileConverter --json isDraft 2>$null
+            if($LASTEXITCODE -ne 0 -or !($draft|ConvertFrom-Json).isDraft){throw 'Existing tag points to another commit; never overwrite release tags.'}
+            $productChanges=git diff --name-only $tagCommit HEAD -- src package.json package-lock.json src-tauri engine scripts/build.ps1 scripts/portable.py scripts/freeze.py
+            if($productChanges){throw 'Draft product source changed; use a new version. Existing tags are never moved.'}
+            Write-Host 'Resuming draft with unchanged product source; existing source tag retained.'
+        }
+    }
     else{Checked {git tag -a $tag -m "File Converter $Version" $source}}
     Checked {git push origin "refs/tags/$tag"}
     $release=& $gh release view $tag --repo chenyokuo/FileConverter --json isDraft,assets 2>$null
@@ -85,6 +101,23 @@ try {
     $assets=@($installer,($installer+'.sig'),$portable,($portable+'.sig'),'latest.json','SHA256SUMS.json','SHA256SUMS.txt','BUILD-INFO.json')|ForEach-Object{Join-Path $directory $_}
     # A draft is resumable after an interrupted upload. Published assets are never clobbered.
     Checked {& $gh release upload $tag @assets --repo chenyokuo/FileConverter --clobber}
+    $remote=(& $gh api "repos/chenyokuo/FileConverter/releases/tags/$tag"|ConvertFrom-Json)
+    if(!$remote.draft){throw 'Release must remain draft until all assets verify'}
+    $sums=Get-Content -LiteralPath (Join-Path $directory 'SHA256SUMS.json') -Raw|ConvertFrom-Json
+    foreach($file in $assets){
+        $name=[IO.Path]::GetFileName($file)
+        $asset=@($remote.assets|Where-Object{$_.name -ceq $name -and $_.state -eq 'uploaded'})
+        if($asset.Count -ne 1 -or $asset[0].size -ne (Get-Item -LiteralPath $file).Length){throw "GitHub asset name/state/size mismatch: $name"}
+        if($asset[0].digest){
+            $hash=$sums.$name
+            if(!$hash){$hash=(Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()}
+            if($asset[0].digest -ne "sha256:$hash"){throw "GitHub asset digest mismatch: $name"}
+        }
+    }
+    $manifest=Get-Content -LiteralPath (Join-Path $directory 'latest.json') -Raw|ConvertFrom-Json
+    foreach($platform in $manifest.platforms.psobject.Properties){
+        if(!($remote.assets|Where-Object{$_.browser_download_url -ceq $platform.Value.url})){throw 'Manifest URL does not match an actual uploaded GitHub asset'}
+    }
     if(!$DraftOnly){
         $edit=@('release','edit',$tag,'--repo','chenyokuo/FileConverter','--draft=false','--latest=false')
         if(!$Version.Contains('-')){$edit[-1]='--latest=true'}
