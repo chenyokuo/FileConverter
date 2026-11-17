@@ -1,0 +1,49 @@
+{
+  "version": "1.1.0-rc.1",
+  "productSource": "02e7d0fbbc4e2dc3b5a86777f4fc2b6ee6c4f43a",
+  "sourceRegression": {
+    "run": 68,
+    "passed": 67,
+    "skippedPEBeforePackaging": 1,
+    "actualPEFollowupTargets": 3
+  },
+  "matrix": {
+    "passed": 305,
+    "failed": 0,
+    "newGeneratedDirectory": true
+  },
+  "newFrozenEditorOCRGroups": 11,
+  "hermeticOriginalEngineGroups": 9,
+  "existingNativeGUI": {
+    "passed": 23,
+    "pageErrors": 0,
+    "externalRequests": 0
+  },
+  "cleanSourceRestore": {
+    "freshVenv": true,
+    "freshVendor": true,
+    "freshNodeModules": true,
+    "hashLockedPythonPackages": 40,
+    "optionalAIAbsent": true,
+    "cachedArchivesReverified": true,
+    "compilerCacheReused": true,
+    "developerSDKReused": true,
+    "actualFreshFixturesGenerated": true,
+    "cleanWindowsVM": false
+  },
+  "locksSHA256": {
+    "engine-lock.json": "1b2afb053a93ebaea56f4549f3c20cde25e4d409e4711b240521ce698af711fb",
+    "engine/requirements-hashes.txt": "211ca8f79108b7d845208e21db013f08eb0f602a9962e447bb298bd540065c9f",
+    "config/python-wheels.json": "a3758773c76b52967a56179b39efb87e0e780fb945716dbc4bbe9c36d620638c",
+    "package-lock.json": "300d0b929719f6b983035e3eb4c8e3fb68c74ffbcee0c6620ca0a40456ac3dde",
+    "src-tauri/Cargo.lock": "75999b9bdb93771162627dbb387947fd2bfd40aeb8273009c57a2de544ecb9e4"
+  },
+  "formalAcceptance": false,
+  "remaining": [
+    "Clean Windows 10/11 machine",
+    "Physical multi-monitor DPI",
+    "NVIDIA/Intel physical encoders",
+    "External GPL/AGPL/LGPL corresponding-source delivery",
+    "Code signing"
+  ]
+}

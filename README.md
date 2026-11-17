@@ -58,7 +58,9 @@ cargo check --manifest-path src-tauri/Cargo.toml
 .venv\Scripts\python.exe -X utf8 tests\matrix.py
 ```
 
-P1–P4 只跑相關簡測和增量編譯。`tests/matrix.py --failed` 重試未通過方向。素材在忽略的 `.tools/` 產生，不提交私人檔案。`tests/native-ui.mjs` 連接真正 WebView2 的 localhost CDP，僅控制測試檔案選擇結果。
+P1–P4 只跑相關簡測和增量編譯。`tests/matrix.py --failed` 重試未通過方向。素材在忽略的 `.tools/` 產生，不提交私人檔案。`tests/native-ui.mjs` 連接真正 WebView2 的 localhost CDP，僅控制測試檔案選擇結果。`scripts/test-packaged.ps1 -InstallRoot <候選目錄> -Test tests/native-editors.mjs -Label portable` 使用隨包 Fixed WebView2 與只含 Windows 的子程序 PATH，檢查真正編輯／輸出及正常關閉；執行前應先關閉自己的 File Converter。另可用 `tests/production-start.py <候選目錄>` 驗證不開 CDP 的一般啟動。這些測試使用本專案自製 fixtures，需先完成相對應功能測試。
+
+原生驗收前以 `.venv\Scripts\python.exe -X utf8 tests\make_packaged_fixtures.py` 從程式產生小型圖片、紅／藍影片、Office 文件與繁中掃描 PDF；不需下載／提交大型測試檔。元件互動測試需先啟動 `npm run dev`，再分別執行 `node tests/video-editor-ui.mjs`、`node tests/image-editor-ui.mjs`、`node tests/editor-integration-ui.mjs`。
 
 ## P5 EXE／Installer／Portable
 

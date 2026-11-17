@@ -21,9 +21,9 @@ shutil.copytree(extended(ROOT/'src-tauri/bundled-engines'),DEST/'engines',dirs_e
 shutil.copytree(extended(ROOT/'src-tauri/webview-runtime'),DEST/'webview-runtime',dirs_exist_ok=True,copy_function=copy_changed)
 shutil.copytree(extended(ROOT/'src-tauri/notices'),DEST/'licenses',dirs_exist_ok=True,copy_function=copy_changed)
 shutil.copytree(extended(ROOT/'docs'),DEST/'docs',dirs_exist_ok=True,copy_function=copy_changed)
-for name in ['LICENSE','README.md','THIRD_PARTY_NOTICES.md']:
+for name in ['LICENSE','README.md','CHANGELOG.md','THIRD_PARTY_NOTICES.md']:
     shutil.copy2(ROOT/name,DEST/name)
-(DEST/'PORTABLE-NOTES.txt').write_text(f'File Converter {VERSION}\nExtract the entire folder, then run FileConverter.exe.\nWindows 10/11 x64. Fixed WebView2, Python, FFmpeg, LibreOffice, Pandoc, Calibre, Ghostscript, 7-Zip, OCR models and downloader runtimes are app-local. No separate engine installation.\nSettings and history: %APPDATA%/studio.rai.converter.\nRight-click integration is optional in Settings / Advanced. Disable it before moving/deleting a Portable folder.\nThis release candidate is unsigned. See docs/VALIDATION.md and THIRD_PARTY_NOTICES.md for acceptance status and distribution obligations.\n',encoding='utf-8')
+(DEST/'PORTABLE-NOTES.txt').write_text(f'File Converter {VERSION}\nExtract the entire folder, then run FileConverter.exe.\nWindows 10/11 x64. Fixed WebView2, Python, FFmpeg, LibreOffice, Pandoc, Calibre, Ghostscript, 7-Zip, OCR models and downloader runtimes are app-local. No separate engine installation.\nSettings and history: %APPDATA%/studio.rai.converter.\nRight-click integration is optional in Settings / Advanced. Disable it before moving/deleting a Portable folder.\nThis release candidate is unsigned. See docs/MULTIMEDIA_P5.md and THIRD_PARTY_NOTICES.md for acceptance status and distribution obligations. Final artifact hashes and deployment results accompany the delivery.\n',encoding='utf-8')
 if '--stage-only' in sys.argv:
     print(DEST)
     sys.exit(0)

@@ -46,6 +46,20 @@ let ids = [];
 const before = await rpc("snapshot");
 const known = new Set(before.jobs.map((j) => j.id));
 const outputDir = path.join(process.cwd(), ".tools/native-editor-output");
+const screenshot = process.env.FILE_CONVERTER_NATIVE_SCREENSHOT || "test-results/native-editor.png";
+const layoutChecks = [];
+const checkEditorLayout = async (selector) => {
+  const cdp = await context.newCDPSession(page);
+  for (const [width,height] of [[1500,960],[1280,720],[960,540],[760,480]]) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", {width,height,deviceScaleFactor:1,mobile:false});
+    await page.waitForTimeout(100);
+    const bounds = await page.locator(selector).evaluate(e=>({width:e.clientWidth,scrollWidth:e.scrollWidth}));
+    expect(bounds.scrollWidth, JSON.stringify({selector,width,height,bounds})).toBeLessThanOrEqual(bounds.width+1);
+    layoutChecks.push({selector,width,height,passed:true});
+  }
+  await cdp.send("Emulation.clearDeviceMetricsOverride");
+  await cdp.detach();
+};
 try {
   await rpc("settings", {
     settings: { ...before.settings, appearance: defaults.appearance },
@@ -150,6 +164,9 @@ try {
   );
   expect(image.status).toBe("completed");
   ids.push(image.id);
+  await checkEditorLayout(".image-editor");
+  await page.locator(".image-editor-layout").scrollIntoViewIfNeeded();
+  await page.screenshot({path:screenshot.replace(/\.png$/, "-image.png")});
   await page.getByRole("button", { name: "加入轉檔佇列", exact: true }).click();
   await expect(page.locator(".draft-row")).toHaveCount(1);
   const converted = await rpc("enqueue", {
@@ -176,12 +193,13 @@ try {
     timeout: 30000,
   });
   await expect(page.locator(".video-editor video")).toBeVisible();
+  await checkEditorLayout(".video-editor");
   await page.locator(".page-scroll").evaluate((e) => (e.scrollTop = 0));
   await page.screenshot({
-    path:
-      process.env.FILE_CONVERTER_NATIVE_SCREENSHOT ||
-      "test-results/native-editor.png",
+    path:screenshot,
   });
+  await page.locator(".editor-timeline-scroll").scrollIntoViewIfNeeded();
+  await page.screenshot({path:screenshot.replace(/\.png$/, "-timeline.png")});
   const initial = await page.evaluate(() => [innerWidth, innerHeight]);
   await invoke("plugin:window|toggle_maximize", { label: "main" });
   await expect.poll(() => page.evaluate(() => innerWidth)).not.toBe(initial[0]);
@@ -193,6 +211,8 @@ try {
     actualAssetProtocol: true,
     actualMediaPlayback: true,
     windowMaximizeRestore: true,
+    splitClipCount: 3,
+    layoutChecks,
     pipelines: [
       "video import→preview→export",
       "image import→preview→export→converter webp",

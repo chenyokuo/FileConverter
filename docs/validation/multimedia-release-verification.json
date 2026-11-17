@@ -1,0 +1,34 @@
+{
+  "version": "1.1.0-rc.1",
+  "exeSha256": "809609a6839e9e95f8d91ef293de8158545eb819637bd1d46d27b80ce4d0be06",
+  "portableIntegrity": true,
+  "installerPayloadMatches": true,
+  "installerExeSha256": "cf8bcae100bc6e910fc951a046e1166b6696e7ab46cfc987380518c2ef5dbd3b",
+  "installerDifference": "Tauri bundle-type marker UNK \u2192 NSS only",
+  "fixedWebView2Included": true,
+  "enginesIncluded": [
+    "Python",
+    "Pillow",
+    "MuPDF",
+    "FFmpeg",
+    "FFprobe",
+    "LibreOffice",
+    "Calibre",
+    "Pandoc",
+    "Ghostscript",
+    "7-Zip",
+    "Deno",
+    "OCR models",
+    "OpenCV",
+    "yt-dlp/ejs",
+    "CJK font"
+  ],
+  "runtimePayloadEntries": 22183,
+  "externalEngineInstallationsRequired": false,
+  "fileAssociations": false,
+  "desktopAndStartMenuShortcutTarget": "FileConverter.exe",
+  "checksums": {
+    "FileConverter-1.1.0-rc.1-windows-x64-portable.zip": "15202485c6d6f1dc0f02c5fd8b83c10227bbc5d96125cbf15b328319ad82f317",
+    "File Converter_1.1.0-rc.1_x64-setup.exe": "0f041fd5f6c48e86e2b7f24738d077695144216e4ffdd7ff484a5f2f511cc60c"
+  }
+}

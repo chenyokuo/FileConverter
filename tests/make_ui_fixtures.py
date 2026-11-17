@@ -1,7 +1,10 @@
 """Small, original fixtures for the native UI harness; never commit generated files."""
 from pathlib import Path
+import sys
 from PIL import Image,ImageDraw
-root=Path(__file__).resolve().parents[1]/'.tools/ui-fixtures'
+workspace=Path(__file__).resolve().parents[1]
+root=Path(sys.argv[sys.argv.index('--directory')+1]).resolve() if '--directory' in sys.argv else workspace/'.tools/ui-fixtures'
+assert root.is_relative_to(workspace/'.tools'), 'Fixtures must stay inside the project test directory'
 root.mkdir(parents=True,exist_ok=True)
 image=Image.new('RGB',(1600,1000));draw=ImageDraw.Draw(image)
 for y in range(1000):

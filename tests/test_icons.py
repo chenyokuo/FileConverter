@@ -13,7 +13,10 @@ ROOT=Path(__file__).resolve().parents[1]
 ICONS=ROOT/'src-tauri/icons'
 
 def pe_icons(path):
-    pe=pefile.PE(str(path))
+    # Installer overlays contain gigabytes of compressed runtimes; inspect only
+    # the PE resource directory needed by this test, not unrelated directories.
+    pe=pefile.PE(str(path), fast_load=True)
+    pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_RESOURCE']])
     resources={}
     for kind in pe.DIRECTORY_ENTRY_RESOURCE.entries:
         if kind.id not in {3,14}:continue

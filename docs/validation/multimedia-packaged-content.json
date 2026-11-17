@@ -1,0 +1,60 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "package": "final-installed",
+      "videoDuration": 4.0,
+      "videoColorsVerified": true,
+      "imagePNGWebPAlphaVerified": true,
+      "core": [
+        {
+          "kind": "image",
+          "size": [
+            400,
+            240
+          ],
+          "mode": "RGB"
+        },
+        {
+          "kind": "Office PDF",
+          "pages": 1,
+          "text": "Matrix sentinel content 42"
+        },
+        {
+          "kind": "Chinese OCR",
+          "pages": 1,
+          "text": "繁髒中文轉檔測試"
+        }
+      ],
+      "fixedWebView2": "157.0.4341.60"
+    },
+    {
+      "package": "final-portable",
+      "videoDuration": 4.0,
+      "videoColorsVerified": true,
+      "imagePNGWebPAlphaVerified": true,
+      "core": [
+        {
+          "kind": "image",
+          "size": [
+            400,
+            240
+          ],
+          "mode": "RGB"
+        },
+        {
+          "kind": "Office PDF",
+          "pages": 1,
+          "text": "Matrix sentinel content 42"
+        },
+        {
+          "kind": "Chinese OCR",
+          "pages": 1,
+          "text": "繁髒中文轉檔測試"
+        }
+      ],
+      "fixedWebView2": "157.0.4341.60"
+    }
+  ],
+  "note": "OCR text is searchable and still requires proofreading."
+}

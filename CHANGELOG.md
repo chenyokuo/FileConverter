@@ -6,6 +6,7 @@
 - 接通下載／轉檔／影片／圖片工作流程，切頁保留狀態並暫停背景播放。
 - Runtime 還原不再依賴已安裝 7-Zip；鎖定 Python wheel hashes 並排除 AI 依賴。
 - 保留 1.0.0-rc.1 既有交付檔、應用識別碼及使用者資料。
+- 修正原生預覽媒體權限、Windows Sidecar 程序樹生命週期、深路徑 Portable 組裝與高 DPI 長路徑工具列溢出；P5 集中檢查及未完成實機／散布閘門見 docs/MULTIMEDIA_P5.md。
 
 # Changelog
 
