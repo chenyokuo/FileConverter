@@ -37,3 +37,10 @@ if not scan.exists():
     with pymupdf.open() as doc:
         page=doc.new_page(width=800,height=140);page.insert_image(page.rect,stream=buffer.getvalue());doc.save(scan)
 print('Prepared small original native/editor/Office/OCR fixtures:',base)
+
+fit_photo=media/'1255x893.png'
+if not fit_photo.exists():
+    image=Image.new('RGBA',(1255,893));draw=ImageDraw.Draw(image);draw.rectangle((20,20,1234,872),fill=(90,150,200,255));draw.rectangle((25,25,75,75),fill='red');draw.rectangle((1179,817,1229,867),fill='blue');image.save(fit_photo)
+exif_photo=media/'orientation.jpg'
+if not exif_photo.exists():
+    image=Image.new('RGB',(1255,893),'white');draw=ImageDraw.Draw(image);draw.rectangle((0,0,99,99),fill='red');draw.rectangle((1155,793,1254,892),fill='blue');exif=Image.Exif();exif[274]=6;image.save(exif_photo,quality=98,exif=exif)

@@ -11,7 +11,9 @@ def inspect(path,engines):
  if not path.is_file():raise ValueError('素材不存在')
  result={'path':str(path),'name':path.name,'duration':5,'kind':'image','poster':None,'waveform':None}
  try:
-  with Image.open(path) as im:result.update(width=im.width,height=im.height,poster=data_image(im))
+  with Image.open(path) as im:
+   oriented=ImageOps.exif_transpose(im)
+   result.update(width=oriented.width,height=oriented.height,poster=data_image(oriented))
   return result
  except (OSError,ValueError):pass
  info=probe(path,engines['ffprobe']);streams=info['streams'];video=next((s for s in streams if s.get('codec_type')=='video'),None);audio=any(s.get('codec_type')=='audio' for s in streams)
