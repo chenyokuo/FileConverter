@@ -131,13 +131,21 @@ try {
         }
     }
     $manifest=Get-Content -LiteralPath (Join-Path $directory 'latest.json') -Raw|ConvertFrom-Json
+    if($remote.tag_name -cne $tag){throw 'Draft is attached to the wrong version tag'}
     foreach($platform in $manifest.platforms.psobject.Properties){
-        if(!($remote.assets|Where-Object{$_.browser_download_url -ceq $platform.Value.url})){throw 'Manifest URL does not match an actual uploaded GitHub asset'}
+        # Draft URLs deliberately use an untagged-* placeholder until publish.
+        $matching=@($remote.assets|Where-Object{("https://github.com/chenyokuo/FileConverter/releases/download/$tag/"+[Uri]::EscapeDataString($_.name)) -ceq $platform.Value.url})
+        if($matching.Count -ne 1){throw 'Manifest URL does not match an actual uploaded GitHub asset'}
     }
     if(!$DraftOnly){
         $edit=@('release','edit',$tag,'--repo','chenyokuo/FileConverter','--draft=false','--latest=false')
         if(!$Version.Contains('-')){$edit[-1]='--latest=true'}
         Checked {& $gh @edit}
+        $publishedRecord=Get-DraftRecord
+        if($publishedRecord.draft){throw 'GitHub did not publish the release'}
+        foreach($platform in $manifest.platforms.psobject.Properties){
+            if(!($publishedRecord.assets|Where-Object{$_.browser_download_url -ceq $platform.Value.url})){throw 'Published asset URL differs from the manifest'}
+        }
     }
     Write-Host "https://github.com/chenyokuo/FileConverter/releases/tag/$tag"
     Write-Host "https://github.com/chenyokuo/FileConverter/releases/download/$tag/latest.json"
