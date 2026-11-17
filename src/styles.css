@@ -2782,3 +2782,22 @@ input[type="range"]::-webkit-slider-thumb {
 .image-inspector textarea{font:inherit;font-size:16px;min-height:90px;color:var(--text);background:var(--control);border:1px solid var(--border);border-radius:7px;padding:10px;}
 
 .editor-download-results{padding:16px;display:grid;gap:12px;}.editor-download-results .row{flex-wrap:wrap}.editor-download-results strong{flex:1;min-width:160px;}
+
+/* Compact editing workspace; materials and typography inherit the active theme. */
+.video-editor{grid-template-columns:minmax(110px,170px) minmax(0,640px) minmax(180px,260px);align-items:start;}
+.video-editor>:not(.editor-assets):not(.editor-preview):not(.editor-properties){grid-column:1/-1;}
+.video-editor>.editor-filebar{grid-row:1;}
+.video-editor>.error-text{grid-row:2;}
+.video-editor>.editor-assets{grid-column:1;grid-row:3;flex-direction:column;align-items:stretch;max-height:360px;overflow:auto;}
+.video-editor>.editor-preview{grid-column:2;grid-row:3;width:100%;max-width:640px;}
+.video-editor>.editor-properties{grid-column:3;grid-row:3;max-height:360px;overflow:auto;}
+.video-editor>.editor-controls{grid-row:4;gap:8px;padding:8px;}
+.video-editor>.editor-timeline-scroll{grid-row:5;height:280px;resize:vertical;min-height:240px;max-height:600px;}
+.video-editor .editor-track{height:72px;}
+.video-editor .editor-clip{height:58px;}
+.video-editor .editor-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.video-editor .editor-assets button{max-width:100%;min-height:48px;}
+.video-editor .editor-assets img{width:44px;height:32px;}
+.clip-context{position:fixed;z-index:30;display:grid;padding:8px;border-radius:10px;}
+@media(max-width:1250px){.video-editor{grid-template-columns:110px minmax(0,1fr)}.video-editor>.editor-properties{grid-column:1/-1;grid-row:6;max-height:260px}.video-editor>.editor-preview{max-width:560px}.video-editor .editor-fields{grid-template-columns:repeat(auto-fit,minmax(120px,1fr));}}
+@media(max-width:800px){.video-editor{grid-template-columns:minmax(0,1fr)}.video-editor>.editor-assets{grid-column:1;grid-row:7;flex-direction:row;flex-wrap:wrap;max-height:140px}.video-editor>.editor-preview{grid-column:1;max-width:480px;margin:auto}}

@@ -22,6 +22,8 @@ def validate(project,engines,check_sources=True):
   ids.add(clip['id'])
   if not __import__('re').fullmatch(r'[VA][1-9][0-9]*',clip['track']):raise ValueError('無效軌道')
   for key,default,lo,hi in [('at',0,0,864000),('in',0,0,864000),('out',5,.001,864000),('speed',1,.25,4),('volume',1,0,4),('fadeIn',0,0,864000),('fadeOut',0,0,864000),('transition',0,0,864000),('x',.65,0,1),('y',.65,0,1),('size',.3,.05,1)]:clip[key]=number(raw.get(key,default),lo,hi,key)
+  clip['pairId']=str(raw.get('pairId') or '')
+  clip['linked']=bool(raw.get('linked',False));clip['videoOnly']=bool(raw.get('videoOnly',False))
   clip['mute']=bool(raw.get('mute',False));clip['kind']=raw.get('kind','video')
   if clip['out']<=clip['in']:raise ValueError('片段終點必須大於起點')
   duration=(clip['out']-clip['in'])/clip['speed']
@@ -50,7 +52,7 @@ def validate(project,engines,check_sources=True):
   clips=sorted([c for c in clean['clips'] if c['track']==track],key=lambda c:c['at'])
   for before,after in zip(clips,clips[1:]):
    overlap=before['at']+(before['out']-before['in'])/before['speed']-after['at']
-   if overlap>.002 and (not track.startswith('V') or abs(overlap-after['transition'])>.02 or overlap>min((before['out']-before['in'])/before['speed'],(after['out']-after['in'])/after['speed'])/2):raise ValueError('同軌片段重疊；請移動片段或設定相符的交叉溶解長度')
+   if overlap>.002 and ((not track.startswith('V') and not after.get('pairId')) or abs(overlap-after['transition'])>.02 or overlap>min((before['out']-before['in'])/before['speed'],(after['out']-after['in'])/after['speed'])/2):raise ValueError('同軌片段重疊；請移動片段或設定相符的交叉溶解長度')
  return clean
 
 def length(project):return max([c['at']+(c['out']-c['in'])/c['speed'] for c in project['clips']]+[t['end'] for t in project.get('titles',[])]+[0])
@@ -72,23 +74,29 @@ def render(job,stage,engines):
   d=(c['out']-c['in'])/c['speed'];path=Path(c['source'])
   if c['kind']=='image':args+=['-loop','1','-t',str(c['out']-c['in']),'-i',path]
   else:args+=['-ss',str(c['in']),'-t',str(c['out']-c['in']),'-i',path]
+  if c['source'] not in metadata and c['kind']!='image':metadata[c['source']]=probe(path,engines['ffprobe'])
   if c['track'].startswith('V'):
+   vmeta=metadata.get(c['source'],{});vstream=next((s for s in vmeta.get('streams',[]) if s.get('codec_type')=='video'),{})
+   video_offset=max(0,float(vstream.get('start_time') or 0)-float(vmeta.get('format',{}).get('start_time') or 0)-c['in'])/c['speed']
    pip=c['track']!='V1';w=max(2,round(width*(c['size'] if pip else 1)/2)*2);h=max(2,round(height*(c['size'] if pip else 1)/2)*2)
    filters=f'scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps},format=rgba,setpts=(PTS-STARTPTS)/{c["speed"]}'
    fade=max(c['fadeIn'],c['transition'])
    if fade:filters+=f',fade=t=in:st=0:d={fade}:alpha=1'
    if c['fadeOut']:filters+=f',fade=t=out:st={d-c["fadeOut"]}:d={c["fadeOut"]}:alpha=1'
-   filters+=f',setpts=PTS+{c["at"]}/TB'
+   filters+=f',setpts=PTS+{c["at"]+video_offset}/TB'
    graph.append(f'[{i}:v:0]{filters}[v{i}]');x=round(c['x']*width) if pip else 0;y=round(c['y']*height) if pip else 0
    graph.append(f'[{base}][v{i}]overlay=x={x}:y={y}:eof_action=pass:enable=\'between(t,{c["at"]},{c["at"]+d})\'[b{i}]');base=f'b{i}'
   if c['source'] not in metadata and c['kind']!='image':metadata[c['source']]=probe(path,engines['ffprobe'])
   has_audio=any(s.get('codec_type')=='audio' for s in metadata.get(c['source'],{}).get('streams',[]))
-  if has_audio and not c['mute']:
+  if has_audio and not c['mute'] and not (c['track'].startswith('V') and c.get('videoOnly')):
    filters=f'asetpts=PTS-STARTPTS,{tempo(c["speed"])},aresample=48000,aformat=channel_layouts=stereo,volume={c["volume"]}'
    fade=max(c['fadeIn'],c['transition'])
    if fade:filters+=f',afade=t=in:d={fade}'
    if c['fadeOut']:filters+=f',afade=t=out:st={d-c["fadeOut"]}:d={c["fadeOut"]}'
-   filters+=f',adelay={round(c["at"]*1000)}:all=1';graph.append(f'[{i}:a:0]{filters}[a{i}]');audio.append(f'[a{i}]')
+   audio_meta=metadata[c['source']]
+   stream=next(s for s in audio_meta['streams'] if s.get('codec_type')=='audio')
+   offset=max(0,float(stream.get('start_time') or 0)-float(audio_meta.get('format',{}).get('start_time') or 0)-c['in'])/c['speed']
+   filters+=f',adelay={round((c["at"]+offset)*1000)}:all=1';graph.append(f'[{i}:a:0]{filters}[a{i}]');audio.append(f'[a{i}]')
  if project['titles']:
   if not engines.get('font'):raise ValueError('本機標題字型缺失')
   shutil.copy2(engines['font'],stage/'font.otf')

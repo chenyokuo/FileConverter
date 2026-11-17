@@ -16,11 +16,13 @@ def inspect(path,engines):
  except (OSError,ValueError):pass
  info=probe(path,engines['ffprobe']);streams=info['streams'];video=next((s for s in streams if s.get('codec_type')=='video'),None);audio=any(s.get('codec_type')=='audio' for s in streams)
  result.update(duration=float(info.get('format',{}).get('duration') or 0),kind='video' if video else 'audio',hasAudio=audio,width=video.get('width') if video else None,height=video.get('height') if video else None)
+ astream=next((s for s in streams if s.get('codec_type')=='audio'),{})
+ result.update(audioStart=float(astream.get('start_time') or 0)-float(info.get('format',{}).get('start_time') or 0),audioDuration=float(astream.get('duration') or result['duration']))
  if result['duration']<=0:raise ValueError('素材長度未知，無法建立編輯時間軸')
  if video:
   png=command([engines['ffmpeg'],'-v','error','-i',path,'-frames:v','1','-vf','scale=640:-2','-f','image2pipe','-vcodec','png','-'],timeout=45);result['poster']='data:image/png;base64,'+base64.b64encode(png).decode()
  if audio:
-  png=command([engines['ffmpeg'],'-v','error','-i',path,'-filter_complex','aformat=channel_layouts=mono,showwavespic=s=1200x64:colors=white','-frames:v','1','-f','image2pipe','-vcodec','png','-'],timeout=90);result['waveform']='data:image/png;base64,'+base64.b64encode(png).decode()
+  png=command([engines['ffmpeg'],'-v','error','-i',path,'-filter_complex',f'aformat=channel_layouts=mono,asetpts=PTS-STARTPTS,adelay={round(max(0,result["audioStart"])*1000)}:all=1,apad,atrim=duration={result["duration"]},showwavespic=s=1200x64:colors=white','-frames:v','1','-f','image2pipe','-vcodec','png','-'],timeout=90);result['waveform']='data:image/png;base64,'+base64.b64encode(png).decode()
  return result
 
 def project_io(args,engines):
