@@ -1,6 +1,6 @@
 // Real Tauri IPC, GitHub HTTPS, official updater verification; no mocked bridge.
 import {chromium,expect} from '@playwright/test';import fs from 'node:fs/promises';
-const mode=process.argv[2]||'controls',label=process.env.FILE_CONVERTER_UPDATE_LABEL||`updater-${mode}`;
+const mode=process.argv[2]||process.env.FILE_CONVERTER_UPDATE_MODE||'controls',label=process.env.FILE_CONVERTER_UPDATE_LABEL||`updater-${mode}`;
 const browser=await chromium.connectOverCDP('http://127.0.0.1:9222');
 await expect.poll(()=>browser.contexts()[0].pages().some(p=>/tauri.localhost|127.0.0.1:1420/.test(p.url())),{timeout:25000}).toBe(true);
 const page=browser.contexts()[0].pages().find(p=>/tauri.localhost|127.0.0.1:1420/.test(p.url()));
@@ -33,7 +33,7 @@ try{
   if(!isCurrent){
    if(mode==='portable')await page.getByRole('switch',{name:'自動下載更新',exact:true}).check();
    else await page.getByRole('button',{name:'下載新版',exact:true}).click();
-   const counts=[];await expect.poll(async()=>{const s=await invoke('update_status');counts.push(s.downloaded);if(s.phase==='error')throw Error(s.error);return s.phase},{timeout:1800000,intervals:[500,1000,2000]}).toBe('ready');
+   const counts=[];let lastProgress=0;await expect.poll(async()=>{const s=await invoke('update_status');counts.push(s.downloaded);if(Date.now()-lastProgress>10000){console.log(`Download ${s.downloaded}/${s.total||'?'} bytes (${s.phase})`);lastProgress=Date.now()}if(s.phase==='error')throw Error(s.error);return s.phase},{timeout:1800000,intervals:[500,1000,2000]}).toBe('ready');
    const downloaded=await invoke('update_status');expect(downloaded.verified).toBe(true);expect(downloaded.downloaded).toBeGreaterThan(0);
    report.download={...downloaded,distinctByteCounts:[...new Set(counts)].length};expect(report.download.distinctByteCounts).toBeGreaterThan(1);
    if(mode==='install'){
