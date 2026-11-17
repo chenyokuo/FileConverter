@@ -18,8 +18,8 @@ from detection import detect
 from worker import convert,probe
 from PIL import Image,ImageStat
 import pymupdf
-STAGE=ROOT/'.tools/p5-matrix';STAGE.mkdir(exist_ok=True)
-RESULTS=ROOT/'test-results/matrix.json';RESULTS.parent.mkdir(exist_ok=True)
+STAGE=ROOT/('.tools/p5-matrix-'+str(int(time.time())) if '--fresh' in sys.argv else '.tools/p5-matrix');STAGE.mkdir(exist_ok=True)
+RESULTS=ROOT/('test-results/multimedia-matrix.json' if '--fresh' in sys.argv else 'test-results/matrix.json');RESULTS.parent.mkdir(exist_ok=True)
 engines=locate(ROOT/'vendor');image_plugins();sources={};counter=0
 def convert_one(source,target,options=None,label='fixture'):
     global counter

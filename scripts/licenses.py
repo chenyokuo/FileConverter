@@ -15,9 +15,18 @@ python_license=Path(sys.base_prefix)/'LICENSE.txt'
 if python_license.is_file():shutil.copy2(python_license,DEST/'PYTHON-LICENSE.txt')
 for name in ['LICENSE','THIRD_PARTY_NOTICES.md']:
     shutil.copy2(ROOT/name,DEST/name)
+import re
+canonical=lambda v:re.sub(r'[-_.]+','-',v).lower()
+approved={canonical(line.split('==')[0]) for line in (ROOT/'engine/requirements-lock.txt').read_text().splitlines() if '==' in line}
+# Drop stale development-only optional-AI notices, not runtime/source/user files.
+for old in (DEST/'python').iterdir() if (DEST/'python').exists() else []:
+    if old.is_dir() and canonical(old.name) not in approved:
+        if not old.resolve().is_relative_to((DEST/'python').resolve()):raise ValueError('Invalid generated notices path')
+        shutil.rmtree(old)
 inventory=[]
 for meta in importlib.metadata.distributions():
     name=meta.metadata['Name'];version=meta.version
+    if canonical(name) not in approved:continue
     inventory.append({'name':name,'version':version,'license':meta.metadata.get('License-Expression') or meta.metadata.get('License','')})
     for file in meta.files or []:
         if any(token in str(file).lower() for token in ['license','copying','notice']) and not str(file).endswith('.py'):

@@ -8,6 +8,12 @@ if (Test-Path '.tools\cargo\bin') {
     $env:CARGO_HOME = Join-Path $ProjectRoot '.tools\cargo'
     $env:PATH = (Join-Path $ProjectRoot '.tools\cargo\bin') + ';' + (Join-Path $ProjectRoot '.tools') + ';' + $env:PATH
 }
+function Invoke-Npm {
+    param([Parameter(ValueFromRemainingArguments=$true)][string[]]$NpmArgs)
+    if($env:FILE_CONVERTER_NPM_CLI){node $env:FILE_CONVERTER_NPM_CLI @NpmArgs}
+    elseif(Test-Path '.tools/npm/package/bin/npm-cli.js'){node .tools/npm/package/bin/npm-cli.js @NpmArgs}
+    else{npm @NpmArgs}
+}
 $PythonExe = Join-Path $ProjectRoot '.venv\Scripts\python.exe'
 if (!(Test-Path $PythonExe)) { throw 'Run python -m venv .venv and install engine/requirements-lock.txt first.' }
 function Invoke-Checked {
@@ -33,8 +39,8 @@ if (!$SkipTests) {
 }
 Invoke-Checked { & $PythonExe scripts\licenses.py }
 Invoke-Checked { & $PythonExe scripts\normalize_bundle_marker.py }
-if ($NoInstaller) { Invoke-Checked { npm run package -- --no-bundle } }
-else { Invoke-Checked { npm run package } }
+if ($NoInstaller) { Invoke-Checked { Invoke-Npm run package -- --no-bundle } }
+else { Invoke-Checked { Invoke-Npm run package } }
 $IconTargets = @('src-tauri\target\release\FileConverter.exe', 'src-tauri\binaries\FileConverterEngine\FileConverterEngine.exe')
 if (!$NoInstaller) {
     $BuildVersion = (Get-Content package.json -Raw | ConvertFrom-Json).version

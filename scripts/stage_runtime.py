@@ -8,7 +8,7 @@ import os
 ROOT=Path(__file__).resolve().parents[1]
 DEST=ROOT/'src-tauri/bundled-engines'
 ENGINES=['ffmpeg','libreoffice','calibre','pandoc','ghostscript','7zip','deno','tessdata','fonts']
-EXCLUDED={'$PLUGINSDIR','.ready','uninstgs.exe.nsis'}
+EXCLUDED={'$PLUGINSDIR','.ready','.fc-runtime-integrity.json','uninstgs.exe.nsis'}
 def ignore(directory,names):
     return [name for name in names if name in EXCLUDED or name.lower().endswith(('.msi','.log','.partial','.tmp')) or name.startswith(('__pycache__','.~lock.'))]
 def main():

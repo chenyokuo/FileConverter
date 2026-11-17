@@ -27,7 +27,7 @@ class QuietLogger:
 def settings(engines):
     os.environ['YTDLP_NO_PLUGINS']='1'
     return {'quiet':True,'no_warnings':True,'logger':QuietLogger(),'ignoreerrors':False,'noplaylist':True,
-        'socket_timeout':20,'retries':3,'fragment_retries':3,'nocheckcertificate':False,
+        'socket_timeout':20,'external_downloader_args':{'ffmpeg_i':['-rw_timeout','20000000']},'retries':3,'fragment_retries':3,'nocheckcertificate':False,
         'cookiesfrombrowser':None,'cookiefile':None,'remote_components':set(),
         'js_runtimes':{'deno':{'path':engines['deno']}} if engines.get('deno') else {},
         'ffmpeg_location':str(Path(engines['ffmpeg']).parent) if engines.get('ffmpeg') else None,
@@ -129,7 +129,7 @@ def selected(token,items):
         if audio_format not in {'mp3','m4a','flac','wav'}:raise ValueError('不支援的音訊後處理')
         convert_to=item.get('convertTo','')
         if convert_to not in {'','mp4','mkv','webm'}:raise ValueError('不支援的下載後轉檔格式')
-        result.append({'url':validate_url(entry['url']),'title':entry['title'],'entryId':entry['id'],'formatId':format_id,
+        result.append({'url':validate_url(entry['url']),'title':entry['title'],'entryId':entry['id'],'formatId':format_id,'formatHasAudio':any(str(f['format_id'])==format_id and f.get('acodec') not in {None,'none'} for f in entry['formats']),
             'sections':sections(item.get('sections'),entry.get('duration')),'duration':entry.get('duration'),'precise':bool(item.get('precise')),'mergeSections':bool(item.get('mergeSections')),'audioOnly':bool(item.get('audioOnly')),'audioFormat':audio_format,'subtitles':languages,'convertTo':convert_to})
     if not result:raise ValueError('請選擇下載項目')
     return result
@@ -171,7 +171,7 @@ def execute(job,stage,engines):
     if p['audioOnly']:
         options.update(format='bestaudio/best',postprocessors=[{'key':'FFmpegExtractAudio','preferredcodec':p['audioFormat'],'preferredquality':'192'}])
     else:
-        options['format']='bestvideo*+bestaudio/best' if p['formatId']=='best' else p['formatId']+'+bestaudio/'+p['formatId']
+        options['format']='bestvideo*+bestaudio/best' if p['formatId']=='best' else p['formatId'] if p.get('formatHasAudio') else p['formatId']+'+bestaudio/'+p['formatId']
         options['merge_output_format']='mkv'
     with ffmpeg_context(engines),yt_dlp.YoutubeDL(options) as ydl:
         info=ydl.extract_info(validate_url(p['url']),download=False)

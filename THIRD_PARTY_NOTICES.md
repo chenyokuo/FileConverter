@@ -66,3 +66,10 @@ The P5 collector preserves actual runtime license files, Python wheel bundled-li
 This is an unsigned private evaluation release candidate, not a completed customer-distribution clearance. Before onward binary distribution, provide recipients with this application's complete source and build instructions and a complete corresponding-source delivery for the exact GPL/AGPL/LGPL components, including FFmpeg codec/build dependencies, Calibre, Pandoc, Ghostscript and linked codec libraries. The current repository and upstream links do not by themselves constitute a complete corresponding-source archive for all external binary builds. Private GitHub visibility does not waive that obligation. See docs/DISTRIBUTION.md for the remaining release gate.
 
 The NSIS template is copied from Tauri CLI 2.12.4 commit 993038c49185307dfc895ab7657d77ca0d5ed7c7 (MIT OR Apache-2.0); its exact upstream URL/hash is preserved in src-tauri/windows/installer.nsi.hbs. The Solid compression flag is removed and datablock deduplication is disabled to avoid large-payload mapping and search costs; NSIS uses zlib compression.
+
+
+## Multimedia expansion (1.1.0-rc.1)
+
+No Fabric/Vidstack/AI SDK or model was added. The editor viewport uses existing React, SVG/Pointer Events and HTML video; rendering uses existing Pillow, FFmpeg and the packaged Noto CJK font. Tauri protocol-asset adds http-range 0.1.6 (MIT), locked by Cargo. All Python setup is an explicit 40-package core whitelist with Windows CPython 3.13 wheel SHA-256, excluding optional PyMuPDF layout/LLM/ONNX packages. New clean build environments contain none of those AI modules. Original development environments can contain unrelated older packages; only selected frozen runtime modules are shipped.
+
+The verified 7-Zip 25.01 bootstrap/download artifacts are preparation tools, not system installation or file-association changes. Exact URLs, hashes, architecture and payload destinations are in engine-lock.json and config/python-wheels.json. Existing corresponding-source distribution requirements in docs/DISTRIBUTION.md remain applicable; private candidate testing does not constitute commercial redistribution clearance.

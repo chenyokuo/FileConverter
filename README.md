@@ -2,9 +2,13 @@
 
 Windows 11 x64 優先、兼顧 Windows 10 的本機轉檔桌面工具。清晰背景、分層玻璃、繁體中文操作；保留使用者資料識別碼 `studio.rai.converter`。
 
-目前為 **1.0.0-rc.1 驗收候選版**。P1–P4 已實作，最終環境及散布驗收狀態見 [驗收紀錄](docs/VALIDATION.md) 與 [散布要求](docs/DISTRIBUTION.md)。候選檔案不代表所有實機驗收已通過。
+目前為 **1.1.0-rc.1 多媒體編輯驗收候選版**。P1–P4 已實作，最終環境及散布驗收狀態見 [本輪驗收紀錄](docs/MULTIMEDIA_P5.md) 與 [散布要求](docs/DISTRIBUTION.md)。候選檔案不代表所有實機驗收已通過。
 
 ## 功能
+
+- 非破壞性影片編輯：V1/A1/A2/V2、多軌拖曳／Trim／Split、插入與合併、分離音軌／混音、速度、淡入淡出／交叉溶解、文字／SRT／畫中畫、Undo/Redo、JSON 專案、共用時間軸預覽與真實 FFmpeg 匯出。
+- 圖片編輯：多圖層、選取／移動／排序／隱藏、裁切／旋轉／翻轉、亮度／對比／濾鏡、畫筆／橡皮擦／馬賽克、文字／形狀、專案存讀、全解析度 PNG/JPG/WebP 及 Alpha。
+- 網址影片區間：播放／Seek、起訖把手與時間輸入、完整／多片段、快速／精確、分段或合併。下載成果可直接送入影片編輯器；圖片成果可送回原有轉檔佇列。切頁保留編輯狀態並暫停背景播放。
 
 - 內容辨識／指定來源→目標兩種模式，混合批次、1–4 工作並行、真實進度、取消程序樹、重試、衝突另存與 SQLite 歷史。
 - 影片／音訊、HEIC／AVIF／GIF 等圖片、Office／PDF、Markdown／HTML、電子書、向量及壓縮格式；共用 [305 個合法直接方向](docs/FORMATS.md)。
@@ -40,14 +44,10 @@ engine-lock.json    Runtime／模型／字型／WebView2 來源和 SHA-256
 
 ## 開發
 
-開發機需 Node.js、Rust MSVC、VS C++ Build Tools、Python 3.13 與 7-Zip；使用者不需要。重用既有依賴快取。
+開發機需 Node.js/npm、Rust MSVC、VS C++ Build Tools、Python 3.13 x64；使用者不需要。7-Zip 由校驗腳本準備，不依賴系統安裝。完整來源、SHA-256、架構與目的地見 [DEPENDENCIES](docs/DEPENDENCIES.md)。
 
 ```powershell
-npm ci
-python -m venv .venv
-.venv\Scripts\python.exe -m pip install -r engine\requirements-lock.txt
-.venv\Scripts\python.exe -X utf8 scripts\prepare.py
-.venv\Scripts\python.exe -X utf8 scripts\acquire_engines.py
+powershell -ExecutionPolicy Bypass -File scripts\setup-dependencies.ps1
 npm run desktop
 ```
 
@@ -67,6 +67,8 @@ powershell -ExecutionPolicy Bypass -File scripts\build.ps1
 ```
 
 重用已校驗 Runtime，產生 PyInstaller onedir、Tauri Release／NSIS、Portable ZIP 與 SHA256SUMS。只有已完成相同 P5 回歸的工作可用 `-SkipTests` 避免重跑；`-NoInstaller` 供必要的局部修復建置。接著執行 `scripts\verify_release.py`、原生 GUI 與安裝驗證。沒有憑證時為未簽署候選版。
+
+影片編輯：匯入素材→在 V1/A1/A2 移動、Trim 或 Split→調整效果→儲存 `.fcvideo.json`→輸出。編輯後會重新合成預覽，長作品會等待，沒有把舊預覽冒充新結果。圖片編輯：匯入／加入圖層→調整或畫筆→儲存 `.fcimage.json`→指定輸出解析度。專案保存素材路徑，搬移素材後需重新定位。
 
 PDF→DOCX／OCR 需校對；融合像素修補不能還原原始畫面；有損壓縮不保證達指定大小；硬體加速不保證更好的畫質。實機與授權限制見文件。
 
