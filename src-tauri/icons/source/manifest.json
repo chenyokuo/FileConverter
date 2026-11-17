@@ -1,0 +1,10 @@
+{
+  "source": "file-converter-original.png",
+  "sha256": "43ac05c2ceb7cd72bee21303c3ff6c1d6e905212eb3df3a1699fbc05d8b6ac77",
+  "originalSize": [
+    1254,
+    1254
+  ],
+  "resampling": "Lanczos",
+  "fit": "contain; no stretching"
+}

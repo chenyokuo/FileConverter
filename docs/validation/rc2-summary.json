@@ -1,0 +1,63 @@
+{
+  "version": "1.1.0-rc.2",
+  "productSource": "765e6e45c9912813f519a7c8d75172a4e2647c06",
+  "branch": "feature/multimedia-editor",
+  "date": "2026-11-17",
+  "sourceRegression": {
+    "run": 70,
+    "passed": 69,
+    "skippedPEBeforeBuild": 1,
+    "laterRealPEPassed": 4
+  },
+  "matrix": {
+    "passed": 305,
+    "failed": 0,
+    "newGeneratedDirectory": true
+  },
+  "firstFrozenEditorOCRPreviewGroups": 13,
+  "postExifRelatedFrozenGroups": 5,
+  "systemOnlyPATHConversions": 9,
+  "existingNativeGUI": {
+    "passed": 23,
+    "failures": 0,
+    "externalRequests": 0
+  },
+  "nativeFinalPackages": [
+    "Installer",
+    "extracted final Portable ZIP"
+  ],
+  "contentAssertions": "Decoded frame colors/duration; audio RMS vs source; selected audio; image corners/size/Alpha; EXIF direction; real section duration",
+  "dataPreserved": [
+    "settings",
+    "jobs",
+    "automation",
+    "original own shell verbs",
+    "existing 1.1.0-rc.1 artifacts"
+  ],
+  "rebuild": {
+    "cleanSourceDirectory": true,
+    "newPythonVenvAndNodeModulesAndVendor": true,
+    "verifiedCachesReused": true,
+    "noCacheNetworkRestore": false,
+    "sdkCompilerCachesReused": true,
+    "pythonPinnedPackages": 40,
+    "AIIncluded": false
+  },
+  "validationReuse": "Full regression/matrix/GUI/core checks ran once in R5. Only orientation/image frozen tests, PE, final payload verification and both native repair cases repeated for the observed EXIF fix; no redundant whole-suite rerun.",
+  "checksums": {
+    "FileConverter-1.1.0-rc.2-windows-x64-portable.zip": "29a21df8a4e54edb5894f80ac4d129f08a896bcd960571f309b33866ed314b3f",
+    "File Converter_1.1.0-rc.2_x64-setup.exe": "a175810d0b42abe35bc6239c5b1fe3ce441793a9e4f5b91768eab784abdc518f"
+  },
+  "limitations": [
+    "No clean Windows VM or second machine",
+    "Windows 10 and physical multi-monitor DPI unverified",
+    "NVIDIA/Intel actual devices unavailable; fallback tested",
+    "YouTube may return HTTP 403; no authentication/cookie bypass",
+    "Unsigned private evaluation candidate",
+    "External binary complete corresponding-source redistribution gate remains open",
+    "1.0.0-rc.1 absent before this task after earlier explicit user deletion"
+  ],
+  "noMainMerge": true,
+  "noTag": true,
+  "noGitHubRelease": true
+}

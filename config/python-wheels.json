@@ -1,0 +1,669 @@
+[
+  {
+    "name": "altgraph",
+    "version": "0.17.5",
+    "filename": "altgraph-0.17.5-py2.py3-none-any.whl",
+    "sha256": "f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597",
+    "source": "https://pypi.org/project/altgraph/0.17.5/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "altgraph-0.17.5.dist-info/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "brotli",
+    "version": "1.2.1",
+    "filename": "brotli-1.2.1-cp313-cp313-win_amd64.whl",
+    "sha256": "e6c4fa55eab6b5684b33239597876a18a35ce1280b63ab960164032afbb8783f",
+    "source": "https://pypi.org/project/brotli/1.2.1/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "brotli-1.2.1.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "certifi",
+    "version": "2026.10.23",
+    "filename": "certifi-2026.10.23-py3-none-any.whl",
+    "sha256": "e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1",
+    "source": "https://pypi.org/project/certifi/2026.10.23/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MPL-2.0",
+    "licenseFiles": [
+      "certifi-2026.10.23.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "charset-normalizer",
+    "version": "3.5.2",
+    "filename": "charset_normalizer-3.5.2-cp313-cp313-win_amd64.whl",
+    "sha256": "78456a747de8dc58360ffa581f30a002baf5aa28cb262536545e91f113ed7639",
+    "source": "https://pypi.org/project/charset-normalizer/3.5.2/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "charset_normalizer-3.5.2.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "et_xmlfile",
+    "version": "2.0.0",
+    "filename": "et_xmlfile-2.0.0-py3-none-any.whl",
+    "sha256": "7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa",
+    "source": "https://pypi.org/project/et_xmlfile/2.0.0/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "fire",
+    "version": "0.7.1",
+    "filename": "fire-0.7.1-py3-none-any.whl",
+    "sha256": "e43fd8a5033a9001e7e2973bab96070694b9f12f2e0ecf96d4683971b5ab1882",
+    "source": "https://pypi.org/project/fire/0.7.1/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "Apache-2.0",
+    "licenseFiles": [
+      "fire-0.7.1.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "fonttools",
+    "version": "4.68.0",
+    "filename": "fonttools-4.68.0-cp313-cp313-win_amd64.whl",
+    "sha256": "6ed796b220654b4d37ad20af73419ec7969b669dd678cab88afb602c5683a331",
+    "source": "https://pypi.org/project/fonttools/4.68.0/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "fonttools-4.68.0.dist-info/licenses/LICENSE",
+      "fonttools-4.68.0.dist-info/licenses/LICENSE.external"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "idna",
+    "version": "3.20",
+    "filename": "idna-3.20-py3-none-any.whl",
+    "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+    "source": "https://pypi.org/project/idna/3.20/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "idna-3.20.dist-info/licenses/LICENSE.md"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "lxml",
+    "version": "6.1.3",
+    "filename": "lxml-6.1.3-cp313-cp313-win_amd64.whl",
+    "sha256": "e477aca0bc0d19f3b4ae9e4f2a1cfd687c31bf772d78734910658186b40b2477",
+    "source": "https://pypi.org/project/lxml/6.1.3/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "lxml-6.1.3.dist-info/licenses/LICENSE.txt",
+      "lxml-6.1.3.dist-info/licenses/LICENSES.txt"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "mutagen",
+    "version": "1.48.1",
+    "filename": "mutagen-1.48.1-py3-none-any.whl",
+    "sha256": "4f077fe87d3fc7fba259aa63d8c026b18382ca6a42ef37c61e16f1b1b5b82fe7",
+    "source": "https://pypi.org/project/mutagen/1.48.1/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "GPL-2.0-or-later",
+    "licenseFiles": [
+      "mutagen-1.48.1.dist-info/licenses/COPYING"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "networkx",
+    "version": "3.7",
+    "filename": "networkx-3.7-py3-none-any.whl",
+    "sha256": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+    "source": "https://pypi.org/project/networkx/3.7/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "networkx-3.7.dist-info/licenses/LICENSE.txt"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "numpy",
+    "version": "2.5.5",
+    "filename": "numpy-2.5.5-cp313-cp313-win_amd64.whl",
+    "sha256": "e0608d1585557b68dcb6a70a41654f7536567960afad79d91752d2863b242b68",
+    "source": "https://pypi.org/project/numpy/2.5.5/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+    "licenseFiles": [
+      "numpy/ma/LICENSE",
+      "numpy/random/LICENSE.md",
+      "numpy/_core/include/numpy/random/LICENSE.txt",
+      "numpy-2.5.5.dist-info/licenses/",
+      "numpy-2.5.5.dist-info/licenses/numpy/",
+      "numpy-2.5.5.dist-info/licenses/LICENSE.txt",
+      "numpy-2.5.5.dist-info/licenses/numpy/fft/",
+      "numpy-2.5.5.dist-info/licenses/numpy/linalg/",
+      "numpy-2.5.5.dist-info/licenses/numpy/ma/",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/",
+      "numpy-2.5.5.dist-info/licenses/numpy/fft/pocketfft/",
+      "numpy-2.5.5.dist-info/licenses/numpy/fft/pocketfft/LICENSE.md",
+      "numpy-2.5.5.dist-info/licenses/numpy/linalg/lapack_lite/",
+      "numpy-2.5.5.dist-info/licenses/numpy/linalg/lapack_lite/LICENSE.txt",
+      "numpy-2.5.5.dist-info/licenses/numpy/ma/LICENSE",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/LICENSE.md",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/distributions/",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/mt19937/",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/pcg64/",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/philox/",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/sfc64/",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/splitmix64/",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/distributions/LICENSE.md",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/mt19937/LICENSE.md",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/pcg64/LICENSE.md",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/philox/LICENSE.md",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/sfc64/LICENSE.md",
+      "numpy-2.5.5.dist-info/licenses/numpy/random/src/splitmix64/LICENSE.md",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/include/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/include/numpy/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/include/numpy/libdivide/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/common/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/highway/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/multiarray/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/npysort/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/umath/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/highway/LICENSE",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/umath/svml/",
+      "numpy-2.5.5.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "opencv-python-headless",
+    "version": "5.0.0.93",
+    "filename": "opencv_python_headless-5.0.0.93-cp37-abi3-win_amd64.whl",
+    "sha256": "829717b6a95554f273e49e357cee3b3a2a26b6f4842fbc1bed2b45bdd8f87e0e",
+    "source": "https://pypi.org/project/opencv-python-headless/5.0.0.93/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "Apache 2.0",
+    "licenseFiles": [
+      "cv2/LICENSE-3RD-PARTY.txt",
+      "cv2/LICENSE.txt",
+      "opencv_python_headless-5.0.0.93.dist-info/LICENSE-3RD-PARTY.txt",
+      "opencv_python_headless-5.0.0.93.dist-info/LICENSE.txt"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "openpyxl",
+    "version": "3.1.5",
+    "filename": "openpyxl-3.1.5-py2.py3-none-any.whl",
+    "sha256": "5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2",
+    "source": "https://pypi.org/project/openpyxl/3.1.5/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "packaging",
+    "version": "26.3",
+    "filename": "packaging-26.3-py3-none-any.whl",
+    "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+    "source": "https://pypi.org/project/packaging/26.3/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "Apache-2.0 OR BSD-2-Clause",
+    "licenseFiles": [
+      "packaging/licenses/__init__.py",
+      "packaging/licenses/_spdx.py",
+      "packaging-26.3.dist-info/licenses/LICENSE",
+      "packaging-26.3.dist-info/licenses/LICENSE.APACHE",
+      "packaging-26.3.dist-info/licenses/LICENSE.BSD"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "pdf2docx",
+    "version": "0.5.13",
+    "filename": "pdf2docx-0.5.13-py3-none-any.whl",
+    "sha256": "a293e9e78d89b12a4a43fcefba1346de220681c3daf20b8a7d3e1fce77f0fe97",
+    "source": "https://pypi.org/project/pdf2docx/0.5.13/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "pdf2docx-0.5.13.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "pefile",
+    "version": "2024.8.26",
+    "filename": "pefile-2024.8.26-py3-none-any.whl",
+    "sha256": "76f8b485dcd3b1bb8166f1128d395fa3d87af26360c2358fb75b80019b957c6f",
+    "source": "https://pypi.org/project/pefile/2024.8.26/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "pefile-2024.8.26.dist-info/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "pillow",
+    "version": "13.0.0",
+    "filename": "pillow-13.0.0-cp313-cp313-win_amd64.whl",
+    "sha256": "9dda0788a9932776a75d8bcc020076edc308ce2508b51f6739a45e3158b3fc42",
+    "source": "https://pypi.org/project/pillow/13.0.0/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT-CMU",
+    "licenseFiles": [
+      "pillow-13.0.0.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "pillow_heif",
+    "version": "1.8.1",
+    "filename": "pillow_heif-1.8.1-cp313-cp313-win_amd64.whl",
+    "sha256": "f2110c6f9ec02efecf52a979addaf5734770e55ca29705ce0c3f0e588db5e6b5",
+    "source": "https://pypi.org/project/pillow_heif/1.8.1/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "pillow_heif-1.8.1.dist-info/licenses/",
+      "pillow_heif-1.8.1.dist-info/licenses/LICENSE.txt",
+      "pillow_heif-1.8.1.dist-info/licenses/LICENSES_bundled.txt"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "psutil",
+    "version": "7.2.2",
+    "filename": "psutil-7.2.2-cp37-abi3-win_amd64.whl",
+    "sha256": "eb7e81434c8d223ec4a219b5fc1c47d0417b12be7ea866e24fb5ad6e84b3d988",
+    "source": "https://pypi.org/project/psutil/7.2.2/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "psutil-7.2.2.dist-info/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "pycryptodomex",
+    "version": "3.24.2",
+    "filename": "pycryptodomex-3.24.2-cp37-abi3-win_amd64.whl",
+    "sha256": "6e912e3a21061bf8f4ce89223cb46f5e98a6b32420d08d770605891a2be266c6",
+    "source": "https://pypi.org/project/pycryptodomex/3.24.2/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD, Public Domain",
+    "licenseFiles": [
+      "pycryptodomex-3.24.2.dist-info/LICENSE.rst"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "pyinstaller",
+    "version": "6.22.3",
+    "filename": "pyinstaller-6.22.3-py3-none-win_amd64.whl",
+    "sha256": "500bd58c7bf7e584a8435adccbd763a0b918d5c12b08d74ff50fd79b2915458b",
+    "source": "https://pypi.org/project/pyinstaller/6.22.3/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)",
+    "licenseFiles": [
+      "pyinstaller-6.22.3.dist-info/licenses/COPYING.txt"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "pyinstaller-hooks-contrib",
+    "version": "2026.10",
+    "filename": "pyinstaller_hooks_contrib-2026.10-py3-none-any.whl",
+    "sha256": "dfc3cde20a7ce6c92e803016e66eed4b7050467e2c5f886a3745d89b258c6d6d",
+    "source": "https://pypi.org/project/pyinstaller-hooks-contrib/2026.10/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "License :: OSI Approved :: Apache Software License; License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "licenseFiles": [
+      "pyinstaller_hooks_contrib-2026.10.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "pymupdf",
+    "version": "2.1",
+    "filename": "pymupdf-2.1-cp311-abi3-win_amd64.whl",
+    "sha256": "e1122bbc3a1212396f0d70d19f78e084991b59ebdfc9d846c28ca8b509de01ad",
+    "source": "https://pypi.org/project/pymupdf/2.1/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "Dual Licensed - GNU AFFERO GPL 3.0 or Artifex Commercial License",
+    "licenseFiles": [
+      "pymupdf-2.1.dist-info/COPYING"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "pypdf",
+    "version": "7.1.0",
+    "filename": "pypdf-7.1.0-py3-none-any.whl",
+    "sha256": "47cca6b24bdcf4c4d65b5f7b8b972535c61710a061261e737688777cfd9a7bfb",
+    "source": "https://pypi.org/project/pypdf/7.1.0/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "pypdf-7.1.0.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "pypdfium2",
+    "version": "5.15.2",
+    "filename": "pypdfium2-5.15.2-py3-none-win_amd64.whl",
+    "sha256": "74d1bace34fb01c660d0b64344d5a4b7d276942b7c6623c88ab59ea21c5acfbd",
+    "source": "https://pypi.org/project/pypdfium2/5.15.2/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD-3-Clause, Apache-2.0, dependency licenses",
+    "licenseFiles": [
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/abseil.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/agg23.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/dragonbox-Apache2-LLVM.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/dragonbox-Boost.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/fast_float.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/freetype.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/harfbuzz.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/highway.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/icu.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/lcms.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/libjpeg_turbo.ijg",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/libjpeg_turbo.md",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/libopenjpeg.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/libpng.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/libtiff.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/pdfium-binaries.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/pdfium.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/simdutf.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/zlib.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/SHARED/Apache-2.0.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/all_except_musl/llvm-libc.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/android/catapult.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/android/cpu_features.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/android/libunwind.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/cibw_musl/libgcc_and_libstdc++.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/pbin_and_sbuild/brotli.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/pbin_and_sbuild/libyuv.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/pbin_musl/musl.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/v8_xfa/bigint.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/v8_xfa/fdlibm.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/v8_xfa/fp16.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/v8_xfa/inspector_protocol.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/v8_xfa/strongtalk.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/BUILD_LICENSES/v8_xfa/v8.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/LICENSES/Apache-2.0.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/LICENSES/BSD-3-Clause.txt",
+      "pypdfium2-5.15.2.dist-info/licenses/LICENSES/CC-BY-4.0.txt"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "python-docx",
+    "version": "1.2.0",
+    "filename": "python_docx-1.2.0-py3-none-any.whl",
+    "sha256": "3fd478f3250fbbbfd3b94fe1e985955737c145627498896a8a6bf81f4baf66c7",
+    "source": "https://pypi.org/project/python-docx/1.2.0/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "python_docx-1.2.0.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "python-pptx",
+    "version": "1.0.2",
+    "filename": "python_pptx-1.0.2-py3-none-any.whl",
+    "sha256": "160838e0b8565a8b1f67947675886e9fea18aa5e795db7ae531606d68e785cba",
+    "source": "https://pypi.org/project/python-pptx/1.0.2/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "python_pptx-1.0.2.dist-info/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "pywin32-ctypes",
+    "version": "0.2.3",
+    "filename": "pywin32_ctypes-0.2.3-py3-none-any.whl",
+    "sha256": "8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8",
+    "source": "https://pypi.org/project/pywin32-ctypes/0.2.3/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "pywin32_ctypes-0.2.3.dist-info/LICENSE.txt"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "PyYAML",
+    "version": "6.0.3",
+    "filename": "pyyaml-6.0.3-cp313-cp313-win_amd64.whl",
+    "sha256": "79005a0d97d5ddabfeeea4cf676af11e647e41d81c9a7722a193022accdb6b7c",
+    "source": "https://pypi.org/project/PyYAML/6.0.3/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "pyyaml-6.0.3.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "requests",
+    "version": "2.34.2",
+    "filename": "requests-2.34.2-py3-none-any.whl",
+    "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+    "source": "https://pypi.org/project/requests/2.34.2/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "Apache-2.0",
+    "licenseFiles": [
+      "requests-2.34.2.dist-info/licenses/LICENSE",
+      "requests-2.34.2.dist-info/licenses/NOTICE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "setuptools",
+    "version": "84.2.1",
+    "filename": "setuptools-84.2.1-py3-none-any.whl",
+    "sha256": "ca140b45d5325a9478f880e351484f62fef15f336462e449ca0c03c873d589c2",
+    "source": "https://pypi.org/project/setuptools/84.2.1/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "setuptools/_vendor/importlib_metadata-8.7.1.dist-info/licenses/LICENSE",
+      "setuptools/_vendor/jaraco_context-6.1.0.dist-info/licenses/LICENSE",
+      "setuptools/_vendor/jaraco_functools-4.4.0.dist-info/licenses/LICENSE",
+      "setuptools/_vendor/more_itertools-10.8.0.dist-info/licenses/LICENSE",
+      "setuptools/_vendor/packaging/licenses/__init__.py",
+      "setuptools/_vendor/packaging/licenses/_spdx.py",
+      "setuptools/_vendor/packaging-26.3.dist-info/licenses/LICENSE",
+      "setuptools/_vendor/packaging-26.3.dist-info/licenses/LICENSE.APACHE",
+      "setuptools/_vendor/packaging-26.3.dist-info/licenses/LICENSE.BSD",
+      "setuptools/_vendor/platformdirs-4.4.0.dist-info/licenses/LICENSE",
+      "setuptools/_vendor/tomli-2.4.0.dist-info/licenses/LICENSE",
+      "setuptools/_vendor/wheel-0.46.3.dist-info/licenses/LICENSE.txt",
+      "setuptools/_vendor/zipp-3.23.0.dist-info/licenses/LICENSE",
+      "setuptools-84.2.1.dist-info/licenses/LICENSE",
+      "setuptools/_vendor/autocommand-2.2.2.dist-info/LICENSE",
+      "setuptools/_vendor/backports.tarfile-1.2.0.dist-info/LICENSE",
+      "setuptools/_vendor/jaraco.text-4.0.0.dist-info/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "tabulate",
+    "version": "0.10.0",
+    "filename": "tabulate-0.10.0-py3-none-any.whl",
+    "sha256": "f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3",
+    "source": "https://pypi.org/project/tabulate/0.10.0/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "tabulate-0.10.0.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "termcolor",
+    "version": "3.3.0",
+    "filename": "termcolor-3.3.0-py3-none-any.whl",
+    "sha256": "cf642efadaf0a8ebbbf4bc7a31cec2f9b5f21a9f726f4ccbb08192c9c26f43a5",
+    "source": "https://pypi.org/project/termcolor/3.3.0/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "termcolor-3.3.0.dist-info/licenses/COPYING.txt"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "typing_extensions",
+    "version": "4.16.0",
+    "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+    "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+    "source": "https://pypi.org/project/typing_extensions/4.16.0/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "PSF-2.0",
+    "licenseFiles": [
+      "typing_extensions-4.16.0.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "urllib3",
+    "version": "2.8.0",
+    "filename": "urllib3-2.8.0-py3-none-any.whl",
+    "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+    "source": "https://pypi.org/project/urllib3/2.8.0/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "MIT",
+    "licenseFiles": [
+      "urllib3-2.8.0.dist-info/licenses/LICENSE.txt"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "websockets",
+    "version": "17.4",
+    "filename": "websockets-17.4-cp313-cp313-win_amd64.whl",
+    "sha256": "203e42eb77e06f85778a908b34c5ad032f34e98a68ef33920d6685c1e65a9420",
+    "source": "https://pypi.org/project/websockets/17.4/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD-3-Clause",
+    "licenseFiles": [
+      "websockets-17.4.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "xlsxwriter",
+    "version": "3.3.1",
+    "filename": "xlsxwriter-3.3.1-py3-none-any.whl",
+    "sha256": "8e2c89e59d733fe59e112317218c64fbbc276d90a8c144ebd6f7fa15e7ab184a",
+    "source": "https://pypi.org/project/xlsxwriter/3.3.1/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "BSD-2-Clause",
+    "licenseFiles": [
+      "xlsxwriter-3.3.1.dist-info/licenses/LICENSE.txt"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "yt-dlp",
+    "version": "2026.10.26",
+    "filename": "yt_dlp-2026.10.26-py3-none-any.whl",
+    "sha256": "a05c5b5d8562f7e8a62f5334348b406af4930d56d3a65f8021d14af0e22339ae",
+    "source": "https://pypi.org/project/yt-dlp/2026.10.26/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "Unlicense",
+    "licenseFiles": [
+      "yt_dlp-2026.10.26.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  },
+  {
+    "name": "yt-dlp-ejs",
+    "version": "0.8.0",
+    "filename": "yt_dlp_ejs-0.8.0-py3-none-any.whl",
+    "sha256": "79300e5fca7f937a1eeede11f0456862c1b41107ce1d726871e0207424f4bdb4",
+    "source": "https://pypi.org/project/yt-dlp-ejs/0.8.0/",
+    "arch": "Windows x64 / Python 3.13 or pure Python",
+    "license": "Unlicense AND MIT AND ISC",
+    "licenseFiles": [
+      "yt_dlp_ejs-0.8.0.dist-info/licenses/LICENSE"
+    ],
+    "destination": ".venv/Lib/site-packages",
+    "resourcePath": "binaries/FileConverterEngine/_internal (PyInstaller selected modules only)"
+  }
+]

@@ -1,134 +1,143 @@
-# RAI Converter — Premium Glass Edition
+<p align="center">
+  <img src="src-tauri/icons/icon.png" width="92" alt="File Converter 圖示">
+</p>
 
-Windows 本機萬用轉檔器。深色玻璃介面、可保存的個人化外觀、真實轉檔佇列，所有使用者檔案留在本機。
+<h1 align="center">File Converter</h1>
 
-![RAI Converter 實際桌面畫面](docs/dashboard.png)
+<p align="center">
+  <strong>轉檔、剪片、修圖、下載影片，一個工具完成。</strong>
+</p>
 
-**目前版本：0.1.0，私人測試版。** 請閱讀 [驗收紀錄](docs/VALIDATION.md) 中已實測與尚待驗證的區別。此版本不是跨所有 Windows 版本完成驗收的正式商業發行版。
+<p align="center">
+  Windows 桌面應用程式 · 繁體中文介面 · 本機檔案處理 · 可自訂外觀
+</p>
 
-## 功能
+<p align="center">
+  <a href="docs/FORMATS.md">支援格式</a> ·
+  <a href="docs/REPAIRS_RC2.md">驗收報告</a> ·
+  <a href="docs/DEPENDENCIES.md">開發與依賴</a>
+</p>
 
-- Dashboard、Converter、History、Settings 四個完整頁面；繁體中文介面、自訂標題列及原創圖示。
-- 六種獨立玻璃材質：Sidebar / Main / File Card / Modal / Floating Toolbar / Settings。各自設定不透明度、模糊、色彩、邊框、陰影；文字不隨材質透明度改變。
-- JPG / PNG / WebP 背景匯入、預設極光／漸層／純色、縮放／位置／裁切、背景透明度／亮度／模糊／暗色遮罩、深色／淺色／系統模式、強調色及外觀配置保存。
-- 圖片轉 PNG / JPG / WebP / BMP / TIFF / PDF，尺寸、品質與透明區域底色設定。
-- FFmpeg 影音轉檔、音軌擷取、CRF／bitrate／解析度／FPS／取樣率／聲道設定；NVENC 在編碼前實際檢測。FFmpeg 的 duration / out_time_us 提供真實進度。
-- PDF 轉 PNG / JPG、圖片與 PDF 混合合併、頁碼擷取、逐頁分割、旋轉。
-- LibreOffice 格式族群內的轉換與 Office → PDF；缺少 LibreOffice 時顯示未安裝，不會假裝成功。
-- SQLite 本機歷史、搜尋／狀態篩選／重試、1–4 個並行任務、取消程序樹、同名檔自動編號、原檔保護。
-- Motion 頁面／清單／Modal／通知動畫、Reduced Motion、離線字型與圖示、無追蹤及無 CDN。
+> **目前版本：1.1.0-rc.2（測試候選版）**  
+> 最新功能位於 `feature/multimedia-editor` 分支，`main` 尚保留舊版。此版本尚未建立正式 GitHub Release。
 
-完整格式矩陣見 [FORMATS.md](docs/FORMATS.md)。PDF → DOCX 尚未提供；整個應用程式視窗透明度尚未通過相容性驗證，因此沒有假滑桿。Windows Mica 為選用底層效果，CSS 玻璃是主要材質。單張圖片與 Office 引擎無法提供連續數值時顯示處理中，不生成假進度。
+## 為什麼做 File Converter？
 
-## 使用方式
+轉換 PDF 要開一個網站、剪影片又得換一個軟體，偶爾還遇到檔案大小限制。File Converter 把常用的檔案轉換與多媒體工具集中到同一個 Windows 桌面程式，讓你直接處理自己的檔案，不必先上傳到線上轉檔服務。
 
-1. 解壓縮整個 Portable 資料夾，開啟 `RAI Converter.exe`；或執行 Windows 安裝程式。
-2. 拖入檔案／按「加入檔案」，每個檔案只顯示支援的輸出格式。
-3. 點選檔案，在右側調整參數，可套用至勾選的同類檔案。箭頭可以調整待轉檔順序。
-4. 選擇輸出資料夾；未選擇時輸出至來源旁的 `RAI Output`。
-5. 按「開始轉換」。可取消／重試，在完成項目開啟輸出資料夾。
-6. 合併圖片或 PDF：勾選至少兩個相容檔案，依清單順序按「合併 PDF」。
-7. 設定 → 個人化外觀可即時預覽及儲存；關閉時會儲存最後的設定。
+一般轉檔、剪輯與圖片處理在本機執行；**只有網址解析與影音下載需要連線**。安裝版與 Portable 版均內含必要的轉檔引擎，使用者不用另外安裝 Python、FFmpeg 或 LibreOffice。
 
-Portable 指免安裝的資料夾版本，設定仍存於 `%APPDATA%\studio.rai.converter`。需要 Windows 10/11 x64 與 WebView2 Runtime。Node / Python / Rust **不需要安裝在使用者電腦上**；Python Runtime、Pillow、MuPDF、FFmpeg / ffprobe 隨包部署。LibreOffice 是 **另行安裝的選用依賴**。安裝程式設定使用 WebView2 離線安裝包；Portable 需要系統已有 WebView2。
+## 核心功能
 
-## 開發環境
+| 功能 | 你可以做什麼 |
+| --- | --- |
+| **萬用轉檔** | 自動辨識檔案類型、批次佇列、品質設定、取消／重試、轉檔歷史 |
+| **影片編輯器** | 多軌時間軸、裁切／分割／插入、影音分軌、混音、字幕、文字、轉場、畫中畫 |
+| **圖片編輯器** | 多圖層、裁切、調色、濾鏡、畫筆、橡皮擦、馬賽克、文字與形狀 |
+| **網址下載** | yt-dlp 影片／音訊下載、畫質選擇、字幕、時間軸選段、多區間輸出 |
+| **PDF 與 Office** | Office → PDF、PDF 頁面處理、圖片與 PDF 互轉、繁中／英文 OCR |
+| **進階工具** | 音訊擷取、影片合併、電子書與壓縮檔工具、Windows 右鍵轉檔、自動化流程 |
 
-- Node.js 24 LTS（目前已驗證 24.22.1）、npm。
-- Rust stable 與 `x86_64-pc-windows-msvc`，目前已驗證 1.100.0。
-- Visual Studio 2022「使用 C++ 的桌面開發」、Windows SDK、WebView2。
-- Python 3.13 x64（目前已驗證 3.13.5）。
+目前已對 **305 個直接轉換方向**進行實際轉換與內容檢查。並非任意兩種格式都能互轉；各來源可用的輸出格式請見 [格式相容清單](docs/FORMATS.md)。
+
+## 介面預覽
+
+### 🎬 影片編輯器
+
+匯入含聲音的影片後，會自動建立連動的 **V1 影片軌**與 **A1 原始音軌**，並顯示音訊波形。你可以在時間軸上拖曳、分割、裁切，或解除連動來單獨編輯音訊。
+
+支援加入背景音樂、SRT 字幕、文字與畫中畫；編輯專案可儲存後繼續修改，最後交由 FFmpeg 匯出。
+
+<p align="center">
+  <img src="docs/validation/rc2-native-tracks.png" width="900" alt="影片編輯器：預覽播放器、素材庫與多軌時間軸">
+</p>
+
+### ⬇️ 影片下載與選段
+
+貼上網址後選擇畫質與格式，直接拖曳時間軸兩端的把手，決定要保留哪一段。可下載完整影片、指定區間或多個片段，並將下載結果送入影片編輯器。
+
+遇到無法直接播放的來源，可選擇**本機預覽備援**；此功能會先取得低畫質完整影片並轉碼，因此需要額外下載時間。實際可用性依來源網站而定。
+
+<p align="center">
+  <img src="docs/validation/rc2-native-download.png" width="900" alt="網址下載：影片預覽、下載設定與區間時間軸">
+</p>
+
+### 🖼️ 圖片編輯器
+
+圖片載入後自動適應工作區，支援 Fit、100%、縮放與平移。可使用多圖層、畫筆、濾鏡、文字與形狀進行編輯，並輸出 PNG、JPG 或 WebP。
+
+預覽縮放與實際圖片解析度分開處理，不會因畫面縮小就改變匯出尺寸。
+
+<p align="center">
+  <img src="docs/validation/rc2-native-image.png" width="900" alt="圖片編輯器：完整畫布、工具列與圖層面板">
+</p>
+
+> 上述畫面均取自 **1.1.0-rc.2 的 Windows 原生程式測試**，不是概念圖。
+
+## 安裝與使用
+
+目前是私人測試候選版，**尚未提供公開下載頁**。已建置的檔案位於開發機的 `release/` 資料夾；大型 Runtime 與安裝包不會提交進 Git 原始碼儲存庫。
+
+| 版本 | 使用方式 |
+| --- | --- |
+| **Installer** | 執行 `File Converter_1.1.0-rc.2_x64-setup.exe`，依畫面完成安裝 |
+| **Portable** | 將 `FileConverter-1.1.0-rc.2-windows-x64-portable.zip` 完整解壓，開啟其中的 `FileConverter.exe` |
+
+**Portable 必須保留整個解壓資料夾**，不能只複製 `FileConverter.exe`；它需要同目錄的引擎、Sidecar、WebView2 與其他資源。
+
+### 快速開始
+
+1. **轉換檔案**：拖入檔案 → 選擇支援的輸出格式 → 設定輸出位置 → 開始轉換。
+2. **剪輯影片**：開啟「影片編輯器」→ 加入素材 → 在時間軸上剪輯 → 儲存專案或匯出影片。
+3. **編輯圖片**：開啟「圖片編輯器」→ 匯入圖片 → 編輯圖層與效果 → 匯出圖片。
+4. **下載片段**：開啟「網址下載」→ 貼上網址 → 選取時間區間 → 設定格式並下載。
+
+影片專案使用 `.fcvideo.json`，圖片專案使用 `.fcimage.json`。專案內保存素材路徑；要在其他電腦繼續編輯時，也需一併保留原始素材。
+
+## 你可以自訂的外觀
+
+File Converter 支援深色／淺色／跟隨系統主題，也能匯入自己的背景圖片，分開調整背景與玻璃面板的透明度、模糊、亮度及強調色。偏好設定與轉檔歷史會保存在本機。
+
+Windows 右鍵入口可於設定中選擇啟用，Windows 11 可能需透過「顯示其他選項」開啟傳統選單。
+
+## 開發與建置
+
+技術架構：**Tauri 2 + React + TypeScript + Rust + Python Sidecar**。前端負責互動介面，Rust 管理權限與桌面生命週期，Python 串接本機轉檔引擎。
+
+開發環境需具備 Windows x64、Node.js／npm、Python 3.13 x64、Rust MSVC、Visual Studio C++ Build Tools 與 Windows SDK。
 
 ```powershell
-npm ci
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r engine\requirements-lock.txt
-.\.venv\Scripts\python.exe scripts\prepare.py
-.\.venv\Scripts\python.exe scripts\icons.py
-New-Item -ItemType Directory -Force src-tauri\binaries | Out-Null
+# 取得原始碼後，在專案根目錄執行
+powershell -ExecutionPolicy Bypass -File scripts/setup-dependencies.ps1
+
+# 啟動桌面開發模式
 npm run desktop
 ```
 
-`npm run dev` 是瀏覽器外觀預覽，會明確標示本機轉檔與背景匯入需要桌面版本；不模擬轉檔。首次下載依賴需要網路，完成打包後執行不需網路。
-
-若使用此工作區已準備好的專案內工具，可用 `node .tools/npm/package/bin/npm-cli.js` 取代 `npm`，並以 `scripts/build.ps1` 設定專案內 Rust PATH。`.tools/` 不會提交。
-
-## 測試與建置
-
-```powershell
-npm run build
-cargo check --manifest-path src-tauri/Cargo.toml
-.\.venv\Scripts\python.exe tests\test_engine.py
-.\.venv\Scripts\python.exe scripts\freeze.py
-$env:RAI_TEST_FROZEN = "$PWD\src-tauri\binaries\rai-engine\rai-engine.exe"
-.\.venv\Scripts\python.exe tests\test_engine.py
-Remove-Item Env:RAI_TEST_FROZEN
-```
-
-測試只產生小型測試檔於忽略的 `.tools/`，不讀取使用者私人檔案，不連網。包含輸出內容檢查、原檔 SHA-256、250 筆匯入、失敗隔離、取消與非正常關閉時的程序清理。
-
-完整 Windows EXE 與 NSIS 安裝包：
+建立發行候選：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/build.ps1
-# 只建立 EXE 與 Portable，不產生安裝程式：
-powershell -ExecutionPolicy Bypass -File scripts/build.ps1 -NoInstaller
 ```
 
-建置流程：準備 FFmpeg → 凍結 Python → 執行原始及凍結引擎測試 → 收集授權 → Tauri release build → Portable ZIP。首次 NSIS 建置需要下載 NSIS 與 Microsoft WebView2 離線安裝包；不表示使用時需要網路。`-SkipTests` 僅適合已完成相同版本測試的本機重建。
+依賴準備腳本會依鎖定清單取得、校驗並部署所需 Runtime。建置流程產生 Installer／Portable；**原始碼不包含 22,000 多個大型 Runtime 檔案**，因此不能只 Clone 後直接啟動未準備的執行檔。
 
-輸出：
+更多技術資料：
 
-- `release/RAI-Converter-0.1.0-windows-x64-portable.zip`
-- `release/RAI Converter_0.1.0_x64-setup.exe`（成功執行安裝包建置時）
-- `release/SHA256SUMS.json`
-- 原始 NSIS 產物位於 `src-tauri/target/release/bundle/nsis/`。
+- [支援格式與轉換方向](docs/FORMATS.md)
+- [依賴、下載來源與重建流程](docs/DEPENDENCIES.md)
+- [1.1.0-rc.2 修復與測試報告](docs/REPAIRS_RC2.md)
+- [散布與第三方授權注意事項](docs/DISTRIBUTION.md)
+- [第三方套件聲明](THIRD_PARTY_NOTICES.md)
 
-不可只複製 `rai-converter.exe`：必須連同 `binaries/rai-engine/`、`engines/ffmpeg/` 與授權一起部署。EXE 與安裝程式尚未簽章；不要把未簽章的測試包宣稱為已通過 SmartScreen 驗證的正式產品。
+## 版本狀態與限制
 
-原生 UI 回歸測試（只在本機測試時啟用除錯埠，正式使用不要設定）：
+`1.1.0-rc.2` 已完成同機 Installer／Portable 測試，包括 **305/305 格式方向**、**23/23 原生 GUI 測試**，以及影片畫面與聲音、圖片尺寸與透明度等實際內容驗證。完整證據與測試邊界請查閱 [驗收報告](docs/REPAIRS_RC2.md)。
 
-```powershell
-.\.venv\Scripts\python.exe tests\make_ui_fixtures.py
-$env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS='--remote-debugging-port=9222'
-& '.\release\RAI-Converter-Portable\RAI Converter.exe'
-npm test
-Remove-Item Env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS
-```
-
-測試連接真正的 WebView2 與後端，僅原生選檔對話框回傳值由測試檔案取代。測試最後恢復原設定，初始無歷史紀錄時會清除自己建立的測試紀錄。這不是遠端服務，正式包沒有加入測試 hook。DPI 測試為 renderer 尺寸模擬，仍需實體螢幕驗收。
-
-## 技術架構
-
-```text
-src/                     React / TypeScript / Tailwind / Motion UI
-  components/            Radix Modal、設定、格式參數編輯器
-src-tauri/src/main.rs     白名單 IPC、視窗生命週期、JSONL 橋接
-src-tauri/capabilities/   最小視窗／選檔權限，無 Shell 插件
-engine/service.py        SQLite、佇列、程序隔離、取消、檔名衝突
-engine/worker.py         Pillow / MuPDF / FFmpeg / LibreOffice
-engine/formats.py        明確相容矩陣
-scripts/                 引擎部署、凍結、圖示、授權、Windows 打包
-tests/                   實際 subprocess 轉檔整合測試
-docs/                    架構、矩陣、驗收及透明度研究
-vendor/                  忽略的外部影音執行檔
-```
-
-Rust 只允許明確列出的引擎命令。前端不能指定執行檔或任意命令；參數以陣列傳遞，`shell=True` 不使用。每個任務用獨立 subprocess 及 Windows Job Object，應用程式結束時清理所有子程序。FFmpeg 輸出先放在輸出資料夾內的暫存目錄，成功後以不覆寫方式發布。失敗／取消後清理暫存。異常關閉後原始檔安全保留，歷史中的執行中任務標為已取消；可能留下的 `.rai-*` 暫存資料夾可在確認無其他實例使用後移除。
+目前仍是**未簽署的測試候選版**：乾淨 Windows、Windows 10、實體多螢幕 DPI 與部分 NVIDIA／Intel 硬體尚待驗證；來源網站可能限制影音預覽或下載。
 
 ## 授權
 
-本專案採 **AGPL-3.0-or-later**。詳見 [LICENSE](LICENSE) 與 [第三方授權](THIRD_PARTY_NOTICES.md)。PyMuPDF 具有 AGPL／商業雙授權；本包未購買商業授權。FFmpeg 選用含 GPL 編碼器的 Gyan essentials build，**不是 LGPL-only**。對外散布前需提供相應原始碼與完整授權；私人 GitHub Repository 不會免除相關義務。離線轉檔不會進行授權驗證連線。
+應用程式採用 **AGPL-3.0-or-later**；內建的 FFmpeg、LibreOffice、Calibre、Ghostscript 等第三方元件各自適用不同授權。
 
-## GitHub
-
-目標：私人 Repository `FileConverter`，描述：`A modern, customizable, offline universal file converter for Windows.`
-
-本機程式碼、測試與建置檢查完成後才準備上傳，建立 Repository 與 Push 必須由使用者最後確認。未登入時請在自己的終端執行 `gh auth login`，不要把密碼或 Token 貼進聊天。
-
-```powershell
-# 確認後才執行：
-gh repo create FileConverter --private --description "A modern, customizable, offline universal file converter for Windows." --source . --remote origin --push
-```
-
-`.gitignore` 排除環境檔、憑證、快取、引擎 EXE、測試檔、Python 環境與編譯產物。GitHub 原始碼不含大型二進位檔；交付包另外產生。
+對外散布前仍需完成相應原始碼與授權材料的交付。詳見 [LICENSE](LICENSE)、[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 與 [散布說明](docs/DISTRIBUTION.md)。

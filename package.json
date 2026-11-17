@@ -1,6 +1,6 @@
 {
-  "name": "rai-converter",
-  "version": "0.1.0",
+  "name": "file-converter",
+  "version": "1.1.0-rc.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,8 @@
     "tauri": "tauri",
     "desktop": "tauri dev",
     "package": "tauri build",
-    "test": "node tests/native-ui.mjs"
+    "test": "node tests/native-ui.mjs",
+    "test:appearance": "node tests/appearance-settings.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "5.3.0",

@@ -1,0 +1,8 @@
+{
+  "requested": "amd",
+  "actual": "cpu",
+  "encoder": "libx265",
+  "fallback": "amd 不可用，改用 CPU",
+  "status": "completed",
+  "codec": "hevc"
+}

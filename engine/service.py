@@ -14,46 +14,13 @@ import threading
 import time
 import uuid
 
-from formats import category, outputs
+from registry import category, outputs, registry, validate, ConversionGraph
+from detection import detect, normalize
 from worker import CREATE_NO_WINDOW, run_worker
 
-def publish_file(source,out):
-    """Atomic no-clobber publication; tolerate short Windows indexing/AV locks."""
-    target=out/source.name;index=1;attempts=0
-    while True:
-        try:
-            if os.name=='nt':os.rename(source,target)  # Windows rename never replaces an existing target
-            else:os.link(source,target);source.unlink()
-            return target
-        except (FileExistsError,IsADirectoryError):
-            target=out/f'{source.stem} ({index}){source.suffix}';index+=1;attempts=0
-        except PermissionError:
-            if target.exists():
-                target=out/f'{source.stem} ({index}){source.suffix}';index+=1;attempts=0
-            elif attempts<6:
-                time.sleep(.025*2**attempts);attempts+=1
-            else:raise
+from fsutils import publish_file
 
-def prevent_orphans(process_handle=None):
-    """Windows job kills all descendants if service dies or desktop closes."""
-    if os.name != 'nt': return
-    from ctypes import wintypes as w
-    class Basic(ctypes.Structure):
-        _fields_ = [('ProcessTime',ctypes.c_int64),('JobTime',ctypes.c_int64),('LimitFlags',w.DWORD),('Min',ctypes.c_size_t),('Max',ctypes.c_size_t),('Active',w.DWORD),('Affinity',ctypes.c_size_t),('Priority',w.DWORD),('Scheduling',w.DWORD)]
-    class Io(ctypes.Structure):
-        _fields_ = [(n,ctypes.c_uint64) for n in ['ReadOps','WriteOps','OtherOps','ReadBytes','WriteBytes','OtherBytes']]
-    class Limits(ctypes.Structure):
-        _fields_ = [('Basic',Basic),('Io',Io),('ProcessMemory',ctypes.c_size_t),('JobMemory',ctypes.c_size_t),('PeakProcess',ctypes.c_size_t),('PeakJob',ctypes.c_size_t)]
-    k=ctypes.WinDLL('kernel32',use_last_error=True)
-    k.CreateJobObjectW.restype=w.HANDLE
-    k.SetInformationJobObject.argtypes=[w.HANDLE,ctypes.c_int,ctypes.c_void_p,w.DWORD]
-    k.AssignProcessToJobObject.argtypes=[w.HANDLE,w.HANDLE]
-    k.GetCurrentProcess.restype=w.HANDLE
-    handle=k.CreateJobObjectW(None,None)
-    limits=Limits();limits.Basic.LimitFlags=0x2000
-    if not handle or not k.SetInformationJobObject(handle,9,ctypes.byref(limits),ctypes.sizeof(limits)) or not k.AssignProcessToJobObject(handle,process_handle or k.GetCurrentProcess()):
-        raise RuntimeError('Windows Job Object 初始化失敗，無法保證程序清理')
-    return handle  # intentionally held for lifetime of service
+from windows_jobs import prevent_orphans
 
 class Service:
     def __init__(self, data_dir, engine_root=None):
@@ -65,21 +32,36 @@ class Service:
         self.db.execute('CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, payload TEXT NOT NULL)')
         self.jobs={r[0]:json.loads(r[1]) for r in self.db.execute('SELECT id,payload FROM jobs')}
         row=self.db.execute('SELECT payload FROM settings WHERE id=1').fetchone();self.settings=json.loads(row[0]) if row else {}
-        self.processes={};self.process_jobs={};self.stages={};self.reserved=set();self.engines=self.detect_engines()
+        self.app_exe=None;self.secrets={};self.processes={};self.process_jobs={};self.stages={};self.reserved=set();self.engines=self.detect_engines()
         for job in self.jobs.values():
             if job['status'] in {'running','queued','cancelling'}:
                 job.update(status='cancelled',error='程式上次關閉，任務已安全中止',finished=time.time());self.save(job)
+        self.hardware_cache=[{'id':'cpu','label':'CPU','available':True,'encoder':'libx264','codecs':{'h264':True,'h265':True},'reason':''}]+[
+            {'id':key,'label':label,'available':False,'encoder':'','reason':'偵測中','pending':True} for key,label in [('nvidia','NVIDIA'),('amd','AMD'),('intel','Intel')]]
+        self.hardware_detecting=False
+        self.refresh_hardware()
+        from automation import Automation
+        self.automation=Automation(self)
         threading.Thread(target=self.scheduler,daemon=True).start()
 
     def detect_engines(self):
-        def find(name, extra=()):
-            paths=[self.engine_root/'ffmpeg'/(name+'.exe'),self.engine_root/(name+'.exe'),*map(Path,extra)]
-            return next((str(p) for p in paths if p.is_file()),shutil.which(name))
-        return {'ffmpeg':find('ffmpeg'),'ffprobe':find('ffprobe'),'soffice':find('soffice',[
-            os.path.join(os.environ.get('PROGRAMFILES','C:/Program Files'),'LibreOffice/program/soffice.exe'),
-            os.path.join(os.environ.get('PROGRAMFILES(X86)','C:/Program Files (x86)'),'LibreOffice/program/soffice.exe')])}
+        from runtime import locate
+        return locate(self.engine_root)
+
+    def refresh_hardware(self):
+        if self.hardware_detecting:return
+        self.hardware_detecting=True
+        self.hardware_cache=[dict(row,available=False,pending=True,reason='偵測中') if row['id']!='cpu' else row for row in self.hardware_cache]
+        def run():
+            from runtime import hardware
+            try:
+                result=hardware(self.engines.get('ffmpeg'),refresh=True)
+                with self.lock:self.hardware_cache=result
+            finally:self.hardware_detecting=False
+        threading.Thread(target=run,daemon=True).start()
 
     def save(self,job):
+        if job.get('previewOnly'):return
         self.db.execute('INSERT OR REPLACE INTO jobs VALUES (?,?)',(job['id'],json.dumps(job,ensure_ascii=True)));self.db.commit()
 
     def send(self,data):
@@ -116,7 +98,9 @@ class Service:
         try:
             out=Path(job['outputDir']);out.mkdir(parents=True,exist_ok=True)
             stage=Path(tempfile.mkdtemp(prefix='.rai-',dir=out));self.stages[job['id']]=stage
-            spec={'job':dict(job),'engines':self.engines,'stage':str(stage)}
+            worker_job=dict(job)
+            if self.secrets.get(job['id']):worker_job['params']={**job.get('params',{}),**self.secrets[job['id']]}
+            spec={'job':worker_job,'engines':self.engines,'stage':str(stage),'hardwareCapabilities':self.hardware_cache}
             command=[sys.executable] if getattr(sys,'frozen',False) else [sys.executable,str(Path(__file__).resolve())]
             with self.lock:
                 if job['status']=='cancelling': raise InterruptedError()
@@ -144,6 +128,7 @@ class Service:
                 except ValueError:continue
                 with self.lock:
                     if job['status']=='cancelling':continue
+                    if 'stats' in message:job.setdefault('stats',{}).update(message['stats']);self.event(job)
                     if 'progress' in message: job['progress']=min(99,message['progress']);self.event(job)
                     if 'files' in message:files=message['files']
                     if 'error' in message:error=message['error']
@@ -161,7 +146,7 @@ class Service:
                 try:
                     for raw in files:
                         file=Path(raw).resolve()
-                        if file.parent!=stage.resolve() or not file.is_file():raise RuntimeError('Invalid engine output')
+                        if not file.is_relative_to(stage.resolve()) or not (file.is_file() or job.get('operation')=='archive.extract' and file.is_dir()):raise RuntimeError('Invalid engine output')
                         target=publish_file(file,out)
                         published.append(str(target))
                 except Exception:
@@ -173,15 +158,23 @@ class Service:
                 job.update(status='cancelled' if isinstance(error,InterruptedError) or job['status']=='cancelling' else 'failed',error=None if isinstance(error,InterruptedError) else str(error),finished=time.time())
                 self.save(job);self.event(job)
         finally:
-            if stage:shutil.rmtree(stage,ignore_errors=True)
+            self.secrets.pop(job['id'],None)
+            if job.get('kind')=='download' and job['status']=='completed':
+                from fsutils import remove_tree
+                try:remove_tree(job['downloadCache'],self.root/'download-cache')
+                except OSError as error:job.setdefault('stats',{})['cleanupWarning']=str(error);self.save(job)
+            if stage:
+                from fsutils import remove_tree
+                try:remove_tree(stage,Path(job['outputDir']))
+                except OSError as error:job.setdefault('stats',{})['cleanupWarning']=str(error);self.save(job)
             with self.lock:self.processes.pop(job['id'],None);self.stages.pop(job['id'],None)
 
-    def inspect(self,paths):
+    def inspect(self,paths,native_hints=None):
         result=[]
         for raw in paths:
             p=Path(raw).resolve()
             if not p.is_file():raise ValueError(f'檔案不存在：{p}')
-            ext=p.suffix.lower()[1:];kind=category(ext);preview=None;dimensions=None
+            detection=detect(p,self.engines,(native_hints or {}).get(str(p)));ext=detection['format'];kind=category(ext);preview=None;dimensions=None
             if kind=='image':
                 try:
                     from PIL import Image,ImageOps
@@ -191,14 +184,107 @@ class Service:
                         buf=io.BytesIO();image.convert('RGBA').save(buf,format='PNG');preview='data:image/png;base64,'+base64.b64encode(buf.getvalue()).decode()
                 except Exception:pass
             required='soffice' if kind=='office' else 'ffmpeg' if kind in {'video','audio'} else None
-            result.append({'path':str(p),'name':p.name,'size':p.stat().st_size,'extension':ext,'category':kind,'formats':outputs(ext),'preview':preview,'dimensions':dimensions,'available':not required or bool(self.engines.get(required))})
+            result.append({'path':str(p),'name':p.name,'size':p.stat().st_size,'extension':ext,'category':kind,'formats':outputs(ext),'preview':preview,'dimensions':dimensions,'available':bool(ext) and any(e['available'] for e in registry(self.engines)['edges'] if e['source']==ext), 'detection':detection, 'reason':detection['warning'] if not ext else ''})
         return result
 
+    def create_tool(self,args):
+        from tool_catalog import validate_tool
+        sources=[str(Path(p).resolve()) for p in args['sources']]
+        definition,params=validate_tool(args['operation'],args.get('params',{}),sources,self.engines)
+        id=uuid.uuid4().hex;preview=bool(args.get('preview'))
+        output=self.root/'previews'/id if preview else Path(args.get('outputDir') or Path(sources[0]).parent/'File Converter Output').resolve()
+        secret={f['key']:params.pop(f['key']) for f in definition['fields'] if f.get('secret')}
+        self.secrets[id]=secret
+        job={'id':id,'sources':sources,'name':Path(sources[0]).name+' · '+definition['name'],'operation':definition['id'],
+            'params':params,'requiresSecret':bool(secret),'previewOnly':preview,'category':category(detect(sources[0],self.engines)['format']) if Path(sources[0]).is_file() else 'archive',
+            'format':params.get('format',detect(sources[0],self.engines)['format'] if definition['output']=='source' else definition['output']),'outputDir':str(output),'options':{**self.settings.get('defaults',{}),**args.get('options',{})},
+            'status':'queued','progress':0,'created':time.time(),'outputs':[],'error':None}
+        self.jobs[id]=job;self.save(job);self.event(job);return [dict(job)]
+
+    def create_download(self,args,resume=None,preview=False):
+        if not self.engines.get('ytdlp') or not self.engines.get('ffmpeg'):raise ValueError('下載 Runtime 不完整')
+        from downloads import selected
+        items=[resume['download']] if resume else selected(args['analysisId'],args['items'])
+        created=[]
+        for item in items:
+            id=uuid.uuid4().hex;cache_key=resume.get('downloadCacheKey') if resume else id
+            if not isinstance(cache_key,str) or len(cache_key)!=32 or any(c not in '0123456789abcdef' for c in cache_key):raise ValueError('無效下載快取')
+            cache=self.root/'download-cache'/cache_key
+            out=(self.root/'previews'/id) if preview else Path(args.get('outputDir') or self.settings.get('downloadDir') or self.root/'Downloads').resolve()
+            job={'id':id,'kind':'download','previewOnly':preview,'sources':[],'download':item,'downloadCache':str(cache),'downloadCacheKey':cache_key,
+                'name':item['title'],'category':'audio' if item['audioOnly'] else 'video','format':item['audioFormat'] if item['audioOnly'] else item.get('convertTo') or 'video',
+                'outputDir':str(out),'options':self.settings.get('defaults',{}),'status':'queued','progress':0,'created':time.time(),'outputs':[],'error':None}
+            self.jobs[id]=job;self.save(job);self.event(job);created.append(dict(job))
+        return created
+
     def call(self,method,args):
+        if method=='editor':
+            from editors import dispatch
+            return dispatch(self,args)
+        if method=='analyze_url':
+            from downloads import analyze
+            return analyze(args['url'],self.engines,args.get('page',1))
+        if method=='resolve_download':
+            from downloads import resolve
+            return resolve(args['analysisId'],args['key'],self.engines)
+        if method=='preview':
+            from previews import preview
+            scratch=self.root/'preview-work';scratch.mkdir(exist_ok=True)
+            return preview(args['path'],self.engines,args.get('page',0),args.get('time',0),bool(args.get('play')),scratch)
         with self.lock:
+            if method=='automation':return self.automation.snapshot()
+            if method=='save_automation':return self.automation.put(args)
+            if method=='delete_automation':return self.automation.delete(args['id'])
+            if method=='watch_action':return self.automation.watch_action(args['id'],args['action'])
+            if method=='plan_workflow':
+                from workflows import plan
+                return plan(args['config'],self.engines)
+            if method=='enqueue_workflow':return self.automation.enqueue(args['config'],args['paths'],args.get('outputDir'))
+            if method=='context_menu':
+                from context_menu import status,update
+                if 'enabled' in args:return update(self.app_exe,bool(args['enabled']),self.engines)
+                return status(self.app_exe)
             if method=='snapshot':
-                return {'jobs':list(self.jobs.values()),'settings':self.settings,'engines':self.engines,'dataDir':str(self.root)}
-            if method=='inspect':return self.inspect(args['paths'])
+                return {'jobs':[j for j in self.jobs.values() if not j.get('previewOnly')],'settings':self.settings,'engines':self.engines,'dataDir':str(self.root),'registry':registry(self.engines)}
+            if method=='inspect':return self.inspect(args['paths'],args.get('nativeHints'))
+            if method=='tools':
+                from tool_catalog import catalog
+                return catalog(self.engines)
+            if method=='open_source':
+                from downloads import validate_url
+                url=validate_url(args['url'])
+                os.startfile(url);return True
+            if method=='download_preview':
+                from downloads import ANALYSES
+                record=ANALYSES.get(args['analysisId'])
+                if not record:raise ValueError('解析資料已過期，請重新解析')
+                entry=record['entries'].get(str(args['key']))
+                if not entry or not entry.get('duration'):raise ValueError('需先解析有限長度的影片')
+                formats=[f for f in entry['formats'] if f.get('vcodec') not in {None,'none'}]
+                formats.sort(key=lambda f:(f.get('acodec') in {None,'none'},abs((f.get('height') or 360)-360)))
+                if not formats:raise ValueError('沒有可用的預覽格式')
+                jobs=self.create_download({'analysisId':args['analysisId'],'items':[{'key':args['key'],'formatId':formats[0]['format_id'],'convertTo':'mp4'}]},preview=True)
+                job=self.jobs[jobs[0]['id']];job['options']={'hardware':'cpu','videoCodec':'h264','videoHeight':360,'qualityPreset':'fast'}
+                return dict(job)
+            if method=='enqueue_download':return self.create_download(args)
+            if method=='enqueue_tool':return self.create_tool(args)
+            if method=='preview_status':return dict(self.jobs[args['id']])
+            if method=='clear_preview':
+                job=self.jobs.get(args['id'])
+                if not job or not job.get('previewOnly'):raise ValueError('無效預覽任務')
+                if job['status'] in {'queued','running','cancelling'}:raise ValueError('請先取消並等候預覽任務結束')
+                from fsutils import remove_tree
+                if Path(job['outputDir']).exists():remove_tree(job['outputDir'],self.root/'previews')
+                
+                if job.get('downloadCache') and Path(job['downloadCache']).exists():remove_tree(job['downloadCache'],self.root/'download-cache')
+                self.jobs.pop(job['id'],None);self.secrets.pop(job['id'],None);return True
+            if method=='registry':return registry(self.engines)
+            if method=='hardware':
+                if args.get('refresh'):self.refresh_hardware()
+                return self.hardware_cache
+            if method=='plan':
+                route=ConversionGraph(registry(self.engines)['edges']).path(args['source'],args['target'])
+                return {'route':route,'executable':len(route)==1,'intermediate':len(route)>1}
             if method=='engines':self.engines=self.detect_engines();return self.engines
             if method=='settings':
                 settings=args['settings']
@@ -206,13 +292,14 @@ class Service:
                 if not 1<=int(settings.get('concurrency',2))<=4:raise ValueError('Concurrency must be 1–4')
                 self.settings=settings;self.db.execute('INSERT OR REPLACE INTO settings VALUES (1,?)',(json.dumps(settings),));self.db.commit();return settings
             if method=='background':
-                from PIL import Image
+                from PIL import Image,ImageOps
                 p=Path(args['path'])
                 if p.suffix.lower() not in {'.jpg','.jpeg','.png','.webp'}:raise ValueError('僅支援 JPG、PNG、WebP 背景')
                 # Decode and re-encode: do not trust extension or retain external file references.
                 with Image.open(p) as image:
                     import io
-                    buf=io.BytesIO();image.convert('RGB').save(buf,format='WEBP',quality=92)
+                    image=ImageOps.exif_transpose(image)
+                    buf=io.BytesIO();image.convert('RGBA' if 'A' in image.getbands() else 'RGB').save(buf,format='WEBP',lossless=True)
                 data=buf.getvalue();(self.root/'background.webp').write_bytes(data)
                 return 'data:image/webp;base64,'+base64.b64encode(data).decode()
             if method=='enqueue':
@@ -220,15 +307,18 @@ class Service:
                 for item in args['jobs']:
                     sources=[str(Path(p).resolve()) for p in item['sources']]
                     if not sources or any(not Path(p).is_file() for p in sources):raise ValueError('無效來源檔案')
-                    if item['format'] not in outputs(Path(sources[0]).suffix.lower()[1:]):raise ValueError('不支援的輸出格式')
+                    detected=detect(sources[0],self.engines)['format']
+                    # Corrupt known inputs become isolated failed jobs, preserving the rest of a batch.
+                    source_format=detected or normalize(Path(sources[0]).suffix)
+                    validate(source_format,item['format'],self.engines,item.get('options'),len(sources))
                     out=Path(item.get('outputDir') or sources[0]).resolve()
-                    if not item.get('outputDir'):out=out.parent/'RAI Output'
-                    job={'id':uuid.uuid4().hex,'sources':sources,'name':Path(sources[0]).name+(' + '+str(len(sources)-1) if len(sources)>1 else ''),'category':category(Path(sources[0]).suffix.lower()[1:]),'format':item['format'],'outputDir':str(out),'options':item.get('options',{}),'status':'queued','progress':0,'created':time.time(),'outputs':[],'error':None}
+                    if not item.get('outputDir'):out=out.parent/'File Converter Output'
+                    job={'id':uuid.uuid4().hex,'sources':sources,'name':Path(sources[0]).name+(' + '+str(len(sources)-1) if len(sources)>1 else ''),'category':category(source_format),'sourceFormat':source_format,'format':item['format'],'outputDir':str(out),'options':item.get('options',{}),'status':'queued','progress':0,'created':time.time(),'outputs':[],'error':None}
                     self.jobs[job['id']]=job;self.save(job);self.event(job);created.append(job)
                 return created
             if method=='cancel':
                 job=self.jobs[args['id']]
-                if job['status']=='queued':job.update(status='cancelled',finished=time.time());self.save(job);self.event(job)
+                if job['status']=='queued':job.update(status='cancelled',finished=time.time());self.secrets.pop(job['id'],None);self.save(job);self.event(job)
                 elif job['status']=='running':
                     job['status']='cancelling';self.save(job);self.event(job)
                     proc=self.processes.get(job['id'])
@@ -237,11 +327,20 @@ class Service:
             if method=='retry':
                 job=self.jobs[args['id']]
                 if job['status'] not in {'failed','cancelled','completed'}:raise ValueError('任務仍在執行')
+                if job.get('kind') in {'fcvideo','fcimage'}:
+                    from editors import enqueue
+                    return [enqueue(self,{'type':job['kind'],'project':job['project'],'format':job['format'],'outputDir':job['outputDir']})]
+                if job.get('kind')=='download':return self.create_download({'outputDir':job['outputDir']},resume=job)
+                if job.get('kind')=='workflow':return self.automation.enqueue(job['workflow'],job['sources'],job['outputDir'])
+                if job.get('operation'):
+                    if job.get('requiresSecret'):raise ValueError('請重新開啟工具輸入密碼，密碼不會保存在歷史')
+                    return self.create_tool({k:job[k] for k in ['sources','operation','params','outputDir']})
                 return self.call('enqueue',{'jobs':[{k:job[k] for k in ['sources','format','outputDir','options']}]})
             if method=='clear':
                 active={'running','queued','cancelling'}
+                ids=set(args['ids']) if 'ids' in args else None
                 for key,job in list(self.jobs.items()):
-                    if job['status'] not in active:self.db.execute('DELETE FROM jobs WHERE id=?',(key,));del self.jobs[key]
+                    if job['status'] not in active and (ids is None or key in ids):self.db.execute('DELETE FROM jobs WHERE id=?',(key,));del self.jobs[key]
                 self.db.commit();return True
             if method=='open_output':
                 job=self.jobs[args['id']];path=Path(job['outputDir'])
@@ -269,13 +368,22 @@ def main():
     data=sys.argv[sys.argv.index('--data')+1] if '--data' in sys.argv else str(Path.home()/'.rai-converter')
     engines=sys.argv[sys.argv.index('--engines')+1] if '--engines' in sys.argv else None
     service=Service(data,engines)
+    service.app_exe=sys.argv[sys.argv.index('--app-exe')+1] if '--app-exe' in sys.argv else None
+    from concurrent.futures import ThreadPoolExecutor
+    preview_pool=ThreadPoolExecutor(max_workers=2)
+    network_pool=ThreadPoolExecutor(max_workers=2)
     try:
         for line in sys.stdin:
             request={}
             try:
-                request=json.loads(line);result=service.call(request['method'],request.get('args',{}))
-                service.send({'id':request['id'],'result':result})
+                request=json.loads(line)
+                def handle(req):
+                    try:service.send({'id':req['id'],'result':service.call(req['method'],req.get('args',{}))})
+                    except Exception as error:service.send({'id':req['id'],'error':str(error)})
+                if request['method'] in {'analyze_url','resolve_download'}:network_pool.submit(handle,dict(request))
+                elif request['method'] in {'preview','editor'}:preview_pool.submit(handle,dict(request))
+                else:handle(request)
             except Exception as error:service.send({'id':request.get('id'),'error':str(error)})
-    finally:service.close()
+    finally:service.close();preview_pool.shutdown(wait=False,cancel_futures=True);network_pool.shutdown(wait=False,cancel_futures=True)
 
 if __name__=='__main__':main()

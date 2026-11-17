@@ -1,0 +1,11 @@
+{
+  "noDebugArguments": true,
+  "noTestWebViewProfile": true,
+  "onlySystemPath": true,
+  "nativeWindowSize": [
+    1294,
+    808
+  ],
+  "frozenEngineStarted": true,
+  "normalWindowCloseExited": true
+}

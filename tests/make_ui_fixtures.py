@@ -1,7 +1,10 @@
 """Small, original fixtures for the native UI harness; never commit generated files."""
 from pathlib import Path
+import sys
 from PIL import Image,ImageDraw
-root=Path(__file__).resolve().parents[1]/'.tools/ui-fixtures'
+workspace=Path(__file__).resolve().parents[1]
+root=Path(sys.argv[sys.argv.index('--directory')+1]).resolve() if '--directory' in sys.argv else workspace/'.tools/ui-fixtures'
+assert root.is_relative_to(workspace/'.tools'), 'Fixtures must stay inside the project test directory'
 root.mkdir(parents=True,exist_ok=True)
 image=Image.new('RGB',(1600,1000));draw=ImageDraw.Draw(image)
 for y in range(1000):
@@ -11,3 +14,18 @@ draw.ellipse((-700,400,1150,1800),fill='#244f63')
 draw.ellipse((750,650,2000,1900),fill='#1b354c')
 image.save(root/'玻璃背景 測試.png')
 Image.new('RGBA',(400,240),(90,150,240,160)).save(root/'中文 alpha & 測試.png')
+Image.new('RGB',(640,400),(100,150,170)).save(root/'產品圖片.jpg')
+import pymupdf
+with pymupdf.open() as doc:
+    page=doc.new_page();page.insert_text((72,72),'File Converter UI verification')
+    page=doc.new_page();page.insert_text((72,72),'Second page for PDF splitting verification')
+    doc.save(root/'使用說明.pdf')
+import sys
+if '--bulk' in sys.argv:
+    import shutil,json
+    directory=root.parent/'ui-bulk';directory.mkdir(exist_ok=True);paths=[]
+    for i in range(250):
+        file=directory/(str(i).zfill(3)+'-中文 [測試] & '+('長檔案名稱'*18)+'.png')
+        if not file.exists():shutil.copy2(root/'中文 alpha & 測試.png',file)
+        paths.append(str(file))
+    (root.parent/'ui-bulk.json').write_text(json.dumps(paths,ensure_ascii=False),encoding='utf-8')

@@ -1,0 +1,99 @@
+{
+  "results": [
+    {
+      "name": "home opens directly on conversion and uses readable typography",
+      "status": "passed"
+    },
+    {
+      "name": "native background import and independent alpha",
+      "status": "passed"
+    },
+    {
+      "name": "all six glass materials have independent real styles",
+      "status": "passed"
+    },
+    {
+      "name": "appearance preset save/apply and SQLite persistence",
+      "status": "passed"
+    },
+    {
+      "name": "light/dark theme and reduced motion",
+      "status": "passed"
+    },
+    {
+      "name": "clear / frosted background presets preserve the image and workspace sharpness",
+      "status": "passed"
+    },
+    {
+      "name": "mixed queue filtering, reordering and batch options remain functional",
+      "status": "passed"
+    },
+    {
+      "name": "GUI file inspect, lawful format list and actual queued conversion",
+      "status": "passed"
+    },
+    {
+      "name": "1500x960 and common desktop layouts keep primary controls on screen",
+      "status": "passed"
+    },
+    {
+      "name": "history search and real retry",
+      "status": "passed"
+    },
+    {
+      "name": "maximize and restore native window",
+      "status": "passed"
+    },
+    {
+      "name": "125 / 150 / 200 percent layout emulation",
+      "status": "passed"
+    },
+    {
+      "name": "navigation, scoped application icons and persistent sidebar collapse",
+      "status": "passed"
+    },
+    {
+      "name": "P0 automatic mode starts unassigned and blocks meaningless PDF passthrough",
+      "status": "passed"
+    },
+    {
+      "name": "P0 specified mode detects mismatches and executes a real matching conversion",
+      "status": "passed"
+    },
+    {
+      "name": "P0 toolbox executes PDF splitting through the existing queue",
+      "status": "passed"
+    },
+    {
+      "name": "toolbox and registry show real bundled engine availability",
+      "status": "passed"
+    },
+    {
+      "name": "P0 populated workspace at desktop and DPI sizes, and About uses new branding",
+      "status": "passed"
+    },
+    {
+      "name": "workflow editor validates, saves and runs a real batch",
+      "status": "passed"
+    },
+    {
+      "name": "file preview renders pages, real comparisons and keyboard dismissal",
+      "status": "passed"
+    },
+    {
+      "name": "new navigation opens downloader and tool parameters",
+      "status": "passed"
+    },
+    {
+      "name": "real tool preview updates pixels and invalidates after parameter edits",
+      "status": "passed"
+    },
+    {
+      "name": "runtime makes no external network requests",
+      "status": "passed"
+    }
+  ],
+  "failures": [],
+  "network": [],
+  "notes": "Real release WebView2 and IPC. OS file picker result supplied by harness. DPI is renderer emulation, not multi-monitor OS DPI certification."
+}

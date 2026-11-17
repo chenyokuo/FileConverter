@@ -1,0 +1,34 @@
+{
+  "frozenSidecar": true,
+  "checks": [
+    {
+      "requested": "cpu",
+      "detectedAvailable": true,
+      "actualEncoder": "libx264",
+      "fallbackReported": false,
+      "duration": 1.0
+    },
+    {
+      "requested": "nvidia",
+      "detectedAvailable": false,
+      "actualEncoder": "libx264",
+      "fallbackReported": true,
+      "duration": 1.0
+    },
+    {
+      "requested": "amd",
+      "detectedAvailable": true,
+      "actualEncoder": "h264_amf",
+      "fallbackReported": false,
+      "duration": 1.0
+    },
+    {
+      "requested": "intel",
+      "detectedAvailable": false,
+      "actualEncoder": "libx264",
+      "fallbackReported": true,
+      "duration": 1.0
+    }
+  ],
+  "note": "CPU composition, existing final encode/fallback. Unavailable hardware is not physical GPU certification."
+}

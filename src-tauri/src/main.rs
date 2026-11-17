@@ -1,22 +1,73 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[cfg(windows)]
+mod engine_job;
+
 use serde_json::{json, Value};
 use std::{collections::HashMap, io::{BufRead, BufReader, Write}, process::{Child, ChildStdin, Command, Stdio}, sync::{atomic::{AtomicU64, Ordering}, mpsc, Arc, Mutex}, time::Duration};
 use tauri::{Emitter, Manager};
 
 struct Bridge {
+    #[cfg(windows)]
+    engine_job: engine_job::EngineJob,
     child: Mutex<Child>,
     input: Mutex<ChildStdin>,
     pending: Arc<Mutex<HashMap<u64, mpsc::Sender<Result<Value, String>>>>>,
     serial: AtomicU64,
 }
 
+#[derive(Default)]
+struct OpenRequests(Mutex<Vec<Value>>);
+
+fn queue_open(app: &tauri::AppHandle, args: Vec<String>, cwd: &str) {
+    let mut target = String::new();
+    let mut paths = Vec::new();
+    let mut iter = args.iter().skip(1);
+    while let Some(arg) = iter.next() {
+        if arg == "--target" {
+            if let Some(value) = iter.next() { if ["pdf","jpg","mp3"].contains(&value.as_str()) { target=value.clone(); } }
+        } else if arg == "--open" {
+            if let Some(value) = iter.next() {
+                let p=std::path::Path::new(value);
+                let p=if p.is_absolute() { p.to_path_buf() } else { std::path::Path::new(cwd).join(p) };
+                if p.is_file() { paths.push(p.to_string_lossy().into_owned()); }
+            }
+        }
+    }
+    if !paths.is_empty() {
+        if let Some(requests)=app.try_state::<OpenRequests>() { if let Ok(mut list)=requests.0.lock() { list.push(json!({"paths":paths,"target":target})); } }
+        let _=app.emit("open-files-ready", ());
+    }
+}
+
 #[tauri::command]
-async fn engine_call(bridge: tauri::State<'_, Arc<Bridge>>, method: String, args: Value) -> Result<Value,String> {
-    const ALLOWED: &[&str] = &["snapshot","inspect","enqueue","settings","background","engines","cancel","retry","clear","open_output"];
+fn take_open_requests(requests: tauri::State<'_, OpenRequests>) -> Vec<Value> {
+    requests.0.lock().map(|mut list|std::mem::take(&mut *list)).unwrap_or_default()
+}
+
+#[tauri::command]
+async fn engine_call(bridge: tauri::State<'_, Arc<Bridge>>, method: String, mut args: Value) -> Result<Value,String> {
+    const ALLOWED: &[&str] = &["editor","snapshot","inspect","enqueue","settings","background","engines","cancel","retry","clear","open_output","registry","plan","hardware","tools","enqueue_tool","preview","preview_status","clear_preview","analyze_url","resolve_download","enqueue_download","download_preview","open_source","automation","save_automation","delete_automation","watch_action","plan_workflow","enqueue_workflow","context_menu"];
     if !ALLOWED.contains(&method.as_str()) { return Err("Command is not allowed".into()); }
     let bridge = Arc::clone(bridge.inner());
     tauri::async_runtime::spawn_blocking(move || {
+        if method == "inspect" {
+            let mut hints = serde_json::Map::new();
+            if let Some(paths) = args["paths"].as_array() {
+                for path in paths.iter().filter_map(Value::as_str) {
+                    use std::io::Read;
+                    if let Ok(file) = std::fs::File::open(path) {
+                        let mut bytes = Vec::new();
+                        if file.take(16384).read_to_end(&mut bytes).is_ok() {
+                            if let Some(kind) = infer::get(&bytes) {
+                                hints.insert(path.to_string(), json!({"extension":kind.extension(),"mime":kind.mime_type()}));
+                            }
+                        }
+                    }
+                }
+            }
+            args["nativeHints"] = Value::Object(hints);
+        }
         let id = bridge.serial.fetch_add(1, Ordering::Relaxed);
         let (tx,rx) = mpsc::channel();
         bridge.pending.lock().map_err(|e| e.to_string())?.insert(id,tx);
@@ -31,6 +82,13 @@ async fn engine_call(bridge: tauri::State<'_, Arc<Bridge>>, method: String, args
         if let Ok(mut pending)=bridge.pending.lock() { pending.remove(&id); }
         result
     }).await.map_err(|e|e.to_string())?
+}
+
+#[tauri::command]
+fn shutdown_app(app: tauri::AppHandle) {
+    // The frontend flushes settings before requesting application exit.
+    // Explicit exit also closes hidden windows and invokes sidecar cleanup.
+    app.exit(0);
 }
 
 #[tauri::command]
@@ -55,16 +113,18 @@ fn start_engine(app: &tauri::App) -> Result<Arc<Bridge>, Box<dyn std::error::Err
     };
     #[cfg(not(debug_assertions))]
     let mut command = {
-        let mut c = Command::new(resource.join("binaries/rai-engine/rai-engine.exe"));
+        let mut c = Command::new(resource.join("binaries/FileConverterEngine/FileConverterEngine.exe"));
         c.arg("--engines").arg(resource.join("engines")); c
     };
     let _ = resource;
-    command.arg("--data").arg(data).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
+    command.arg("--data").arg(data).arg("--app-exe").arg(std::env::current_exe()?).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
     #[cfg(windows)] {
         use std::os::windows::process::CommandExt;
-        command.creation_flags(0x08000000);
+        command.creation_flags(0x08000000 | 0x00000004);
     }
     let mut child = command.spawn()?;
+    #[cfg(windows)]
+    let engine_job=engine_job::EngineJob::attach(&mut child)?;
     let input = child.stdin.take().ok_or("No stdin")?;
     let output = child.stdout.take().ok_or("No stdout")?;
     let stderr = child.stderr.take().ok_or("No stderr")?;
@@ -86,17 +146,28 @@ fn start_engine(app: &tauri::App) -> Result<Arc<Bridge>, Box<dyn std::error::Err
         if let Ok(mut map)=waiting.lock() { for (_,tx) in map.drain() { let _=tx.send(Err("Conversion engine stopped".into())); } }
         let _=handle.emit("engine-stopped", "本機轉檔引擎已停止，請重新啟動程式。");
     });
-    Ok(Arc::new(Bridge {child:Mutex::new(child),input:Mutex::new(input),pending,serial:AtomicU64::new(1)}))
+    Ok(Arc::new(Bridge {#[cfg(windows)] engine_job,child:Mutex::new(child),input:Mutex::new(input),pending,serial:AtomicU64::new(1)}))
 }
 
 fn main() {
-    tauri::Builder::default().plugin(tauri_plugin_dialog::init())
-        .setup(|app| { app.manage(start_engine(app)?); Ok(()) })
-        .invoke_handler(tauri::generate_handler![engine_call,native_material])
-        .build(tauri::generate_context!()).expect("Could not start RAI Converter")
+    tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app,args,cwd| {
+            queue_open(app,args,&cwd);
+            if let Some(window)=app.get_webview_window("main") { let _=window.unminimize(); let _=window.show(); let _=window.set_focus(); }
+        }))
+        .plugin(tauri_plugin_dialog::init())
+        .manage(OpenRequests::default())
+        .setup(|app| {
+            app.manage(start_engine(app)?);
+            queue_open(app.handle(),std::env::args().collect(),&std::env::current_dir()?.to_string_lossy());
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![engine_call,native_material,shutdown_app,take_open_requests])
+        .build(tauri::generate_context!()).expect("Could not start File Converter")
         .run(|app,event| {
             if let tauri::RunEvent::Exit = event {
                 if let Some(bridge)=app.try_state::<Arc<Bridge>>() {
+                    #[cfg(windows)] bridge.engine_job.terminate();
                     if let Ok(mut child)=bridge.child.lock() { let _=child.kill(); let _=child.wait(); }
                 }
             }

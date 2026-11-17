@@ -1,0 +1,91 @@
+{
+  "version": "1.1.0-rc.2",
+  "actualNativeIPC": true,
+  "actualAssetProtocol": true,
+  "actualMediaPlayback": true,
+  "windowMaximizeRestore": true,
+  "splitClipCount": 6,
+  "layoutChecks": [
+    {
+      "selector": ".image-editor",
+      "width": 1500,
+      "height": 960,
+      "passed": true
+    },
+    {
+      "selector": ".image-editor",
+      "width": 1280,
+      "height": 720,
+      "passed": true
+    },
+    {
+      "selector": ".image-editor",
+      "width": 960,
+      "height": 540,
+      "passed": true
+    },
+    {
+      "selector": ".image-editor",
+      "width": 760,
+      "height": 480,
+      "passed": true
+    },
+    {
+      "selector": ".video-editor",
+      "width": 1500,
+      "height": 960,
+      "passed": true
+    },
+    {
+      "selector": ".video-editor",
+      "width": 1280,
+      "height": 720,
+      "passed": true
+    },
+    {
+      "selector": ".video-editor",
+      "width": 960,
+      "height": 540,
+      "passed": true
+    },
+    {
+      "selector": ".video-editor",
+      "width": 760,
+      "height": 480,
+      "passed": true
+    }
+  ],
+  "pipelines": [
+    "video import→preview→export",
+    "image import→preview→export→converter webp",
+    "page state retained"
+  ],
+  "engines": {
+    "calibre": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\calibre\\PFiles64\\Calibre2\\ebook-convert.exe",
+    "deno": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\deno\\deno.exe",
+    "ffmpeg": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\ffmpeg\\ffmpeg.exe",
+    "ffprobe": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\ffmpeg\\ffprobe.exe",
+    "font": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\fonts\\NotoSansCJKtc-Regular.otf",
+    "ghostscript": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\ghostscript\\bin\\gswin64c.exe",
+    "heif": "pillow_heif",
+    "opencv": "cv2",
+    "pandoc": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\pandoc\\pandoc-3.14\\pandoc.exe",
+    "pdf2docx": "pdf2docx",
+    "pypdf": "pypdf",
+    "sevenzip": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\7zip\\7z.exe",
+    "soffice": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\libreoffice\\program\\soffice.com",
+    "tessdata": "E:\\handmade_App\\FileConverter\\release\\FileConverter-1.1.0-rc.2-Portable\\engines\\tessdata",
+    "ytdlp": "yt_dlp"
+  },
+  "outputs": [
+    "E:\\handmade_App\\FileConverter\\.tools\\native-editor-output\\timeline-master (5).mp4",
+    "E:\\handmade_App\\FileConverter\\.tools\\native-editor-output\\edited (5).png",
+    "E:\\handmade_App\\FileConverter\\.tools\\native-editor-output\\edited (5).webp"
+  ],
+  "userHistoryBefore": 0,
+  "ownJobIds": [
+    "793bc6a178564380807dc4e8706ea9e5",
+    "414a84e8c2e84eed8bfebf73a81eda97",
+    "2d3e025528d54eac8ab84ef3f62c755d"
+  ]
+}

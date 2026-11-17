@@ -1,0 +1,108 @@
+{
+  "runtime": {
+    "libreoffice": {
+      "version": "26.8.3",
+      "archiveSha256": "0e6918c273eabbdbbd800ee0dacbbf130a14c13c2e4cec861b06dd59e015bf94",
+      "verified": true
+    },
+    "calibre": {
+      "version": "9.18.0",
+      "archiveSha256": "05c0f2223866f8082e05b2d4bc9c57b31a833de8355a1191fd79c260c2636d38",
+      "verified": true
+    },
+    "pandoc": {
+      "version": "3.14",
+      "archiveSha256": "0144b96e8c7b023fd382ec5ef5bdc475e873f1019d6fa72502492df2c9a94a3b",
+      "verified": true
+    },
+    "ghostscript": {
+      "version": "10.08.0",
+      "archiveSha256": "52a91b8bf09298788d7a57b9206127026c23eacd75405f0a131e26dc381dce50",
+      "verified": true
+    },
+    "deno": {
+      "version": "2.9.8",
+      "archiveSha256": "cba84b26e0df5ae7f74fc66b86a95b866872a86292ebd84fa1e959927edd93bf",
+      "verified": true
+    },
+    "7zip": {
+      "version": "25.01",
+      "archiveSha256": "78afa2a1c773caf3cf7edf62f857d2a8a5da55fb0fff5da416074c0d28b2b55f",
+      "verified": true
+    },
+    "tessdata-eng": {
+      "version": "fast model, SHA-256 pinned",
+      "archiveSha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+      "verified": true
+    },
+    "tessdata-chi_tra": {
+      "version": "fast model, SHA-256 pinned",
+      "archiveSha256": "529c5b5797d64b126065cd55f2bb4c7fd7b15790798091b1ff259941a829330b",
+      "verified": true
+    },
+    "font": {
+      "version": "Sans2.004",
+      "archiveSha256": "dce08bd4fd91aa8aa76ed8fea4b694c2dfb8550f67871e326843212ddbeb88b4",
+      "verified": true
+    },
+    "webview2": {
+      "version": "157.0.4341.60",
+      "archiveSha256": "1bad3df802a4c21f6b271cf3cd640912056291e3915b86fa7577a18899f761b9",
+      "verified": true
+    },
+    "ffmpeg": {
+      "version": "8.1.2",
+      "archiveSha256": "db580001caa24ac104c8cb856cd113a87b0a443f7bdf47d8c12b1d740584a2ec",
+      "verified": true
+    },
+    "font-license": {
+      "version": "OFL 1.1 / Sans2.004",
+      "archiveSha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
+      "verified": true
+    }
+  },
+  "python": {
+    "altgraph": "0.17.5",
+    "brotli": "1.2.1",
+    "certifi": "2026.10.23",
+    "charset-normalizer": "3.5.2",
+    "et_xmlfile": "2.0.0",
+    "fire": "0.7.1",
+    "fonttools": "4.68.0",
+    "idna": "3.20",
+    "lxml": "6.1.3",
+    "mutagen": "1.48.1",
+    "networkx": "3.7",
+    "numpy": "2.5.5",
+    "opencv-python-headless": "5.0.0.93",
+    "openpyxl": "3.1.5",
+    "packaging": "26.3",
+    "pdf2docx": "0.5.13",
+    "pefile": "2024.8.26",
+    "pillow": "13.0.0",
+    "pillow_heif": "1.8.1",
+    "psutil": "7.2.2",
+    "pycryptodomex": "3.24.2",
+    "pyinstaller": "6.22.3",
+    "pyinstaller-hooks-contrib": "2026.10",
+    "pymupdf": "2.1",
+    "pypdf": "7.1.0",
+    "pypdfium2": "5.15.2",
+    "python-docx": "1.2.0",
+    "python-pptx": "1.0.2",
+    "pywin32-ctypes": "0.2.3",
+    "PyYAML": "6.0.3",
+    "requests": "2.34.2",
+    "setuptools": "84.2.1",
+    "tabulate": "0.10.0",
+    "termcolor": "3.3.0",
+    "typing_extensions": "4.16.0",
+    "urllib3": "2.8.0",
+    "websockets": "17.4",
+    "xlsxwriter": "3.3.1",
+    "yt-dlp": "2026.10.26",
+    "yt-dlp-ejs": "0.8.0"
+  },
+  "aiModulesAbsent": true,
+  "actualCoreImports": true
+}

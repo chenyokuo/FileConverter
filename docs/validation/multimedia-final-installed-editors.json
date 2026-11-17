@@ -1,0 +1,86 @@
+{
+  "version": "1.1.0-rc.1",
+  "actualNativeIPC": true,
+  "actualAssetProtocol": true,
+  "actualMediaPlayback": true,
+  "windowMaximizeRestore": true,
+  "splitClipCount": 3,
+  "layoutChecks": [
+    {
+      "selector": ".image-editor",
+      "width": 1500,
+      "height": 960,
+      "passed": true
+    },
+    {
+      "selector": ".image-editor",
+      "width": 1280,
+      "height": 720,
+      "passed": true
+    },
+    {
+      "selector": ".image-editor",
+      "width": 960,
+      "height": 540,
+      "passed": true
+    },
+    {
+      "selector": ".image-editor",
+      "width": 760,
+      "height": 480,
+      "passed": true
+    },
+    {
+      "selector": ".video-editor",
+      "width": 1500,
+      "height": 960,
+      "passed": true
+    },
+    {
+      "selector": ".video-editor",
+      "width": 1280,
+      "height": 720,
+      "passed": true
+    },
+    {
+      "selector": ".video-editor",
+      "width": 960,
+      "height": 540,
+      "passed": true
+    },
+    {
+      "selector": ".video-editor",
+      "width": 760,
+      "height": 480,
+      "passed": true
+    }
+  ],
+  "pipelines": [
+    "video import→preview→export",
+    "image import→preview→export→converter webp",
+    "page state retained"
+  ],
+  "engines": {
+    "calibre": "engines/calibre/PFiles64/Calibre2/ebook-convert.exe",
+    "deno": "engines/deno/deno.exe",
+    "ffmpeg": "engines/ffmpeg/ffmpeg.exe",
+    "ffprobe": "engines/ffmpeg/ffprobe.exe",
+    "font": "engines/fonts/NotoSansCJKtc-Regular.otf",
+    "ghostscript": "engines/ghostscript/bin/gswin64c.exe",
+    "heif": "pillow_heif",
+    "opencv": "cv2",
+    "pandoc": "engines/pandoc/pandoc-3.14/pandoc.exe",
+    "pdf2docx": "pdf2docx",
+    "pypdf": "pypdf",
+    "sevenzip": "engines/7zip/7z.exe",
+    "soffice": "engines/libreoffice/program/soffice.com",
+    "tessdata": "engines/tessdata",
+    "ytdlp": "yt_dlp"
+  },
+  "outputs": [
+    "timeline-master (3).mp4",
+    "edited (3).png",
+    "edited (3).webp"
+  ],
+  "userHistoryBefore": 0
+}

@@ -1,66 +1,35 @@
-# 驗收紀錄 — 0.1.0
+最新版 1.1.0-rc.2 修復與實際封裝驗證請見 [RC2 修復驗收](REPAIRS_RC2.md)；前版記錄見 [Multimedia P5](MULTIMEDIA_P5.md)。以下保留 1.0.0-rc.1 歷史紀錄。
 
-日期：2026-11-16；Windows 11 x64 10.0.26200，WebView2，Node 24.22.1，Rust 1.100.0，Python 3.13.5。這是可執行的私人測試版本，未宣稱跨所有 Windows 環境通過正式發行驗收。
+# P5 驗收紀錄 — 1.0.0-rc.1
 
-## 已實際執行並通過
+2026-11-16，Windows x64 開發主機；所有素材由測試建立，RAR 使用 libarchive 官方 RAR5 stored 開源測試素材。沒有將使用者檔案上傳。P1–P4 只有相關測試和增量編譯，P5 才統一封裝。
 
-- `npm run build`：TypeScript 檢查與 Vite production build。
-- `cargo check`：Windows 原生 Rust / Tauri 橋接。
-- Tauri release EXE 編譯；真實桌面視窗已開啟並檢視 Dashboard / Appearance。
-- Python 原始引擎 **17 / 17** subprocess 整合測試通過。
-- PyInstaller 凍結引擎 **17 / 17** 相同測試通過。
-- 自包含 Portable 版本實際啟動，真正 WebView2 / Rust IPC / frozen engine 的 **9 / 9** GUI 測試群組通過。
-- Windows Mica 的原生 apply / clear 呼叫已成功執行，介面切換 native-mica 樣式；CSS 材質持續可用。
-- Windows NSIS 安裝包成功產生，設定內嵌 Microsoft WebView2 離線安裝包。
+| 驗證 | 實際結果 |
+|---|---|
+| 完整來源回歸 | 55 項，53 通過、2 當時跳過。之後以空 Runtime 實測 missing-LO：來源／凍結版均通過；建置 EXE 圖示另行驗證。新增影片預覽案例亦通過 |
+| 直接轉換矩陣 | 305/305；圖片實際解碼、媒體試解碼、文件內文／儲存格／投影片 XML、舊 Office 渲染、PDF 頁面與文字、電子書內文及壓縮展開 |
+| 凍結 Sidecar | 核心 23 項：22 通過、1 missing-LO 跳過；P2–P4 20/20 通過。Office 巨集／主動內容停用後受影響預覽案例再測通過 |
+| 真實 GUI／IPC | 開發模式 22 組、實際 Portable 候選 23 組通過；外觀、六材質、佇列、真實轉檔、歷史、視窗、工作流程、預設、預覽、參數變更與鍵盤關閉 |
+| 版面 | 1500×960 與常見桌面尺寸；125/150/200% renderer DPI 模擬通過。這不是 Windows 多螢幕實體 DPI 認證 |
+| Windows 選用整合 | 實際 HKCU 專屬 shell 啟停／清理、第二次啟動轉送通過；測試後恢復原右鍵狀態，沒有修改預設關聯 |
+| WebView2 | app-local 固定版 157.0.4341.60，Microsoft 簽章 Valid，CDP 回報同版 |
+| 大來源 | 1,073,741,868 bytes WAV：實際辨識，串流裁切 2 秒 FLAC 並解碼驗證 |
+| 大量 GUI | 250 個真實長中文／特殊字元檔名；匯入、批次 JPG 設定、清空與 1500×960 無水平溢出通過；逐項高成本動畫在大量檔案停用 |
+| 取消與原檔 | 真實 worker／FFmpeg 程序樹結束，原檔雜湊、撞名另存、失敗不阻斷整批；已在來源與 frozen 核心回歸驗證 |
+| 網址下載 | 自有本機 HTTP/HLS：720/1080 實際畫質、播放清單選單項目、字幕內容、四種音訊、取消後 Range 續傳、並行本機轉檔。未宣稱所有外部網站永久可用 |
 
-### 17 項引擎測試
+矩陣驗證最初把 FFmpeg 測試參數寫成 `.25`，被本版 CLI 拒絕；修正為 `0.25` 後直接對已實際轉換出的 127 個媒體檔重新解碼，沒有為測試錯誤重新編碼其餘成功項目。最終逐方向結果在 `test-results/matrix.json`，成功方向列於 `engine/verified-capabilities.json`。
 
-1. 合法相容矩陣與不支援格式。
-2. 中文／空白／`&`／方括號路徑、圖片縮放、alpha→白底、同名衝突、原始 SHA-256 不變。
-3. PNG / WebP / BMP / TIFF 實際產出。
-4. 圖片與 PDF 混合合併、指定頁碼擷取、逐頁分割、旋轉角度與內容。
-5. PDF→PNG / JPG 頁數與像素尺寸。
-6. 損毀圖片失敗時其他任務仍完成。
-7. 背景解碼、持久化 WebP、設定重啟後一致。
-8. 歷史重啟、重試及清除不刪除輸出。
-9. MP4→WebM、音軌→MP3、解析度／聲道／取樣率、真實 FFmpeg 非零進度。
-10. 執行中取消，worker 與 FFmpeg 都結束；不發布結果、不留下該任務暫存。
-11. 單並行佇列與取消尚未執行任務。
-12. 拒絕無效轉換、任意 Shell 命令與無效並行設定。
-13. 250 筆圖片匯入與預覽資料。
-14. 本機 FFmpeg / ffprobe 部署檢測。
-15. 非正常終止服務後清理子程序、重啟紀錄標記取消。
+## 本機硬體量測
 
-16. 所有 12 種影音輸出容器皆產生有效檔案，ffprobe 驗證時長與 streams。
-17. 缺少 LibreOffice 時 Office→PDF 提供明確依賴錯誤。
+自製 1080p30、3 秒測試來源，H.264 fast、CRF/QP 23。CPU libx264：0.645 秒、139.43 wall FPS、SSIM 0.995061、2,274,349 bytes。AMD h264_amf：0.485 秒、185.70 wall FPS、SSIM 0.980053、3,938,577 bytes。CRF 與 QP 並非相同率控制，這是使用相同數值設定的實測；含初始化成本，單次樣本，不是普遍效能保證；GPU 較快但不代表更佳品質。AMD HEVC 在此機不可用，明確指定 AMD 時已驗證退回 libx265 並產生可讀 HEVC；此機 NVIDIA／Intel 實際探測失敗，僅驗證不可用與 CPU 備援，沒有宣稱在實體 NVIDIA／Intel 裝置完成輸出測試。
 
-測試請求使用真正 UTF-8 非 ASCII JSON，涵蓋 Rust 發送中文資料的編碼條件。曾發現 Windows 預設 CP950 解碼問題，已在凍結 sidecar 明確設定 UTF-8。輸出發布改用 Windows 不覆寫 rename，並有限重試短暫索引／防毒鎖定。
+## 尚未通過的正式驗收閘門
 
-### 9 組 GUI 測試
+目前未找到可用 Windows Sandbox／Hyper-V，使用者亦已確認沒有乾淨 VM／實機。已完成僅含 Windows 系統目錄 PATH 的凍結引擎 9 組代表功能與 Portable GUI；仍不能將同一開發主機測試宣稱為「無任何開發／引擎安裝的乾淨 Windows 電腦」驗收。實體多螢幕／不同 Windows OS DPI 亦未驗證。
 
-1. 匯入背景與獨立圖片 alpha，亮度／模糊／遮罩／縮放／位置。
-2. 六種材質獨立 alpha / blur；實際計算 sidebar 背景、blur 與文字 opacity。
-3. 外觀配置、SQLite 保存、頁面重載後恢復。
-4. 深色／淺色與減少動態效果。
-5. GUI 加檔、合法格式清單、真正 WebP 轉檔及檔案存在。
-6. 歷史搜尋與真正重試。
-7. 自訂按鈕最大化／還原。
-8. 125 / 150 / 200% renderer DPI 版面模擬，無水平溢出；高度不足可捲動。
-9. 未發生外部網路請求，無前端執行錯誤。
+對外散布的完整 corresponding-source 交付尚待完成，見 [散布要求](DISTRIBUTION.md)。候選包未簽署。這些項目未完成前，不標示 P5 正式通過、不清理舊版交付檔、不建立正式發行 Tag 或 Push main，以遵守使用者「最終整合驗收通過再同步」的要求。
 
-原生檔案對話框已實際開啟。自動化測試用自己的路徑回傳值替代 OS picker，後續解碼、複製、SQLite、轉檔全部呼叫真實服務，不模擬轉檔。圖片與影音進度都是引擎回報，無定時假進度。
+Release／Installer／Portable、PE 圖示、安裝／移除、ZIP 全 CRC、Runtime 項目／雜湊及交付 SHA-256 檢查已通過；詳見 `docs/P5.md` 與 `docs/validation/release-verification.json`。只有乾淨 Windows／實體環境及散布閘門仍未完成。
 
-## 尚待環境驗收／已知限制
-
-- 沒有在移除 Python / Node / Rust 的全新 VM 上安裝；Portable 包確實含 Python Runtime、Pillow、MuPDF 與 FFmpeg，已在本機使用 frozen 版本驗證。安裝／解除安裝、檔案關聯與乾淨機器測試仍需 VM。
-- 沒有實體切換 Windows 10 / 多台 Windows 11，也沒有多螢幕跨 DPI 拖曳驗收；renderer 模擬不能替代 OS 實測。
-- 沒有安裝 LibreOffice，因此 Office adapter 的完整格式組合仍未實測；介面明確顯示缺少依賴，不能啟用這類待轉檔。安裝最新版 LibreOffice 後重新匯入檔案可使用。
-- NVENC 未在可用 NVIDIA GPU 上驗收；實際執行前會測試編碼能力，失敗時顯示錯誤，使用者可用 CPU 重試。
-- 未實際斷開整台電腦網路；程式碼無雲端路徑，打包資源本機化，執行測試未觀察到外部請求。
-- 未提供整個 OS 視窗透明度控制；研究與待驗證事項見 WINDOW_TRANSPARENCY.md。
-- PDF→DOCX 未提供。動畫圖片／多頁 TIFF 只處理第一畫格／頁。格式偵測初始依副檔名，解碼器再驗證內容。
-- 250 筆匯入已測試，數千筆列表尚待虛擬化與效能測試；沒有新增人為檔案大小上限。
-- 輸出檔名衝突保護已測試；突然斷電可能保留 `.rai-*` 暫存資料夾，需在確認無其他實例使用時清理。
-- 未簽章；對外散布前仍需完成授權原始碼提供、程式碼簽章、乾淨 VM 與跨 Windows 驗收。
-
-詳細機器產生的記錄與 DPI 截圖在忽略的 `test-results/`，避免測試檔與環境資料進入 Git。README 圖片為實際應用程式截圖。
+P5 額外修正：Tauri 安裝版 verbatim 路徑不直接交給 C 引擎／右鍵登錄；Tesseract 於隔離 worker 以相對模型路徑載入，已驗證中文模型目錄與英文／繁中 OCR。繁中＋English 採繁中優先，仍有辨識錯字，不能宣稱完美還原。

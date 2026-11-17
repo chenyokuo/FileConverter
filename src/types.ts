@@ -1,4 +1,27 @@
-export type Page = "dashboard" | "converter" | "history" | "settings";
+export type Page = "video-editor" | "image-editor" | "converter" | "toolbox" | "download" | "workflow" | "history" | "settings";
+export type ConversionMode = "auto" | "preset";
+export interface Capability {
+  id: string;
+  source: string;
+  target: string;
+  category: string;
+  engine: string;
+  available: boolean;
+  reason: string;
+  testStatus: string;
+  lossy: boolean;
+  settings: string[];
+  qualityNote: string;
+  intermediate: boolean;
+  operationRequired: boolean;
+}
+export interface Registry {
+  version: number;
+  edges: Capability[];
+  sources: string[];
+  adapters: { id: string; available: boolean }[];
+  execution: string;
+}
 export type MaterialName =
   "sidebar" | "main" | "card" | "modal" | "toolbar" | "settings";
 export interface Material {
@@ -26,14 +49,29 @@ export interface Appearance {
   materials: Record<MaterialName, Material>;
 }
 export interface Settings {
+  appearanceVersion: number;
   appearance: Appearance;
   presets: { name: string; appearance: Appearance }[];
   concurrency: number;
   outputDir: string;
+  downloadDir:string;
   defaults: Options;
   reducedMotion: boolean;
+  sidebarCollapsed: boolean;
+}
+export interface HardwareDevice {
+  pending?: boolean;
+  id: string;
+  label: string;
+  available: boolean;
+  encoder: string;
+  reason: string;
+  codecs?: Record<string, boolean>;
 }
 export interface Options {
+  hardware: "auto" | "cpu" | "nvidia" | "amd" | "intel";
+  hardwareDecode: boolean;
+  qualityPreset: "fast" | "balanced" | "quality";
   quality: number;
   width: number;
   height: number;
@@ -61,16 +99,30 @@ export interface InputFile {
   preview: string | null;
   dimensions: number[] | null;
   available: boolean;
+  reason?: string;
+  detection?: {
+    format: string;
+    extension: string;
+    method: string;
+    warning: string;
+    native?: { mime: string; extension: string };
+  };
 }
 export interface Draft extends InputFile {
   id: string;
   format: string;
   options: Options;
   selected: boolean;
+  expectedSource?: string;
 }
 export type Status =
   "queued" | "running" | "cancelling" | "completed" | "failed" | "cancelled";
 export interface Job {
+  kind?:string;
+  operation?: string;
+  params?: Record<string, unknown>;
+  previewOnly?: boolean;
+  requiresSecret?: boolean;
   id: string;
   sources: string[];
   name: string;
@@ -79,6 +131,14 @@ export interface Job {
   outputDir: string;
   options: Options;
   status: Status;
+  stats?: {
+    warning?: string;
+    encoder?: string;
+    fps?: number;
+    speed?: string;
+    hardwareFallback?: string;
+    [key: string]: unknown;
+  };
   progress: number;
   created: number;
   started?: number;
@@ -87,6 +147,7 @@ export interface Job {
   error: string | null;
 }
 export interface Engines {
+  [name: string]: string | null;
   ffmpeg: string | null;
   ffprobe: string | null;
   soffice: string | null;
@@ -96,4 +157,5 @@ export interface Snapshot {
   jobs: Job[];
   engines: Engines;
   dataDir: string;
+  registry: Registry;
 }

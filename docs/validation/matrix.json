@@ -1,0 +1,1654 @@
+{
+  "7z:zip": {
+    "status": "passed",
+    "seconds": 0.07,
+    "outputs": 1
+  },
+  "7z:tar": {
+    "status": "passed",
+    "seconds": 0.11,
+    "outputs": 1
+  },
+  "aac:aac": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "aac:flac": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "aac:m4a": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "aac:mp3": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "aac:ogg": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "aac:opus": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "aac:wav": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:mp4": {
+    "status": "passed",
+    "seconds": 0.27,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:mov": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:mkv": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:avi": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:webm": {
+    "status": "passed",
+    "seconds": 0.44,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:wmv": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:aac": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:flac": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:m4a": {
+    "status": "passed",
+    "seconds": 0.29,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:mp3": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:ogg": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:opus": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avi:wav": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "avif:avif": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "avif:bmp": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "avif:gif": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "avif:heic": {
+    "status": "passed",
+    "seconds": 0.12,
+    "outputs": 1
+  },
+  "avif:jpg": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "avif:png": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "avif:tiff": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "avif:webp": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "avif:pdf": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "azw3:epub": {
+    "status": "passed",
+    "seconds": 0.4,
+    "outputs": 1
+  },
+  "azw3:mobi": {
+    "status": "passed",
+    "seconds": 0.85,
+    "outputs": 1
+  },
+  "azw3:fb2": {
+    "status": "passed",
+    "seconds": 0.79,
+    "outputs": 1
+  },
+  "bmp:avif": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "bmp:bmp": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "bmp:gif": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "bmp:heic": {
+    "status": "passed",
+    "seconds": 0.12,
+    "outputs": 1
+  },
+  "bmp:jpg": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "bmp:png": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "bmp:tiff": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "bmp:webp": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "bmp:pdf": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "csv:xlsx": {
+    "status": "passed",
+    "seconds": 8.25,
+    "outputs": 1
+  },
+  "csv:ods": {
+    "status": "passed",
+    "seconds": 8.41,
+    "outputs": 1
+  },
+  "csv:pdf": {
+    "status": "passed",
+    "seconds": 8.62,
+    "outputs": 1
+  },
+  "csv:tsv": {
+    "status": "passed",
+    "seconds": 8.84,
+    "outputs": 1
+  },
+  "doc:pdf": {
+    "status": "passed",
+    "seconds": 9.38,
+    "outputs": 1
+  },
+  "doc:docx": {
+    "status": "passed",
+    "seconds": 9.45,
+    "outputs": 1
+  },
+  "doc:odt": {
+    "status": "passed",
+    "seconds": 9.62,
+    "outputs": 1
+  },
+  "doc:rtf": {
+    "status": "passed",
+    "seconds": 19.64,
+    "outputs": 1
+  },
+  "doc:txt": {
+    "status": "passed",
+    "seconds": 8.81,
+    "outputs": 1
+  },
+  "docx:pdf": {
+    "status": "passed",
+    "seconds": 9.19,
+    "outputs": 1
+  },
+  "docx:doc": {
+    "status": "passed",
+    "seconds": 22.96,
+    "outputs": 1
+  },
+  "docx:odt": {
+    "status": "passed",
+    "seconds": 13.17,
+    "outputs": 1
+  },
+  "docx:docx": {
+    "status": "passed",
+    "seconds": 10.51,
+    "outputs": 1
+  },
+  "docx:rtf": {
+    "status": "passed",
+    "seconds": 19.02,
+    "outputs": 1
+  },
+  "docx:txt": {
+    "status": "passed",
+    "seconds": 8.47,
+    "outputs": 1
+  },
+  "docx:md": {
+    "status": "passed",
+    "seconds": 0.04,
+    "outputs": 1
+  },
+  "docx:html": {
+    "status": "passed",
+    "seconds": 0.07,
+    "outputs": 1
+  },
+  "eps:pdf": {
+    "status": "passed",
+    "seconds": 0.32,
+    "outputs": 1
+  },
+  "eps:png": {
+    "status": "passed",
+    "seconds": 0.3,
+    "outputs": 1
+  },
+  "epub:mobi": {
+    "status": "passed",
+    "seconds": 0.86,
+    "outputs": 1
+  },
+  "epub:azw3": {
+    "status": "passed",
+    "seconds": 0.8,
+    "outputs": 1
+  },
+  "epub:fb2": {
+    "status": "passed",
+    "seconds": 0.78,
+    "outputs": 1
+  },
+  "fb2:epub": {
+    "status": "passed",
+    "seconds": 0.39,
+    "outputs": 1
+  },
+  "fb2:mobi": {
+    "status": "passed",
+    "seconds": 0.82,
+    "outputs": 1
+  },
+  "fb2:azw3": {
+    "status": "passed",
+    "seconds": 0.81,
+    "outputs": 1
+  },
+  "flac:aac": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "flac:flac": {
+    "status": "passed",
+    "seconds": 0.19,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "flac:m4a": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "flac:mp3": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "flac:ogg": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "flac:opus": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "flac:wav": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "gif:avif": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "gif:bmp": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "gif:gif": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "gif:heic": {
+    "status": "passed",
+    "seconds": 0.11,
+    "outputs": 1
+  },
+  "gif:jpg": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "gif:png": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "gif:tiff": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "gif:webp": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "gif:pdf": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "gz:zip": {
+    "status": "passed",
+    "seconds": 0.08,
+    "outputs": 1
+  },
+  "gz:7z": {
+    "status": "passed",
+    "seconds": 0.12,
+    "outputs": 1
+  },
+  "gz:tar": {
+    "status": "passed",
+    "seconds": 0.11,
+    "outputs": 1
+  },
+  "heic:avif": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "heic:bmp": {
+    "status": "passed",
+    "seconds": 0.02,
+    "outputs": 1
+  },
+  "heic:gif": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "heic:heic": {
+    "status": "passed",
+    "seconds": 0.11,
+    "outputs": 1
+  },
+  "heic:jpg": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "heic:png": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "heic:tiff": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "heic:webp": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "heic:pdf": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "html:md": {
+    "status": "passed",
+    "seconds": 0.03,
+    "outputs": 1
+  },
+  "html:docx": {
+    "status": "passed",
+    "seconds": 0.05,
+    "outputs": 1
+  },
+  "html:pdf": {
+    "status": "passed",
+    "seconds": 8.79,
+    "outputs": 1
+  },
+  "html:txt": {
+    "status": "passed",
+    "seconds": 0.04,
+    "outputs": 1
+  },
+  "jpg:avif": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "jpg:bmp": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "jpg:gif": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "jpg:heic": {
+    "status": "passed",
+    "seconds": 0.11,
+    "outputs": 1
+  },
+  "jpg:jpg": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "jpg:png": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "jpg:tiff": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "jpg:webp": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "jpg:pdf": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "m4a:aac": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "m4a:flac": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "m4a:m4a": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "m4a:mp3": {
+    "status": "passed",
+    "seconds": 0.2,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "m4a:ogg": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "m4a:opus": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "m4a:wav": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "md:html": {
+    "status": "passed",
+    "seconds": 0.07,
+    "outputs": 1
+  },
+  "md:docx": {
+    "status": "passed",
+    "seconds": 0.06,
+    "outputs": 1
+  },
+  "md:pdf": {
+    "status": "passed",
+    "seconds": 9.73,
+    "outputs": 1
+  },
+  "md:txt": {
+    "status": "passed",
+    "seconds": 0.04,
+    "outputs": 1
+  },
+  "mkv:mp4": {
+    "status": "passed",
+    "seconds": 0.29,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:mov": {
+    "status": "passed",
+    "seconds": 0.27,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:mkv": {
+    "status": "passed",
+    "seconds": 0.27,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:avi": {
+    "status": "passed",
+    "seconds": 0.28,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:webm": {
+    "status": "passed",
+    "seconds": 0.46,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:wmv": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:aac": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:flac": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:m4a": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:mp3": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:ogg": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:opus": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mkv:wav": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mobi:epub": {
+    "status": "passed",
+    "seconds": 0.4,
+    "outputs": 1
+  },
+  "mobi:azw3": {
+    "status": "passed",
+    "seconds": 0.84,
+    "outputs": 1
+  },
+  "mobi:fb2": {
+    "status": "passed",
+    "seconds": 0.8,
+    "outputs": 1
+  },
+  "mov:mp4": {
+    "status": "passed",
+    "seconds": 0.29,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:mov": {
+    "status": "passed",
+    "seconds": 0.28,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:mkv": {
+    "status": "passed",
+    "seconds": 0.27,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:avi": {
+    "status": "passed",
+    "seconds": 0.27,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:webm": {
+    "status": "passed",
+    "seconds": 0.45,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:wmv": {
+    "status": "passed",
+    "seconds": 0.26,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:aac": {
+    "status": "passed",
+    "seconds": 0.28,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:flac": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:m4a": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:mp3": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:ogg": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:opus": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mov:wav": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp3:aac": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp3:flac": {
+    "status": "passed",
+    "seconds": 0.2,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp3:m4a": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp3:mp3": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp3:ogg": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp3:opus": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp3:wav": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:mp4": {
+    "status": "passed",
+    "seconds": 0.26,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:mov": {
+    "status": "passed",
+    "seconds": 0.29,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:mkv": {
+    "status": "passed",
+    "seconds": 0.34,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:avi": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:webm": {
+    "status": "passed",
+    "seconds": 0.44,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:wmv": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:aac": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:flac": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:m4a": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:mp3": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:ogg": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:opus": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "mp4:wav": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "odp:pdf": {
+    "status": "passed",
+    "seconds": 13.03,
+    "outputs": 1
+  },
+  "odp:ppt": {
+    "status": "passed",
+    "seconds": 21.7,
+    "outputs": 1
+  },
+  "odp:pptx": {
+    "status": "passed",
+    "seconds": 9.79,
+    "outputs": 1
+  },
+  "odp:odp": {
+    "status": "passed",
+    "seconds": 12.29,
+    "outputs": 1
+  },
+  "ods:pdf": {
+    "status": "passed",
+    "seconds": 9.01,
+    "outputs": 1
+  },
+  "ods:xls": {
+    "status": "passed",
+    "seconds": 17.13,
+    "outputs": 1
+  },
+  "ods:xlsx": {
+    "status": "passed",
+    "seconds": 9.06,
+    "outputs": 1
+  },
+  "ods:ods": {
+    "status": "passed",
+    "seconds": 8.9,
+    "outputs": 1
+  },
+  "ods:csv": {
+    "status": "passed",
+    "seconds": 8.21,
+    "outputs": 1
+  },
+  "ods:tsv": {
+    "status": "passed",
+    "seconds": 8.2,
+    "outputs": 1
+  },
+  "odt:pdf": {
+    "status": "passed",
+    "seconds": 9.12,
+    "outputs": 1
+  },
+  "odt:doc": {
+    "status": "passed",
+    "seconds": 18.65,
+    "outputs": 1
+  },
+  "odt:docx": {
+    "status": "passed",
+    "seconds": 9.1,
+    "outputs": 1
+  },
+  "odt:odt": {
+    "status": "passed",
+    "seconds": 9.34,
+    "outputs": 1
+  },
+  "odt:rtf": {
+    "status": "passed",
+    "seconds": 17.43,
+    "outputs": 1
+  },
+  "odt:txt": {
+    "status": "passed",
+    "seconds": 8.95,
+    "outputs": 1
+  },
+  "ogg:aac": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "ogg:flac": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "ogg:m4a": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "ogg:mp3": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "ogg:ogg": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "ogg:opus": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "ogg:wav": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "opus:aac": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "opus:flac": {
+    "status": "passed",
+    "seconds": 0.2,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "opus:m4a": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "opus:mp3": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "opus:ogg": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "opus:opus": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "opus:wav": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "pdf:png": {
+    "status": "passed",
+    "seconds": 0.02,
+    "outputs": 1
+  },
+  "pdf:jpg": {
+    "status": "passed",
+    "seconds": 0.03,
+    "outputs": 1
+  },
+  "pdf:pdf": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "pdf:docx": {
+    "status": "passed",
+    "seconds": 0.13,
+    "outputs": 1
+  },
+  "pdf:txt": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "pdf:svg": {
+    "status": "passed",
+    "seconds": 0.04,
+    "outputs": 1
+  },
+  "pdf:eps": {
+    "status": "passed",
+    "seconds": 0.46,
+    "outputs": 1
+  },
+  "png:avif": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "png:bmp": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "png:gif": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "png:heic": {
+    "status": "passed",
+    "seconds": 0.11,
+    "outputs": 1
+  },
+  "png:jpg": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "png:png": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "png:tiff": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "png:webp": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "png:pdf": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "ppt:pdf": {
+    "status": "passed",
+    "seconds": 9.19,
+    "outputs": 1
+  },
+  "ppt:pptx": {
+    "status": "passed",
+    "seconds": 9.86,
+    "outputs": 1
+  },
+  "ppt:odp": {
+    "status": "passed",
+    "seconds": 9.61,
+    "outputs": 1
+  },
+  "pptx:pdf": {
+    "status": "passed",
+    "seconds": 9.89,
+    "outputs": 1
+  },
+  "pptx:ppt": {
+    "status": "passed",
+    "seconds": 18.7,
+    "outputs": 1
+  },
+  "pptx:odp": {
+    "status": "passed",
+    "seconds": 9.19,
+    "outputs": 1
+  },
+  "pptx:pptx": {
+    "status": "passed",
+    "seconds": 8.33,
+    "outputs": 1
+  },
+  "rar:zip": {
+    "status": "passed",
+    "seconds": 0.08,
+    "outputs": 1
+  },
+  "rar:7z": {
+    "status": "passed",
+    "seconds": 0.11,
+    "outputs": 1
+  },
+  "rar:tar": {
+    "status": "passed",
+    "seconds": 0.12,
+    "outputs": 1
+  },
+  "rtf:pdf": {
+    "status": "passed",
+    "seconds": 8.48,
+    "outputs": 1
+  },
+  "rtf:docx": {
+    "status": "passed",
+    "seconds": 8.47,
+    "outputs": 1
+  },
+  "rtf:odt": {
+    "status": "passed",
+    "seconds": 8.34,
+    "outputs": 1
+  },
+  "rtf:txt": {
+    "status": "passed",
+    "seconds": 8.63,
+    "outputs": 1
+  },
+  "svg:pdf": {
+    "status": "passed",
+    "seconds": 0.02,
+    "outputs": 1
+  },
+  "svg:png": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "svg:eps": {
+    "status": "passed",
+    "seconds": 0.44,
+    "outputs": 1
+  },
+  "tar:zip": {
+    "status": "passed",
+    "seconds": 0.07,
+    "outputs": 1
+  },
+  "tar:7z": {
+    "status": "passed",
+    "seconds": 0.11,
+    "outputs": 1
+  },
+  "tiff:avif": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "tiff:bmp": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "tiff:gif": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "tiff:heic": {
+    "status": "passed",
+    "seconds": 0.11,
+    "outputs": 1
+  },
+  "tiff:jpg": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "tiff:png": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "tiff:tiff": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "tiff:webp": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "tiff:pdf": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "tsv:xlsx": {
+    "status": "passed",
+    "seconds": 8.0,
+    "outputs": 1
+  },
+  "tsv:ods": {
+    "status": "passed",
+    "seconds": 7.88,
+    "outputs": 1
+  },
+  "tsv:pdf": {
+    "status": "passed",
+    "seconds": 8.1,
+    "outputs": 1
+  },
+  "tsv:csv": {
+    "status": "passed",
+    "seconds": 8.08,
+    "outputs": 1
+  },
+  "txt:md": {
+    "status": "passed",
+    "seconds": 0.04,
+    "outputs": 1
+  },
+  "txt:html": {
+    "status": "passed",
+    "seconds": 0.07,
+    "outputs": 1
+  },
+  "txt:docx": {
+    "status": "passed",
+    "seconds": 0.06,
+    "outputs": 1
+  },
+  "txt:pdf": {
+    "status": "passed",
+    "seconds": 8.44,
+    "outputs": 1
+  },
+  "wav:aac": {
+    "status": "passed",
+    "seconds": 0.26,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wav:flac": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wav:m4a": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wav:mp3": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wav:ogg": {
+    "status": "passed",
+    "seconds": 0.27,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wav:opus": {
+    "status": "passed",
+    "seconds": 0.27,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wav:wav": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:mp4": {
+    "status": "passed",
+    "seconds": 0.26,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:mov": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:mkv": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:avi": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:webm": {
+    "status": "passed",
+    "seconds": 0.37,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:wmv": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:aac": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:flac": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:m4a": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:mp3": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:ogg": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:opus": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webm:wav": {
+    "status": "passed",
+    "seconds": 0.22,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "webp:avif": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "webp:bmp": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "webp:gif": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "webp:heic": {
+    "status": "passed",
+    "seconds": 0.12,
+    "outputs": 1
+  },
+  "webp:jpg": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "webp:png": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "webp:tiff": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "webp:webp": {
+    "status": "passed",
+    "seconds": 0.0,
+    "outputs": 1
+  },
+  "webp:pdf": {
+    "status": "passed",
+    "seconds": 0.01,
+    "outputs": 1
+  },
+  "wmv:mp4": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:mov": {
+    "status": "passed",
+    "seconds": 0.25,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:mkv": {
+    "status": "passed",
+    "seconds": 0.24,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:avi": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:webm": {
+    "status": "passed",
+    "seconds": 0.43,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:wmv": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:aac": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:flac": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:m4a": {
+    "status": "passed",
+    "seconds": 0.23,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:mp3": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:ogg": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:opus": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "wmv:wav": {
+    "status": "passed",
+    "seconds": 0.21,
+    "outputs": 1,
+    "note": "Original converted output decoded successfully after correcting test duration .25 to 0.25; no re-encode."
+  },
+  "xls:pdf": {
+    "status": "passed",
+    "seconds": 8.13,
+    "outputs": 1
+  },
+  "xls:xlsx": {
+    "status": "passed",
+    "seconds": 7.9,
+    "outputs": 1
+  },
+  "xls:ods": {
+    "status": "passed",
+    "seconds": 7.94,
+    "outputs": 1
+  },
+  "xls:csv": {
+    "status": "passed",
+    "seconds": 7.85,
+    "outputs": 1
+  },
+  "xlsx:pdf": {
+    "status": "passed",
+    "seconds": 8.18,
+    "outputs": 1
+  },
+  "xlsx:xls": {
+    "status": "passed",
+    "seconds": 19.74,
+    "outputs": 1
+  },
+  "xlsx:ods": {
+    "status": "passed",
+    "seconds": 9.03,
+    "outputs": 1
+  },
+  "xlsx:xlsx": {
+    "status": "passed",
+    "seconds": 9.19,
+    "outputs": 1
+  },
+  "xlsx:csv": {
+    "status": "passed",
+    "seconds": 9.52,
+    "outputs": 1
+  },
+  "xlsx:tsv": {
+    "status": "passed",
+    "seconds": 8.81,
+    "outputs": 1
+  },
+  "zip:7z": {
+    "status": "passed",
+    "seconds": 0.08,
+    "outputs": 1
+  },
+  "zip:tar": {
+    "status": "passed",
+    "seconds": 0.08,
+    "outputs": 1
+  }
+}

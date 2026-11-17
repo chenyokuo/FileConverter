@@ -1,0 +1,18 @@
+{
+  "shell": {
+    "size": [
+      32,
+      32
+    ],
+    "meanPixelDifference": 0.0,
+    "image": "p0-shell-icon.png"
+  },
+  "window": {
+    "size": [
+      32,
+      32
+    ],
+    "meanPixelDifference": 0.0,
+    "image": "p0-window-icon.png"
+  }
+}

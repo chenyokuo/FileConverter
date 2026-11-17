@@ -22,8 +22,8 @@ import psutil
 class Client:
     def __init__(self,root):
         command=[sys.executable,str(ROOT/'engine/service.py')]
-        if os.environ.get('RAI_TEST_FROZEN'):command=[os.environ['RAI_TEST_FROZEN']]
-        self.proc=subprocess.Popen(command+['--data',str(root),'--engines',str(ROOT/'vendor')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        if os.environ.get('FILE_CONVERTER_TEST_FROZEN'):command=[os.environ['FILE_CONVERTER_TEST_FROZEN']]
+        self.proc=subprocess.Popen(command+['--data',str(root),'--engines',os.environ.get('FILE_CONVERTER_TEST_ENGINES',str(ROOT/'vendor'))],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         self.messages=queue.Queue();self.events=[];self.serial=0
         def read():
             for line in self.proc.stdout:
@@ -116,6 +116,10 @@ class EngineTests(unittest.TestCase):
     def test_07_background_and_settings_persist(self):
         image=self.client.call('background',{'path':str(self.image)})
         self.assertTrue(image.startswith('data:image/webp;base64,'));self.assertEqual(base64.b64decode(image.split(',')[1]),(self.dir/'data/background.webp').read_bytes())
+        import io
+        with Image.open(io.BytesIO(base64.b64decode(image.split(',')[1]))) as saved:
+            self.assertEqual(saved.size,(80,40))
+            self.assertEqual(saved.convert('RGBA').getpixel((0,0)),(255,0,0,128))
         settings={'concurrency':3,'appearance':{'image':image,'imageOpacity':37,'materials':{'card':{'opacity':22,'blur':31}}}}
         self.client.call('settings',{'settings':settings});self.client.close();self.client=Client(self.dir/'data')
         self.assertEqual(self.client.call('snapshot')['settings'],settings)
@@ -154,7 +158,7 @@ class EngineTests(unittest.TestCase):
         self.client.call('cancel',{'id':jobs[-1]['id']});result=self.client.wait([j['id'] for j in jobs]);self.assertEqual(result[-1]['status'],'cancelled')
         self.assertEqual(sum(j['status']=='completed' for j in result),14,[(j['status'],j.get('error')) for j in result])
     def test_12_missing_office_and_invalid_request(self):
-        with self.assertRaises(ValueError):self.enqueue(self.pdf,'docx')
+        with self.assertRaises(ValueError):self.enqueue(self.pdf,'mp4')
         with self.assertRaises(ValueError):self.client.call('shell',{'command':'whoami'})
         with self.assertRaises(ValueError):self.client.call('settings',{'settings':{'concurrency':10}})
     def test_13_bulk_inspect(self):
@@ -184,10 +188,85 @@ class EngineTests(unittest.TestCase):
                 self.assertGreater(float(info['format']['duration']),2)
                 self.assertTrue(info['streams'])
     def test_17_missing_office_dependency_error(self):
-        if self.client.call('engines')['soffice']:self.skipTest('LibreOffice is present')
-        source=self.inputs/'test.docx';source.write_bytes(b'placeholder; adapter must fail explicitly before invoking a missing engine')
-        job=self.enqueue(source,'pdf');result=self.client.wait([job['id']])[0]
-        self.assertEqual(result['status'],'failed');self.assertIn('LibreOffice',result['error'])
+        from unittest.mock import patch
+        from docx import Document
+        source=self.dir/'missing-runtime.docx';source.parent.mkdir(parents=True,exist_ok=True)
+        document=Document();document.add_paragraph('Missing runtime handling');document.save(source)
+        empty=self.dir/'empty-engines';empty.mkdir()
+        with patch.dict(os.environ,{'FILE_CONVERTER_TEST_ENGINES':str(empty)}):missing=Client(self.dir/'missing-runtime-data')
+        try:
+            self.assertIsNone(missing.call('engines')['soffice'])
+            job=missing.call('enqueue',{'jobs':[{'sources':[str(source)],'format':'pdf','outputDir':str(self.out),'options':{}}]})[0]
+            result=missing.wait([job['id']])[0]
+            self.assertEqual(result['status'],'failed');self.assertIn('LibreOffice',result['error'])
+        finally:missing.close()
+
+    def test_18_disguised_content_worker_and_inspect(self):
+        renamed=self.inputs/'實際 PNG 偽裝 [PDF] & 測試.pdf';renamed.write_bytes(self.image.read_bytes())
+        info=self.client.call('inspect',{'paths':[str(renamed)]})[0]
+        self.assertEqual(info['extension'],'png');self.assertEqual(info['category'],'image')
+        self.assertIn('副檔名',info['detection']['warning']);self.assertIn('jpg',info['formats'])
+        result=self.finish(self.enqueue(renamed,'jpg'))
+        with Image.open(result['outputs'][0]) as image:self.assertEqual(image.format,'JPEG')
+        corrupt=self.inputs/'損壞.pdf';corrupt.write_bytes(b'%PDF-1.7\ncorrupt')
+        infos=self.client.call('inspect',{'paths':[str(corrupt),str(self.image)]})
+        self.assertFalse(infos[0]['available']);self.assertTrue(infos[1]['available'])
+
+    def test_19_registry_metadata_and_graph(self):
+        registry=self.client.call('registry');self.assertGreater(len(registry['edges']),100)
+        for edge in registry['edges']:
+            for key in ['source','target','engine','available','testStatus','lossy','settings','qualityNote','intermediate']:
+                self.assertIn(key,edge)
+        direct=self.client.call('plan',{'source':'png','target':'jpg'})
+        self.assertTrue(direct['executable']);self.assertFalse(direct['intermediate'])
+        indirect=self.client.call('plan',{'source':'pdf','target':'webp'})
+        self.assertFalse(indirect['executable']);self.assertTrue(indirect['intermediate'])
+        self.assertEqual(len(indirect['route']),2)
+        impossible=self.client.call('plan',{'source':'pdf','target':'mp4'})
+        self.assertEqual(impossible['route'],[])
+        self.assertEqual(self.client.call('snapshot')['registry'],registry)
+
+    def test_20_pdf_requires_real_operation(self):
+        with self.assertRaisesRegex(ValueError,'PDF → PDF'):
+            self.enqueue(self.pdf,'pdf')
+        self.assertEqual(self.client.call('snapshot')['jobs'],[])
+        rotated=self.finish(self.enqueue(self.pdf,'pdf',{'rotation':90}))
+        with pymupdf.open(rotated['outputs'][0]) as doc:self.assertEqual(doc[0].rotation,90)
+
+    def test_21_container_detection_not_extension(self):
+        import zipfile
+        for part,fmt in [('word/document.xml','docx'),('xl/workbook.xml','xlsx'),('ppt/presentation.xml','pptx')]:
+            p=self.inputs/f'{fmt} 偽裝.png'
+            with zipfile.ZipFile(p,'w') as z:z.writestr('[Content_Types].xml','<Types/>');z.writestr(part,'<root/>')
+            item=self.client.call('inspect',{'paths':[str(p)]})[0]
+            self.assertEqual(item['extension'],fmt);self.assertEqual(item['category'],'office')
+            self.assertEqual(item['formats'],outputs(fmt))
+        if self.video.exists():
+            p=self.inputs/'實際影片 偽裝.mp3';p.write_bytes(self.video.read_bytes())
+            info=self.client.call('inspect',{'paths':[str(p)]})[0]
+            self.assertEqual(info['extension'],'mp4');self.assertEqual(info['category'],'video')
+
+    def test_22_legacy_office_compound_directory(self):
+        import struct
+        from detection import detect
+        header=bytearray(512);header[:8]=bytes.fromhex('d0cf11e0a1b11ae1')
+        struct.pack_into('<H',header,30,9);struct.pack_into('<I',header,48,1)
+        struct.pack_into('<I',header,68,0xfffffffe)
+        struct.pack_into('<109I',header,76,0,*([0xffffffff]*108))
+        fat=struct.pack('<128I',0xfffffffd,0xfffffffe,*([0xffffffff]*126))
+        for name,fmt in [('WordDocument','doc'),('Workbook','xls'),('PowerPoint Document','ppt')]:
+            directory=bytearray(512);encoded=(name+'\0').encode('utf-16le');directory[:len(encoded)]=encoded
+            struct.pack_into('<H',directory,64,len(encoded));directory[66]=2
+            p=self.inputs/f'{fmt} container.bin';p.write_bytes(header+fat+directory)
+            self.assertEqual(detect(p,{})['format'],fmt)
+
+    def test_23_scoped_history_cleanup_preserves_other_records(self):
+        first=self.finish(self.enqueue(self.image,'webp'))
+        second=self.finish(self.enqueue(self.image,'png'))
+        self.client.call('clear',{'ids':[first['id']]})
+        self.assertEqual([j['id'] for j in self.client.call('snapshot')['jobs']],[second['id']])
+        self.assertTrue(Path(first['outputs'][0]).is_file())
+        self.assertTrue(Path(second['outputs'][0]).is_file())
 
 def uuid_name():
     import uuid

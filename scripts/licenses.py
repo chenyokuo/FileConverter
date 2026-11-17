@@ -4,16 +4,29 @@ import json
 from pathlib import Path
 import shutil
 import sys
+import os
+import stat
 ROOT=Path(__file__).resolve().parents[1]
 DEST=ROOT/'src-tauri'/'notices'
 DEST.mkdir(exist_ok=True)
+for file in DEST.rglob('*'):
+    if file.is_file():os.chmod(file,stat.S_IREAD|stat.S_IWRITE)
 python_license=Path(sys.base_prefix)/'LICENSE.txt'
 if python_license.is_file():shutil.copy2(python_license,DEST/'PYTHON-LICENSE.txt')
 for name in ['LICENSE','THIRD_PARTY_NOTICES.md']:
     shutil.copy2(ROOT/name,DEST/name)
+import re
+canonical=lambda v:re.sub(r'[-_.]+','-',v).lower()
+approved={canonical(line.split('==')[0]) for line in (ROOT/'engine/requirements-lock.txt').read_text().splitlines() if '==' in line}
+# Drop stale development-only optional-AI notices, not runtime/source/user files.
+for old in (DEST/'python').iterdir() if (DEST/'python').exists() else []:
+    if old.is_dir() and canonical(old.name) not in approved:
+        if not old.resolve().is_relative_to((DEST/'python').resolve()):raise ValueError('Invalid generated notices path')
+        shutil.rmtree(old)
 inventory=[]
 for meta in importlib.metadata.distributions():
     name=meta.metadata['Name'];version=meta.version
+    if canonical(name) not in approved:continue
     inventory.append({'name':name,'version':version,'license':meta.metadata.get('License-Expression') or meta.metadata.get('License','')})
     for file in meta.files or []:
         if any(token in str(file).lower() for token in ['license','copying','notice']) and not str(file).endswith('.py'):
@@ -27,7 +40,7 @@ for package in (ROOT/'node_modules').glob('**/package.json'):
         if file.is_file() and any(file.name.upper().startswith(x) for x in ['LICENSE','COPYING','NOTICE','OFL']):
             target=DEST/'npm'/package.parent.relative_to(ROOT/'node_modules')/file.name
             target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(file,target)
-cargo=ROOT/'.tools/cargo/registry/src'
+cargo=Path(os.environ.get('CARGO_HOME',ROOT/'.tools/cargo'))/'registry/src'
 if not cargo.exists():cargo=Path.home()/'.cargo/registry/src'
 for package in cargo.glob('*/*'):
     if not package.is_dir():continue
@@ -42,3 +55,16 @@ import subprocess
 with (DEST/'ffmpeg/buildconf.txt').open('w',encoding='utf-8') as f:
     subprocess.run([str(ffmpeg/'ffmpeg.exe'),'-buildconf'],stdout=f,stderr=subprocess.STDOUT,check=True)
 print('Collected third-party notices:',sum(1 for p in DEST.rglob('*') if p.is_file()))
+
+# Runtime executables carry their own component notices. Preserve the actual
+# payload inventory separately from development-only Python/npm tools.
+runtime=ROOT/'src-tauri/bundled-engines'
+for file in runtime.rglob('*'):
+    if file.is_file() and (any(token in file.name.lower() for token in ['license','copying','copyright','notice']) or file.name in {'engine-lock.json','manifest.json','payload-manifest.json'}):
+        target=DEST/'engines'/file.relative_to(runtime);target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(file,target)
+shutil.copy2(ROOT/'engine-lock.json',DEST/'engine-lock.json')
+for file in (ROOT/'src-tauri/webview-runtime').rglob('*'):
+    if file.is_file() and any(token in file.name.lower() for token in ['license','credits','terms']):
+        target=DEST/'webview2'/file.relative_to(ROOT/'src-tauri/webview-runtime');target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(file,target)
+for file in DEST.rglob('*'):
+    if file.is_file() and not file.stat().st_mode&stat.S_IWRITE:os.chmod(file,stat.S_IREAD|stat.S_IWRITE)
