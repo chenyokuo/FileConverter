@@ -201,7 +201,7 @@ class Service:
             'status':'queued','progress':0,'created':time.time(),'outputs':[],'error':None}
         self.jobs[id]=job;self.save(job);self.event(job);return [dict(job)]
 
-    def create_download(self,args,resume=None):
+    def create_download(self,args,resume=None,preview=False):
         if not self.engines.get('ytdlp') or not self.engines.get('ffmpeg'):raise ValueError('下載 Runtime 不完整')
         from downloads import selected
         items=[resume['download']] if resume else selected(args['analysisId'],args['items'])
@@ -210,8 +210,8 @@ class Service:
             id=uuid.uuid4().hex;cache_key=resume.get('downloadCacheKey') if resume else id
             if not isinstance(cache_key,str) or len(cache_key)!=32 or any(c not in '0123456789abcdef' for c in cache_key):raise ValueError('無效下載快取')
             cache=self.root/'download-cache'/cache_key
-            out=Path(args.get('outputDir') or self.settings.get('downloadDir') or self.root/'Downloads').resolve()
-            job={'id':id,'kind':'download','sources':[],'download':item,'downloadCache':str(cache),'downloadCacheKey':cache_key,
+            out=(self.root/'previews'/id) if preview else Path(args.get('outputDir') or self.settings.get('downloadDir') or self.root/'Downloads').resolve()
+            job={'id':id,'kind':'download','previewOnly':preview,'sources':[],'download':item,'downloadCache':str(cache),'downloadCacheKey':cache_key,
                 'name':item['title'],'category':'audio' if item['audioOnly'] else 'video','format':item['audioFormat'] if item['audioOnly'] else item.get('convertTo') or 'video',
                 'outputDir':str(out),'options':self.settings.get('defaults',{}),'status':'queued','progress':0,'created':time.time(),'outputs':[],'error':None}
             self.jobs[id]=job;self.save(job);self.event(job);created.append(dict(job))
@@ -250,6 +250,22 @@ class Service:
             if method=='tools':
                 from tool_catalog import catalog
                 return catalog(self.engines)
+            if method=='open_source':
+                from downloads import validate_url
+                url=validate_url(args['url'])
+                os.startfile(url);return True
+            if method=='download_preview':
+                from downloads import ANALYSES
+                record=ANALYSES.get(args['analysisId'])
+                if not record:raise ValueError('解析資料已過期，請重新解析')
+                entry=record['entries'].get(str(args['key']))
+                if not entry or not entry.get('duration'):raise ValueError('需先解析有限長度的影片')
+                formats=[f for f in entry['formats'] if f.get('vcodec') not in {None,'none'}]
+                formats.sort(key=lambda f:(f.get('acodec') in {None,'none'},abs((f.get('height') or 360)-360)))
+                if not formats:raise ValueError('沒有可用的預覽格式')
+                jobs=self.create_download({'analysisId':args['analysisId'],'items':[{'key':args['key'],'formatId':formats[0]['format_id'],'convertTo':'mp4'}]},preview=True)
+                job=self.jobs[jobs[0]['id']];job['options']={'hardware':'cpu','videoCodec':'h264','videoHeight':360,'qualityPreset':'fast'}
+                return dict(job)
             if method=='enqueue_download':return self.create_download(args)
             if method=='enqueue_tool':return self.create_tool(args)
             if method=='preview_status':return dict(self.jobs[args['id']])
@@ -259,6 +275,8 @@ class Service:
                 if job['status'] in {'queued','running','cancelling'}:raise ValueError('請先取消並等候預覽任務結束')
                 from fsutils import remove_tree
                 if Path(job['outputDir']).exists():remove_tree(job['outputDir'],self.root/'previews')
+                
+                if job.get('downloadCache') and Path(job['downloadCache']).exists():remove_tree(job['downloadCache'],self.root/'download-cache')
                 self.jobs.pop(job['id'],None);self.secrets.pop(job['id'],None);return True
             if method=='registry':return registry(self.engines)
             if method=='hardware':

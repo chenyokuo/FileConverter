@@ -152,6 +152,46 @@ export function DownloadPage({
       setBusy(false);
     }
   };
+  const downloadSettings = (<div className="download-settings glass" data-material="settings">
+            <label className="tool-checkbox">
+              <span>僅下載音訊</span>
+              <input
+                type="checkbox"
+                checked={audioOnly}
+                onChange={(e) => setAudioOnly(e.target.checked)}
+              />
+            </label>
+            {audioOnly ? (
+              <label className="field">
+                <span>音訊後處理</span>
+                <select
+                  value={audioFormat}
+                  onChange={(e) => setAudioFormat(e.target.value)}
+                >
+                  {["mp3", "m4a", "flac", "wav"].map((f) => (
+                    <option value={f} key={f}>
+                      {f.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              <label className="field">
+                <span>下載後自動轉檔</span>
+                <select
+                  value={convertTo}
+                  onChange={(e) => setConvertTo(e.target.value)}
+                >
+                  <option value="">保留下載格式</option>
+                  {["mp4", "mkv", "webm"].map((f) => (
+                    <option value={f} key={f}>
+                      {f.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>);
   return (
     <div className="download-page" ref={root}>
       <form
@@ -250,6 +290,7 @@ export function DownloadPage({
                 {(selected.has(entry.key) || analysis.entries.length === 1) && (
                   <DownloadRange
                     key={`${analysis.analysisId}-${entry.key}-${entry.previewUrl || ""}`}
+                    analysisId={analysis.analysisId} entryKey={entry.key} sourceUrl={entry.url}
                     duration={entry.duration}
                     previewUrl={entry.previewUrl}
                     loading={busy || resolving === entry.key}
@@ -260,6 +301,7 @@ export function DownloadPage({
                   />
                 )}
                 <div className="download-entry-options">
+                  {entry.key===analysis.entries[0].key && downloadSettings}
                   {!entry.resolved ? (
                     <Button
                       compact
@@ -353,46 +395,6 @@ export function DownloadPage({
               </Button>
             </div>
           )}
-          <div className="download-settings glass" data-material="settings">
-            <label className="tool-checkbox">
-              <span>僅下載音訊</span>
-              <input
-                type="checkbox"
-                checked={audioOnly}
-                onChange={(e) => setAudioOnly(e.target.checked)}
-              />
-            </label>
-            {audioOnly ? (
-              <label className="field">
-                <span>音訊後處理</span>
-                <select
-                  value={audioFormat}
-                  onChange={(e) => setAudioFormat(e.target.value)}
-                >
-                  {["mp3", "m4a", "flac", "wav"].map((f) => (
-                    <option value={f} key={f}>
-                      {f.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ) : (
-              <label className="field">
-                <span>下載後自動轉檔</span>
-                <select
-                  value={convertTo}
-                  onChange={(e) => setConvertTo(e.target.value)}
-                >
-                  <option value="">保留下載格式</option>
-                  {["mp4", "mkv", "webm"].map((f) => (
-                    <option value={f} key={f}>
-                      {f.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-          </div>
           <div className="conversion-toolbar glass" data-material="toolbar">
             <div className="output-path">
               <span>下載資料夾</span>

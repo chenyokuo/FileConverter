@@ -55,7 +55,7 @@ export function useUndo<T>(initial: T) {
   };
 }
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-async function release(job: Job) {
+export async function release(job: Job) {
   try {
     let current = job;
     if (["queued", "running", "cancelling"].includes(current.status))
