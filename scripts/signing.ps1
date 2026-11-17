@@ -35,7 +35,7 @@ function Enable-UpdateSigning {
     if ($env:TAURI_SIGNING_PRIVATE_KEY) { return }
     $protected = Join-Path $SigningRoot 'updater-private.dpapi'
     if (!(Test-Path -LiteralPath $protected)) { throw 'No signing key. Restore the matching key or run scripts/setup.ps1 -InitializeSigningKey for the first release.' }
-    $secure = Get-Content -LiteralPath $protected -Raw | ConvertTo-SecureString
+    $secure = ConvertTo-SecureString -String ((Get-Content -LiteralPath $protected -Raw).Trim())
     $env:TAURI_SIGNING_PRIVATE_KEY = [Net.NetworkCredential]::new('', $secure).Password
     $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = ''
 }
