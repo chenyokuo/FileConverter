@@ -18,7 +18,7 @@ powershell -ExecutionPolicy Bypass -File scripts/setup-dependencies.ps1 -Downloa
 
 加 `-Offline` 只允許既有 runtime/wheels/npm/Cargo 快取，缺項就報錯。每個解壓目錄的 `.fc-runtime-integrity.json` 記錄 archive 與重要 EXE 的雜湊；不進入發行包。`scripts/verify_dependencies.py` 驗證所有釘選來源快取、重要引擎、40 個 Python 版本、核心 API 和 AI 模組未安裝。
 
-重要：PyMuPDF 2.1 的 PyPI dependency metadata 會引入本輪不使用的 layout/LLM/ONNX 元件。不要改用普通 `pip install -r` 自動擴張依賴樹；受支援的 setup 使用明確白名單，不安裝這些模組。預覽／PDF/OCR 採經實測的 classic API；PyInstaller 另有排除條件，發行包也驗證不含 AI 模組。首次準備時辨識到的不需要 wheel 已從本專案快取移除，未安裝到新環境或納入封裝。
+重要：PyMuPDF 2.1 的 PyPI dependency metadata 會引入本輪不使用的 layout/LLM/ONNX 元件。不要改用普通 `pip install -r` 自動擴張依賴樹；受支援的 setup 使用明確白名單，不安裝額外 AI 套件。官方 PyMuPDF wheel 本身亦帶有可選的 layout/LLM 目錄，因此 setup 在明確標記為自己新建的 venv 中移除這些未使用目錄，再驗證無 AI 模組／ONNX 模型；不修改現有使用者 venv 或官方快取 wheel。預覽／PDF/OCR 採經實測的 classic API；PyInstaller 另有排除條件，發行包也驗證不含 AI 模組。首次準備時辨識到的不需要 wheel 已從本專案快取移除，未安裝到新環境或納入封裝。
 
 建置：`scripts/build.ps1`。P1–P4 不執行它；P5 已完成相同回歸才可用 `-SkipTests` 避免重測。完整打包前執行 `scripts/verify_dependencies.py`；打包後執行 `scripts/verify_release.py`、真實 EXE/Installer 驗證。來源還原、SDK／新目錄驗證與正式產物結果另記於 `MULTIMEDIA_P5.md`；乾淨目錄並不等於乾淨 Windows VM。
 

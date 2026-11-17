@@ -1,3 +1,4 @@
+import {version as appVersion} from "../../package.json";
 import { AppIcon } from "./AppIcon";
 import { ContextIntegration } from "./ContextIntegration";
 import { useState } from "react";
@@ -666,7 +667,7 @@ export function SettingsPage({
 
                 <h2>File Converter</h2>
 
-                <span className="badge">v1.0.0-rc.1 · Windows x64</span>
+                <span className="badge">v{appVersion} · Windows x64</span>
                 <hr />
                 <div className="about-stack">
                   <p>React · Tauri · Rust · Python</p>

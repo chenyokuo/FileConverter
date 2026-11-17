@@ -21,7 +21,7 @@ for line in (ROOT/'engine/requirements-lock.txt').read_text().splitlines():
  if actual!=expected:raise RuntimeError('Unexpected Python version: '+name+' '+actual)
  report['python'][name]=actual
 # Existing development venvs may predate this expansion; new setup never installs these.
-report['aiModulesAbsent']=all(importlib.util.find_spec(name) is None for name in ['pymupdf_layout','pymupdf4llm','onnxruntime'])
+report['aiModulesAbsent']=all(importlib.util.find_spec(name) is None for name in ['pymupdf_layout','pymupdf.layout','pymupdf4llm','onnxruntime'])
 if not report['aiModulesAbsent']:raise RuntimeError('Unwanted AI modules in prepared environment; restore into a new venv with --no-deps and the approved hash lock')
 engines=locate(ROOT/'vendor');assert all(engines.values()),str(engines)
 from PIL import Image

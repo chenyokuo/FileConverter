@@ -40,7 +40,7 @@ for package in (ROOT/'node_modules').glob('**/package.json'):
         if file.is_file() and any(file.name.upper().startswith(x) for x in ['LICENSE','COPYING','NOTICE','OFL']):
             target=DEST/'npm'/package.parent.relative_to(ROOT/'node_modules')/file.name
             target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(file,target)
-cargo=ROOT/'.tools/cargo/registry/src'
+cargo=Path(os.environ.get('CARGO_HOME',ROOT/'.tools/cargo'))/'registry/src'
 if not cargo.exists():cargo=Path.home()/'.cargo/registry/src'
 for package in cargo.glob('*/*'):
     if not package.is_dir():continue

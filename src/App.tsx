@@ -1,3 +1,4 @@
+import {version as appVersion} from "../package.json";
 import { ImageEditor } from "./components/ImageEditor";
 import { VideoEditor } from "./components/VideoEditor";
 import { DownloadPage } from "./components/DownloadPage";
@@ -881,7 +882,7 @@ export default function App() {
               ))}
             </nav>
             <div className="sidebar-bottom">
-              <span>v1.0.0-rc.1</span>
+              <span>v{appVersion}</span>
               <Button
                 compact
                 aria-label="開啟個人化設定"

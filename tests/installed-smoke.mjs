@@ -11,6 +11,6 @@ try{
  expect((await rpc('snapshot')).jobs.filter(j=>ids.includes(j.id)).map(j=>j.status)).toEqual(['completed','completed','completed']);
  report.jobs=(await rpc('snapshot')).jobs.filter(j=>ids.includes(j.id));
  if(process.env.FILE_CONVERTER_CONTEXT_UNINSTALL_TEST!=='0'){await rpc('context_menu',{enabled:true});expect((await rpc('context_menu')).enabled).toBe(true);report.contextMenuEnabledForUninstallTest=true;}
- await page.getByRole('button',{name:'設定',exact:true}).click();await page.getByRole('button',{name:'關於 File Converter',exact:true}).click();await expect(page.locator('.about-card')).toContainText('v1.0.0-rc.1');await page.screenshot({path:'test-results/installed-about.png'});
+ await page.getByRole('button',{name:'設定',exact:true}).click();await page.getByRole('button',{name:'關於 File Converter',exact:true}).click();await expect(page.locator('.about-card')).toContainText('v'+JSON.parse(await fs.readFile('package.json','utf8')).version);await page.screenshot({path:'test-results/installed-about.png'});
  await fs.writeFile(process.env.FILE_CONVERTER_SMOKE_REPORT||'test-results/installed-smoke.json',JSON.stringify(report,null,2));console.log('PASS app-local runtimes, image, Office PDF and Chinese OCR',report.contextMenuEnabledForUninstallTest?'with shell registration':'');
 }finally{await rpc('clear',{ids});await rpc('settings',{settings:snapshot.settings});await invoke('shutdown_app');await b.close().catch(()=>{});}
