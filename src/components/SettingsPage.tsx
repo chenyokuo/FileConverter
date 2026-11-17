@@ -1,6 +1,8 @@
 import {version as appVersion} from "../../package.json";
 import { AppIcon } from "./AppIcon";
 import { ContextIntegration } from "./ContextIntegration";
+import { UpdateSettings } from "./UpdateSettings";
+import type { UpdateController } from "../updates";
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { motion, AnimatePresence } from "motion/react";
@@ -34,6 +36,7 @@ const sections = [
   ["performance", "效能", Cpu],
   ["files", "檔案管理", FolderOpen],
   ["advanced", "進階", ShieldCheck],
+  ["updates", "軟體更新", RefreshCw],
   ["about", "關於 File Converter", Info],
 ] as const;
 export function SettingsPage({
@@ -43,6 +46,7 @@ export function SettingsPage({
   refresh,
   notify,
   dataDir,
+  updates,
 }: {
   settings: Settings;
   setSettings: (v: Settings) => void;
@@ -50,6 +54,7 @@ export function SettingsPage({
   refresh: () => void;
   notify: (s: string, error?: boolean) => void;
   dataDir: string;
+  updates: UpdateController;
 }) {
   const [section, setSection] = useState("appearance");
   const [material, setMaterial] = useState<MaterialName>("card");
@@ -658,6 +663,7 @@ export function SettingsPage({
                 </section>
               </>
             )}
+            {section === "updates" && <UpdateSettings settings={settings} setSettings={setSettings} controller={updates} />}
             {section === "about" && (
               <section
                 className="about-card settings-card glass"

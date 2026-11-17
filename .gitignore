@@ -2,6 +2,9 @@ node_modules/
 dist/
 target/
 .tools/
+*.dpapi
+*.key
+*.key.pub
 .venv/
 __pycache__/
 *.py[cod]

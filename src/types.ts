@@ -49,6 +49,7 @@ export interface Appearance {
   materials: Record<MaterialName, Material>;
 }
 export interface Settings {
+  updater: { checkOnStartup: boolean; autoDownload: boolean; autoInstall: boolean; channel: "stable" | "rc" };
   appearanceVersion: number;
   appearance: Appearance;
   presets: { name: string; appearance: Appearance }[];

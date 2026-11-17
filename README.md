@@ -18,14 +18,14 @@
   <a href="docs/DEPENDENCIES.md">開發與依賴</a>
 </p>
 
-> **目前版本：1.1.0-rc.2（測試候選版）**  
-> 目前已整合至 `main` 分支；此版本尚未建立正式 GitHub Release。
+> **目前版本：1.1.0-rc.3（Prerelease）**
+> [下載安裝版與 Portable](https://github.com/chenyokuo/FileConverter/releases/tag/v1.1.0-rc.3) · [更新與發布說明](docs/UPDATES.md)
 
 ## 為什麼做 File Converter？
 
 轉換 PDF 要開一個網站、剪影片又得換一個軟體，偶爾還遇到檔案大小限制。File Converter 把常用的檔案轉換與多媒體工具集中到同一個 Windows 桌面程式，讓你直接處理自己的檔案，不必先上傳到線上轉檔服務。
 
-一般轉檔、剪輯與圖片處理在本機執行；**只有網址解析與影音下載需要連線**。安裝版與 Portable 版均內含必要的轉檔引擎，使用者不用另外安裝 Python、FFmpeg 或 LibreOffice。
+一般轉檔、剪輯與圖片處理在本機執行；**網址解析、影音下載及選用的更新檢查／下載需要連線**。安裝版與 Portable 版均內含必要的轉檔引擎，使用者不用另外安裝 Python、FFmpeg 或 LibreOffice。
 
 ## 核心功能
 
@@ -76,12 +76,12 @@
 
 ## 安裝與使用
 
-目前是私人測試候選版，**尚未提供公開下載頁**。已建置的檔案位於開發機的 `release/` 資料夾；大型 Runtime 與安裝包不會提交進 Git 原始碼儲存庫。
+請至 [GitHub Releases](https://github.com/chenyokuo/FileConverter/releases) 下載 Installer 或 Portable ZIP，並用同版 `SHA256SUMS.txt` 核對檔案。RC 版標為 Prerelease，不會被 GitHub 的「Latest」正式版入口包含。大型 Runtime 與安裝包存放在 Release 附件，不提交進 Git 原始碼。
 
 | 版本 | 使用方式 |
 | --- | --- |
-| **Installer** | 執行 `File Converter_1.1.0-rc.2_x64-setup.exe`，依畫面完成安裝 |
-| **Portable** | 將 `FileConverter-1.1.0-rc.2-windows-x64-portable.zip` 完整解壓，開啟其中的 `FileConverter.exe` |
+| **Installer** | 執行 `File Converter_1.1.0-rc.3_x64-setup.exe`，依畫面完成安裝 |
+| **Portable** | 將 `FileConverter-1.1.0-rc.3-windows-x64-portable.zip` 完整解壓，開啟其中的 `FileConverter.exe` |
 
 **Portable 必須保留整個解壓資料夾**，不能只複製 `FileConverter.exe`；它需要同目錄的引擎、Sidecar、WebView2 與其他資源。
 
@@ -100,6 +100,14 @@ File Converter 支援深色／淺色／跟隨系統主題，也能匯入自己�
 
 Windows 右鍵入口可於設定中選擇啟用，Windows 11 可能需透過「顯示其他選項」開啟傳統選單。
 
+## 軟體更新
+
+在「設定 → 軟體更新」按下「檢查更新」，可查看最新版本與更新說明，並選擇「啟動時檢查」、「自動下載」及 Installer 的「自動安裝」。這些自動選項預設關閉，保持離線使用方式。
+
+正式通道只取得正式版；候選通道同時接受較新的 RC 與正式版。下載顯示實際位元組進度，完成後經 Tauri 簽章及簽署版本驗證。Installer 交由 NSIS 更新並重啟；有轉檔、下載、預覽或匯出任務時會等待，啟用中的監看資料夾須先暫停。請在允許自動安裝前儲存編輯專案。
+
+Portable 可檢查及下載經簽章驗證的新版 ZIP，請完整解壓到新資料夾。兩種版本均沿用 `%APPDATA%\studio.rai.converter` 保存設定及歷史。**rc.2 及更早版本首次需要手動安裝 rc.3**，才能使用之後的內建更新；不會替舊 EXE 憑空加入 Updater。
+
 ## 開發與建置
 
 技術架構：**Tauri 2 + React + TypeScript + Rust + Python Sidecar**。前端負責互動介面，Rust 管理權限與桌面生命週期，Python 串接本機轉檔引擎。
@@ -108,19 +116,21 @@ Windows 右鍵入口可於設定中選擇啟用，Windows 11 可能需透過「�
 
 ```powershell
 # 取得原始碼後，在專案根目錄執行
-powershell -ExecutionPolicy Bypass -File scripts/setup-dependencies.ps1
+powershell -ExecutionPolicy Bypass -File scripts/setup.ps1
 
 # 啟動桌面開發模式
 npm run desktop
 ```
 
-建立發行候選：
+由具備發布權限及原始簽章私鑰的維護者，從乾淨且已推送的 `main` 建立發行候選：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/build.ps1
+powershell -ExecutionPolicy Bypass -File scripts/publish-release.ps1 -Version 1.1.0-rc.3
 ```
 
 依賴準備腳本會依鎖定清單取得、校驗並部署所需 Runtime。建置流程產生 Installer／Portable；**原始碼不包含 22,000 多個大型 Runtime 檔案**，因此不能只 Clone 後直接啟動未準備的執行檔。
+
+發布腳本沿用 `build.ps1`，產生簽章、`latest.json` 與 SHA-256，建立版本 Tag，先上傳草稿附件，再公開為 Prerelease／正式版。更新不需額外伺服器或應用程式內的 GitHub Token。金鑰備份、接續中斷上傳及測試方式見 [更新系統文件](docs/UPDATES.md)。
 
 更多技術資料：
 
@@ -134,7 +144,7 @@ powershell -ExecutionPolicy Bypass -File scripts/build.ps1
 
 `1.1.0-rc.2` 已完成同機 Installer／Portable 測試，包括 **305/305 格式方向**、**23/23 原生 GUI 測試**，以及影片畫面與聲音、圖片尺寸與透明度等實際內容驗證。完整證據與測試邊界請查閱 [驗收報告](docs/REPAIRS_RC2.md)。
 
-目前仍是**未簽署的測試候選版**：乾淨 Windows、Windows 10、實體多螢幕 DPI 與部分 NVIDIA／Intel 硬體尚待驗證；來源網站可能限制影音預覽或下載。
+rc.3 只修改更新與發布流程，相關驗收另見 [更新系統文件](docs/UPDATES.md)，沒有為文件或更新功能重跑 305 格式矩陣。**Tauri 更新簽章不等於 Windows Authenticode 簽章**；目前沒有 Authenticode 憑證。乾淨 Windows、Windows 10、實體多螢幕 DPI 與部分 NVIDIA／Intel 硬體尚待驗證；來源網站可能限制影音預覽或下載。
 
 ## 授權
 

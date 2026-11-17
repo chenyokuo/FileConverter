@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {manifest,validateVersion,versions} from '../scripts/release.mjs';
+import {defaults,mergeSettings} from '../src/defaults.ts';
+const v='1.1.0-rc.3';assert.equal(validateVersion(v),v);
+for(const invalid of ['../escape','1.1','v1.1.0','1.1.0; echo secret','1.1.0/evil'])assert.throws(()=>validateVersion(invalid));
+assert.equal(new Set(versions()).size,1);assert.equal(versions()[0],v);
+const result=manifest({version:v,installer:'File Converter_setup.exe',portable:'Portable.zip',installerSignature:'REAL-INSTALLER-SIGNATURE',portableSignature:'REAL-PORTABLE-SIGNATURE',notes:'繁中更新說明',date:'2026-11-17T00:00:00Z'});
+assert.equal(result.platforms['windows-x86_64'].signature,'REAL-INSTALLER-SIGNATURE');
+assert.equal(result.platforms['windows-x86_64-portable'].signature,'REAL-PORTABLE-SIGNATURE');
+assert.equal(result.platforms['windows-x86_64'].url,'https://github.com/chenyokuo/FileConverter/releases/download/v1.1.0-rc.3/File%20Converter_setup.exe');
+assert.throws(()=>manifest({version:v}));
+const old=mergeSettings({outputDir:'中文 & files',appearance:defaults.appearance});
+assert.deepEqual(old.updater,defaults.updater);assert.equal(old.outputDir,'中文 & files');
+assert.equal(mergeSettings({...old,updater:{...old.updater,autoDownload:true}}).updater.autoDownload,true);
+assert.equal(old.updater.checkOnStartup,false);
+console.log('PASS updater manifest targets, URL encoding, version consistency, missing signatures and legacy settings migration. Cryptographic/native verification runs separately.');

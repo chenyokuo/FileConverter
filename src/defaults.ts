@@ -58,6 +58,7 @@ export const defaultAppearance: Appearance = {
   },
 };
 export const defaults: Settings = {
+  updater: { checkOnStartup: false, autoDownload: false, autoInstall: false, channel: "rc" },
   appearanceVersion: 2,
   appearance: defaultAppearance,
   presets: [],
@@ -92,6 +93,7 @@ export function mergeSettings(raw: Partial<Settings>): Settings {
     ...defaults,
     ...raw,
     appearanceVersion: 2,
+    updater: { ...defaults.updater, ...raw.updater },
     defaults: { ...defaultOptions, ...raw.defaults },
     appearance: {
       ...defaultAppearance,

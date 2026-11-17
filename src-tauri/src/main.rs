@@ -2,12 +2,14 @@
 
 #[cfg(windows)]
 mod engine_job;
+mod updates;
 
 use serde_json::{json, Value};
 use std::{collections::HashMap, io::{BufRead, BufReader, Write}, process::{Child, ChildStdin, Command, Stdio}, sync::{atomic::{AtomicU64, Ordering}, mpsc, Arc, Mutex}, time::Duration};
 use tauri::{Emitter, Manager};
 
 struct Bridge {
+    activity: Arc<Mutex<updates::Activity>>,
     #[cfg(windows)]
     engine_job: engine_job::EngineJob,
     child: Mutex<Child>,
@@ -46,10 +48,22 @@ fn take_open_requests(requests: tauri::State<'_, OpenRequests>) -> Vec<Value> {
 }
 
 #[tauri::command]
-async fn engine_call(bridge: tauri::State<'_, Arc<Bridge>>, method: String, mut args: Value) -> Result<Value,String> {
+async fn engine_call(bridge: tauri::State<'_, Arc<Bridge>>, method: String, args: Value) -> Result<Value,String> {
     const ALLOWED: &[&str] = &["editor","snapshot","inspect","enqueue","settings","background","engines","cancel","retry","clear","open_output","registry","plan","hardware","tools","enqueue_tool","preview","preview_status","clear_preview","analyze_url","resolve_download","enqueue_download","download_preview","open_source","automation","save_automation","delete_automation","watch_action","plan_workflow","enqueue_workflow","context_menu"];
     if !ALLOWED.contains(&method.as_str()) { return Err("Command is not allowed".into()); }
     let bridge = Arc::clone(bridge.inner());
+    let working=updates::work_method(&method);
+    {
+        let mut activity=bridge.activity.lock().map_err(|e|e.to_string())?;
+        if working && activity.installing {return Err("正在安裝更新，請稍候再新增工作".into())}
+        if working {activity.calls+=1;}
+    }
+    let result=bridge_request(Arc::clone(&bridge),method,args).await;
+    if working {bridge.activity.lock().unwrap().calls-=1;}
+    result
+}
+
+async fn bridge_request(bridge: Arc<Bridge>,method: String,mut args: Value)->Result<Value,String>{
     tauri::async_runtime::spawn_blocking(move || {
         if method == "inspect" {
             let mut hints = serde_json::Map::new();
@@ -80,8 +94,22 @@ async fn engine_call(bridge: tauri::State<'_, Arc<Bridge>>, method: String, mut 
             rx.recv_timeout(Duration::from_secs(120)).map_err(|_| "Engine did not respond".to_string())?
         })();
         if let Ok(mut pending)=bridge.pending.lock() { pending.remove(&id); }
+        if let Ok(value)=&result {
+            let mut activity=bridge.activity.lock().unwrap();
+            let mut record=|job:&Value| {if let (Some(id),Some(status))=(job["id"].as_str(),job["status"].as_str()){activity.jobs.entry(id.into()).or_insert_with(||status.into());}};
+            if let Some(jobs)=value["jobs"].as_array(){for job in jobs {record(job)}}
+            if let Some(jobs)=value.as_array(){for job in jobs {record(job)}}
+            record(value);
+        }
         result
     }).await.map_err(|e|e.to_string())?
+}
+
+fn stop_engine(app:&tauri::AppHandle){
+    if let Some(bridge)=app.try_state::<Arc<Bridge>>() {
+        #[cfg(windows)] bridge.engine_job.terminate();
+        if let Ok(mut child)=bridge.child.lock(){let _=child.kill();let _=child.wait();}
+    }
 }
 
 #[tauri::command]
@@ -130,11 +158,18 @@ fn start_engine(app: &tauri::App) -> Result<Arc<Bridge>, Box<dyn std::error::Err
     let stderr = child.stderr.take().ok_or("No stderr")?;
     std::thread::spawn(move || { for line in BufReader::new(stderr).lines().map_while(Result::ok) { eprintln!("engine: {line}"); } });
     let pending: Arc<Mutex<HashMap<u64,mpsc::Sender<Result<Value,String>>>>> = Arc::default();
+    let activity=Arc::new(Mutex::new(updates::Activity::default()));
+    let observed=Arc::clone(&activity);
     let waiting = Arc::clone(&pending); let handle = app.handle().clone();
     std::thread::spawn(move || {
         for line in BufReader::new(output).lines().map_while(Result::ok) {
             if let Ok(value)=serde_json::from_str::<Value>(&line) {
-                if value["event"]=="job" { let _=handle.emit("engine-job", &value["data"]); }
+                if value["event"]=="job" {
+                    if let (Some(id),Some(status))=(value["data"]["id"].as_str(),value["data"]["status"].as_str()) {
+                        observed.lock().unwrap().jobs.insert(id.into(),status.into());
+                    }
+                    let _=handle.emit("engine-job", &value["data"]);
+                }
                 else if let Some(id)=value["id"].as_u64() {
                     if let Ok(mut map)=waiting.lock() { if let Some(tx)=map.remove(&id) {
                         let answer=if let Some(error)=value["error"].as_str() { Err(error.to_string()) } else { Ok(value["result"].clone()) };
@@ -146,30 +181,31 @@ fn start_engine(app: &tauri::App) -> Result<Arc<Bridge>, Box<dyn std::error::Err
         if let Ok(mut map)=waiting.lock() { for (_,tx) in map.drain() { let _=tx.send(Err("Conversion engine stopped".into())); } }
         let _=handle.emit("engine-stopped", "本機轉檔引擎已停止，請重新啟動程式。");
     });
-    Ok(Arc::new(Bridge {#[cfg(windows)] engine_job,child:Mutex::new(child),input:Mutex::new(input),pending,serial:AtomicU64::new(1)}))
+    Ok(Arc::new(Bridge {activity,#[cfg(windows)] engine_job,child:Mutex::new(child),input:Mutex::new(input),pending,serial:AtomicU64::new(1)}))
 }
 
 fn main() {
+    if let Some(result)=updates::verify_release_cli(){std::process::exit(if result.is_ok(){0}else{2});}
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app,args,cwd| {
             queue_open(app,args,&cwd);
             if let Some(window)=app.get_webview_window("main") { let _=window.unminimize(); let _=window.show(); let _=window.set_focus(); }
         }))
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
+        .manage(updates::Updates::default())
         .manage(OpenRequests::default())
         .setup(|app| {
             app.manage(start_engine(app)?);
             queue_open(app.handle(),std::env::args().collect(),&std::env::current_dir()?.to_string_lossy());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![engine_call,native_material,shutdown_app,take_open_requests])
+        .invoke_handler(tauri::generate_handler![engine_call,native_material,shutdown_app,take_open_requests,updates::update_status,updates::update_check,updates::update_download,updates::update_install,updates::update_open_download])
         .build(tauri::generate_context!()).expect("Could not start File Converter")
         .run(|app,event| {
             if let tauri::RunEvent::Exit = event {
-                if let Some(bridge)=app.try_state::<Arc<Bridge>>() {
-                    #[cfg(windows)] bridge.engine_job.terminate();
-                    if let Ok(mut child)=bridge.child.lock() { let _=child.kill(); let _=child.wait(); }
-                }
+                stop_engine(app);
             }
         });
 }

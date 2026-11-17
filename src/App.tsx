@@ -1,4 +1,5 @@
 import {version as appVersion} from "../package.json";
+import { useUpdates } from "./updates";
 import { ImageEditor } from "./components/ImageEditor";
 import { VideoEditor } from "./components/VideoEditor";
 import { DownloadPage } from "./components/DownloadPage";
@@ -187,6 +188,7 @@ export default function App() {
   const [clock, setClock] = useState(Date.now());
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
+  const updates = useUpdates(settings, ready);
   const saveRevision = useRef(0);
   const lastSaved = useRef("");
   const pageScroll = useRef<HTMLDivElement>(null);
@@ -1302,6 +1304,7 @@ export default function App() {
                   )}
                   {page === "settings" && (
                     <SettingsPage
+                      updates={updates}
                       settings={settings}
                       setSettings={setSettings}
                       engines={engines}

@@ -1,4 +1,4 @@
-param([switch]$SkipTests, [switch]$NoInstaller)
+param([switch]$SkipTests, [switch]$NoInstaller, [string]$PythonExe='')
 $ErrorActionPreference = 'Stop'
 $env:PYTHONUTF8 = '1'
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -14,7 +14,8 @@ function Invoke-Npm {
     elseif(Test-Path '.tools/npm/package/bin/npm-cli.js'){node .tools/npm/package/bin/npm-cli.js @NpmArgs}
     else{npm @NpmArgs}
 }
-$PythonExe = Join-Path $ProjectRoot '.venv\Scripts\python.exe'
+if (!$PythonExe) { $PythonExe = Join-Path $ProjectRoot '.venv\Scripts\python.exe' }
+$PythonExe = [IO.Path]::GetFullPath($PythonExe)
 if (!(Test-Path $PythonExe)) { throw 'Run python -m venv .venv and install engine/requirements-lock.txt first.' }
 function Invoke-Checked {
     param([scriptblock]$Action)
