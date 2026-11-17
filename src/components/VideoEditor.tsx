@@ -227,7 +227,7 @@ export function VideoEditor({
     const amount = Math.min(0.5, clipLength(c) / 2, clipLength(before) / 2);
     update({ at: before.at + clipLength(before) - amount, transition: amount });
   };
-  const addToMusic = async () => { const files=await pickFiles(); const list=await loadAssets(files); const snap=history.read(); history.change({...snap,clips:[...snap.clips,...list.map(a=>newClip(a,"A2",current))]}); };
+  const addToMusic = async () => { const files=await pickFiles(); const list=(await loadAssets(files)).filter(a=>a.hasAudio || a.kind==="audio"); if(!list.length){setError("請選擇包含音訊的素材");return;} const snap=history.read(); history.change({...snap,clips:[...snap.clips,...list.map(a=>newClip(a,"A2",current))]}); };
   const saveProject = async (as = false) => {
     try {
       const result = await projectDialog(
@@ -345,7 +345,7 @@ export function VideoEditor({
         }
       }}
     >
-      {menu && <div className="clip-context glass" role="menu" style={{left:Math.min(menu.x,innerWidth-240),top:Math.min(menu.y,innerHeight-180)}}><Button onClick={()=>{split();setMenu(null)}}>分割</Button><Button onClick={()=>{if(c)update({mute:!c.mute});setMenu(null)}}>靜音／取消靜音</Button><Button onClick={()=>{if(c)history.change({...p,clips:p.clips.filter(x=>!related(c,x))});setMenu(null)}}>刪除片段</Button><Button onClick={()=>setMenu(null)}>關閉選單</Button></div>}
+      {menu && <div className="clip-context glass" role="menu" style={{left:Math.min(menu.x,innerWidth-240),top:Math.min(menu.y,innerHeight-180)}}><Button onClick={()=>{split();setMenu(null)}}>分割</Button><Button onClick={()=>{if(c)update({mute:!(c.videoOnly && audioClip ? audioClip.mute : c.mute)});setMenu(null)}}>靜音／取消靜音</Button><Button onClick={()=>{if(c)history.change({...p,clips:p.clips.filter(x=>!related(c,x))});setMenu(null)}}>刪除片段</Button><Button onClick={()=>setMenu(null)}>關閉選單</Button></div>}
       <div className="editor-filebar row">
         <Button
           onClick={() => {
