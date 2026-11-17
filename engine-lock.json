@@ -95,10 +95,10 @@
     "resourcePath": "webview-runtime/"
   },
   "7zip-bootstrap": {
-    "version": "25.01 binary SHA pinned",
+    "version": "26.04",
     "url": "https://www.7-zip.org/a/7zr.exe",
     "sha256": "256feca8e274e5da655e2a284fabafd9f554365eb164862089dacd4e8276d282",
-    "license": "LGPL-2.1-or-later with unRAR restriction",
+    "license": "Public domain (7zr reduced standalone; upstream executable banner)",
     "arch": "x86 bootstrap on x64",
     "destination": ".tools/engine-downloads/7zr.exe",
     "resourcePath": null
