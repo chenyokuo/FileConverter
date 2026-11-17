@@ -23,8 +23,19 @@ function Invoke-Checked {
 }
 if (!(Test-Path 'vendor\ffmpeg\ffprobe.exe')) { Invoke-Checked { & $PythonExe scripts\prepare.py } }
 Invoke-Checked { & $PythonExe scripts\acquire_engines.py }
+Invoke-Checked { & $PythonExe scripts\verify_dependencies.py }
 Invoke-Checked { & $PythonExe scripts\stage_runtime.py }
 Invoke-Checked { & $PythonExe scripts\freeze.py }
+# A new frozen runtime is a new integration boundary, even when source regressions already passed.
+$env:FILE_CONVERTER_TEST_FROZEN=Join-Path $ProjectRoot 'src-tauri/binaries/FileConverterEngine/FileConverterEngine.exe'
+$env:FILE_CONVERTER_TEST_ENGINES=Join-Path $ProjectRoot 'src-tauri/bundled-engines'
+try {
+    Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_image_editor.py' -v }
+    Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_video_editor.py' -v }
+    Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_p2.py' -k ocr -v }
+    Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_p4.py' -k pdf_ocr -v }
+} finally { Remove-Item Env:FILE_CONVERTER_TEST_FROZEN,Env:FILE_CONVERTER_TEST_ENGINES -ErrorAction SilentlyContinue }
+
 Invoke-Checked { node tests\appearance-settings.mjs }
 if (!$SkipTests) {
     Invoke-Checked { & $PythonExe -X utf8 -m unittest discover -s tests -p 'test_*.py' -v }
