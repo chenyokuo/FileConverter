@@ -99,11 +99,27 @@ try {
         Checked {& $gh @create}
     }
     $assets=@($installer,($installer+'.sig'),$portable,($portable+'.sig'),'latest.json','SHA256SUMS.json','SHA256SUMS.txt','BUILD-INFO.json')|ForEach-Object{Join-Path $directory $_}
-    # A draft is resumable after an interrupted upload. Published assets are never clobbered.
-    Checked {& $gh release upload $tag @assets --repo chenyokuo/FileConverter --clobber}
-    $remote=(& $gh api "repos/chenyokuo/FileConverter/releases/tags/$tag"|ConvertFrom-Json)
-    if(!$remote.draft){throw 'Release must remain draft until all assets verify'}
+    function Get-DraftRecord {
+        # Get-by-tag can return 404 for drafts. gh resolves the authenticated
+        # draft and provides its actual API URL by numeric release ID.
+        $apiUrl=& $gh release view $tag --repo chenyokuo/FileConverter --json apiUrl --jq .apiUrl
+        if($LASTEXITCODE -or !$apiUrl.StartsWith('https://api.github.com/repos/chenyokuo/FileConverter/releases/')){throw 'Cannot resolve draft API URL'}
+        $raw=& $gh api $apiUrl
+        if($LASTEXITCODE){throw 'Cannot read draft release record'}
+        return ($raw|ConvertFrom-Json)
+    }
     $sums=Get-Content -LiteralPath (Join-Path $directory 'SHA256SUMS.json') -Raw|ConvertFrom-Json
+    $beforeUpload=Get-DraftRecord
+    $pending=@(foreach($file in $assets){
+        $name=[IO.Path]::GetFileName($file);$hash=$sums.$name
+        if(!$hash){$hash=(Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()}
+        $same=@($beforeUpload.assets|Where-Object{$_.name -ceq $name -and $_.state -eq 'uploaded' -and $_.digest -eq "sha256:$hash" -and $_.size -eq (Get-Item -LiteralPath $file).Length})
+        if($same.Count -eq 1){Write-Host "Reusing verified GitHub asset: $name"}else{$file}
+    })
+    # A draft is resumable after an interrupted upload. Published assets are never clobbered.
+    if($pending.Count){Checked {& $gh release upload $tag @pending --repo chenyokuo/FileConverter --clobber}}
+    $remote=Get-DraftRecord
+    if(!$remote.draft){throw 'Release must remain draft until all assets verify'}
     foreach($file in $assets){
         $name=[IO.Path]::GetFileName($file)
         $asset=@($remote.assets|Where-Object{$_.name -ceq $name -and $_.state -eq 'uploaded'})
