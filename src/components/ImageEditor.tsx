@@ -40,7 +40,9 @@ export function ImageEditor({
   const p = history.value;
   const [selected, setSelected] = useState("");
   const [mode, setMode] = useState("select");
-  const [zoom, setZoom] = useState(0.65);
+  const [zoom, setZoom] = useState(1);
+  const [autoFit,setAutoFit]=useState(true);
+  const zoomRef=useRef(zoom);zoomRef.current=zoom;
   const [color, setColor] = useState("#ffffff");
   const [stroke, setStroke] = useState(12);
   const [draft, setDraft] = useState<number[][]>([]);
@@ -51,6 +53,10 @@ export function ImageEditor({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const viewport = useRef<HTMLDivElement>(null);
+  const fit=()=>{const el=viewport.current;if(!el || !el.clientWidth || !el.clientHeight)return;const style=getComputedStyle(el);const w=el.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-2;const h=el.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-2;setZoom(Math.max(.0001,Math.min(w/p.width,h/p.height)));el.scrollTo(0,0);};
+  const manualZoom=(value:number,anchor?:number[])=>{const el=viewport.current;const stage=el?.querySelector<HTMLElement>('.image-stage');if(!el || !stage)return;const box=el.getBoundingClientRect();const rect=stage.getBoundingClientRect();const cursor=anchor || [box.left+el.clientWidth/2,box.top+el.clientHeight/2];const point=[(cursor[0]-rect.left)/zoomRef.current,(cursor[1]-rect.top)/zoomRef.current];const next=Math.max(.0001,Math.min(16,value));setAutoFit(false);setZoom(next);requestAnimationFrame(()=>{el.scrollLeft=stage.offsetLeft+point[0]*next-(cursor[0]-box.left-el.clientLeft);el.scrollTop=stage.offsetTop+point[1]*next-(cursor[1]-box.top-el.clientTop);});};
+  useEffect(()=>{if(!autoFit)return;const el=viewport.current;if(!el)return;const observer=new ResizeObserver(fit);observer.observe(el);fit();return()=>observer.disconnect();},[p.width,p.height,autoFit]);
+  useEffect(()=>{const el=viewport.current;if(!el)return;const wheel=(event:WheelEvent)=>{event.preventDefault();manualZoom(zoomRef.current*Math.exp(-event.deltaY*.001),[event.clientX,event.clientY]);};el.addEventListener('wheel',wheel,{passive:false});return()=>el.removeEventListener('wheel',wheel);},[]);
   const drag = useRef<{
     point: number[];
     project: ImageProject;
@@ -102,6 +108,7 @@ export function ImageEditor({
           layers: [...snapshot.layers, ...added],
         });
         setSelected(added[added.length - 1].id);
+        if(!snapshot.layers.length){setAutoFit(true);}
       }
     } catch (e) {
       setError(String(e));
@@ -137,17 +144,10 @@ export function ImageEditor({
       });
   };
   const point = (e: PointerEvent<SVGSVGElement>) => {
-    const box = e.currentTarget.getBoundingClientRect();
-    return [
-      Math.max(
-        0,
-        Math.min(p.width, ((e.clientX - box.left) / box.width) * p.width),
-      ),
-      Math.max(
-        0,
-        Math.min(p.height, ((e.clientY - box.top) / box.height) * p.height),
-      ),
-    ];
+    const matrix=e.currentTarget.getScreenCTM();
+    if(!matrix)return [0,0];
+    const local=new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix.inverse());
+    return [Math.max(0,Math.min(p.width,local.x)),Math.max(0,Math.min(p.height,local.y))];
   };
   const down = (e: PointerEvent<SVGSVGElement>) => {
     e.preventDefault();
@@ -303,6 +303,7 @@ export function ImageEditor({
       const result = await projectDialog("fcimage", "load");
       if (result) {
         history.change(result.project as ImageProject);
+        setAutoFit(true);
         setPath(result.path);
         setSelected("");
         setError(
@@ -705,16 +706,21 @@ export function ImageEditor({
         </aside>
       </div>
       <div className="row image-footer">
+        <Button onClick={()=>{setAutoFit(true);fit();}}>Fit to Canvas</Button>
+        <Button onClick={()=>manualZoom(1)}>100%</Button>
+        <Button aria-label="放大畫布" onClick={()=>manualZoom(zoom*1.25)}>＋</Button>
+        <Button aria-label="縮小畫布" onClick={()=>manualZoom(zoom/1.25)}>－</Button>
+        <span>{autoFit ? "自動適應" : "手動縮放"}</span>
         <label>
           畫布縮放 {Math.round(zoom * 100)}%{" "}
           <input
             aria-label="畫布縮放"
             type="range"
-            min={0.1}
-            max={3}
-            step={0.05}
+            min={0.0001}
+            max={16}
+            step={0.01}
             value={zoom}
-            onChange={(e) => setZoom(Number(e.target.value))}
+            onChange={(e) => manualZoom(Number(e.target.value))}
           />
         </label>
         <span>

@@ -2816,3 +2816,7 @@ input[type="range"]::-webkit-slider-thumb {
 .download-entry-options>.download-settings{grid-template-columns:minmax(0,1fr);padding:12px;}
 .download-entry-options select{max-width:100%;min-width:0;}
 .download-entry-options .subtitle-choices{max-height:140px;overflow:auto;}
+
+.image-viewport{height:clamp(300px,calc(100vh - 300px),640px);min-height:300px;max-height:none;display:flex;align-items:flex-start;}
+.image-stage{margin:auto;}
+.image-viewport>p[role=status]{position:absolute;left:20px;bottom:8px;padding:4px 8px;background:var(--control);border-radius:6px;pointer-events:none;}
