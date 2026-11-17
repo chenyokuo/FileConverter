@@ -25,14 +25,17 @@ try{
   await expect.poll(async()=>(await invoke('update_status')).phase,{timeout:45000}).toMatch(/current|error/);
   report.check=await invoke('update_status');
  }else{
-  await page.getByLabel('更新通道').selectOption('rc');await page.getByRole('button',{name:'檢查更新',exact:true}).click();
-  const wanted=mode==='current'?'current':'available';await expect.poll(async()=>(await invoke('update_status')).phase,{timeout:45000}).toBe(wanted);
+  if(mode!=='startup'){await page.getByLabel('更新通道').selectOption('rc');await page.getByRole('button',{name:'檢查更新',exact:true}).click();}
+  const isCurrent=['current','startup'].includes(mode);
+  const wanted=isCurrent?'current':'available';await expect.poll(async()=>(await invoke('update_status')).phase,{timeout:45000}).toBe(wanted);
+  if(mode==='startup'){await expect(page.getByRole('switch',{name:'啟動時檢查更新',exact:true})).toBeChecked();report.checkedOnStartupWithoutButton=true;}
   report.check=await invoke('update_status');
-  if(mode!=='current'){
-   await page.getByRole('button',{name:'下載新版',exact:true}).click();
+  if(!isCurrent){
+   if(mode==='portable')await page.getByRole('switch',{name:'自動下載更新',exact:true}).check();
+   else await page.getByRole('button',{name:'下載新版',exact:true}).click();
    const counts=[];await expect.poll(async()=>{const s=await invoke('update_status');counts.push(s.downloaded);if(s.phase==='error')throw Error(s.error);return s.phase},{timeout:1800000,intervals:[500,1000,2000]}).toBe('ready');
    const downloaded=await invoke('update_status');expect(downloaded.verified).toBe(true);expect(downloaded.downloaded).toBeGreaterThan(0);
-   report.download={...downloaded,distinctByteCounts:[...new Set(counts)].length};
+   report.download={...downloaded,distinctByteCounts:[...new Set(counts)].length};expect(report.download.distinctByteCounts).toBeGreaterThan(1);
    if(mode==='install'){
     expect(downloaded.installed).toBe(true);
     // Corrupt the exact cached installer, call the genuine official install()
@@ -42,15 +45,20 @@ try{
     const restored=await fs.open(downloaded.downloadPath,'r+');await restored.write(first,0,1,0);await restored.close();
     await invoke('update_download');expect((await invoke('update_status')).verified).toBe(true);
     const root=process.cwd();const input=root+'/.tools/editor-ui/red.mp4';
-    const queued=await rpc('editor',{action:'enqueue',type:'fcvideo',project:{type:'fcvideo',version:1,width:1920,height:1080,fps:60,clips:[{id:'busy',source:input,track:'V1',in:0,out:2,at:0,speed:.1}],export:{hardware:'cpu',videoCodec:'h264',qualityPreset:'quality'}},format:'mp4',outputDir:root+'/.tools/updater-busy-output'});
+    const queued=await rpc('editor',{action:'enqueue',type:'fcvideo',project:{type:'fcvideo',version:1,width:1920,height:1080,fps:60,clips:[{id:'busy',source:input,track:'V1',in:0,out:2,at:0,speed:.25}],export:{hardware:'cpu',videoCodec:'h264',qualityPreset:'quality'}},format:'mp4',outputDir:root+'/.tools/updater-busy-output'});
     const blocked=await invoke('update_install');expect(blocked.phase).toBe('ready');expect(blocked.waitReason).toMatch(/工作/);report.realExportDeferredInstall=true;
     await rpc('cancel',{id:queued.id});await expect.poll(async()=>(await rpc('snapshot')).jobs.find(j=>j.id===queued.id)?.status,{timeout:45000}).toMatch(/cancelled|completed/);await rpc('clear',{ids:[queued.id]});
-    await rpc('settings',{settings:before.settings});
+    const watchSource=root+'/.tools/updater-watch-source';await fs.mkdir(watchSource,{recursive:true});
+    const watch=await rpc('save_automation',{kind:'watch',name:'Update guard test',config:{name:'Update guard test',source:'png',steps:[{type:'convert',target:'jpg'}]},sourceDir:watchSource,outputDir:root+'/.tools/updater-watch-output'});
+    try{await rpc('watch_action',{id:watch.id,action:'start'});const blockedWatch=await invoke('update_install');expect(blockedWatch.phase).toBe('ready');expect(blockedWatch.waitReason).toMatch(/監看/);report.activeWatcherDeferredInstall=true;}
+    finally{await rpc('watch_action',{id:watch.id,action:'stop'});await rpc('delete_automation',{id:watch.id});}
+    await fs.writeFile('.tools/updater-restore-settings.json',JSON.stringify(before.settings));report.autoInstallExercised=true;
     await page.screenshot({path:`test-results/${label}.png`});
     await fs.writeFile(`test-results/${label}.json`,JSON.stringify(report,null,2));close=false;
     // Success launches NSIS and ends this connection/process. Post-install
     // restart/version/user-data checks are performed by the Windows harness.
-    await invoke('update_install').catch(()=>{});
+    await page.getByRole('switch',{name:'自動安裝更新（等待工作完成）',exact:true}).check().catch(error=>{if(!/closed/i.test(String(error)))throw error});
+    if(!page.isClosed())await page.waitForEvent('close',{timeout:30000});
    }
   }
  }

@@ -29,6 +29,8 @@ if(!$PrepareOnly){
     if($repo.isPrivate){throw 'The update repository is private. Make chenyokuo/FileConverter public before publishing anonymous updater endpoints.'}
     if((git branch --show-current).Trim() -ne 'main'){throw 'Publish from validated main; do not silently merge feature branches.'}
     if((git rev-parse origin/main).Trim() -ne $source){throw 'Push validated main before publishing.'}
+    $published=& $gh release view "v$Version" --repo chenyokuo/FileConverter --json isDraft 2>$null
+    if($LASTEXITCODE -eq 0 -and !($published|ConvertFrom-Json).isDraft){throw 'This version is already public. Choose a new version; do not rebuild or replace it.'}
 }
 . "$PSScriptRoot/signing.ps1"
 $oldKey=$env:TAURI_SIGNING_PRIVATE_KEY;$oldPassword=$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD;$oldCI=$env:CI
